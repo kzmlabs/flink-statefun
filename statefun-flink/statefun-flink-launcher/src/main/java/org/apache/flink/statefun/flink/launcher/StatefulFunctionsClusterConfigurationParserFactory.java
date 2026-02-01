@@ -20,8 +20,6 @@ package org.apache.flink.statefun.flink.launcher;
 import static org.apache.flink.client.cli.CliFrontendParser.PARALLELISM_OPTION;
 import static org.apache.flink.runtime.entrypoint.parser.CommandLineOptions.CONFIG_DIR_OPTION;
 import static org.apache.flink.runtime.entrypoint.parser.CommandLineOptions.DYNAMIC_PROPERTY_OPTION;
-import static org.apache.flink.runtime.entrypoint.parser.CommandLineOptions.HOST_OPTION;
-import static org.apache.flink.runtime.entrypoint.parser.CommandLineOptions.REST_PORT_OPTION;
 
 import java.util.Properties;
 import javax.annotation.Nonnull;
@@ -76,7 +74,6 @@ public class StatefulFunctionsClusterConfigurationParserFactory
   public Options getOptions() {
     final Options options = new Options();
     options.addOption(CONFIG_DIR_OPTION);
-    options.addOption(REST_PORT_OPTION);
     options.addOption(JOB_ID_OPTION);
     options.addOption(DYNAMIC_PROPERTY_OPTION);
     options.addOption(PARALLELISM_OPTION);
@@ -92,8 +89,6 @@ public class StatefulFunctionsClusterConfigurationParserFactory
     final String configDir = commandLine.getOptionValue(CONFIG_DIR_OPTION.getOpt());
     final Properties dynamicProperties =
         commandLine.getOptionProperties(DYNAMIC_PROPERTY_OPTION.getOpt());
-    final int restPort = getRestPort(commandLine);
-    final String hostname = commandLine.getOptionValue(HOST_OPTION.getOpt());
     final int parallelism = getParallelism(commandLine);
     final SavepointRestoreSettings savepointRestoreSettings =
         CliFrontendParser.createSavepointRestoreSettings(commandLine);
@@ -103,20 +98,9 @@ public class StatefulFunctionsClusterConfigurationParserFactory
         configDir,
         dynamicProperties,
         commandLine.getArgs(),
-        hostname,
-        restPort,
         savepointRestoreSettings,
         jobId,
         parallelism);
-  }
-
-  private int getRestPort(CommandLine commandLine) throws FlinkParseException {
-    final String restPortString = commandLine.getOptionValue(REST_PORT_OPTION.getOpt(), "-1");
-    try {
-      return Integer.parseInt(restPortString);
-    } catch (NumberFormatException e) {
-      throw createFlinkParseException(REST_PORT_OPTION, e);
-    }
   }
 
   private int getParallelism(CommandLine commandLine) throws FlinkParseException {

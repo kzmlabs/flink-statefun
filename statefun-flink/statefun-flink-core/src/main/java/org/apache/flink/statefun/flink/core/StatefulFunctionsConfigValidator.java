@@ -96,7 +96,7 @@ public final class StatefulFunctionsConfigValidator {
       ConfigOptions.key("execution.checkpointing.unaligned").booleanType().defaultValue(false);
 
   private static void validateNoHeapBackedTimers(Configuration configuration) {
-    final String timerFactory = configuration.getString(TIMER_SERVICE_FACTORY);
+    final String timerFactory = configuration.get(TIMER_SERVICE_FACTORY);
     if (!timerFactory.equalsIgnoreCase("rocksdb")) {
       throw new StatefulFunctionsInvalidConfigException(
           TIMER_SERVICE_FACTORY,
@@ -105,7 +105,7 @@ public final class StatefulFunctionsConfigValidator {
   }
 
   private static void validateUnalignedCheckpointsDisabled(Configuration configuration) {
-    final boolean unalignedCheckpoints = configuration.getBoolean(ENABLE_UNALIGNED_CHECKPOINTS);
+    final boolean unalignedCheckpoints = configuration.get(ENABLE_UNALIGNED_CHECKPOINTS);
     if (unalignedCheckpoints) {
       throw new StatefulFunctionsInvalidConfigException(
           ENABLE_UNALIGNED_CHECKPOINTS,

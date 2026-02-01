@@ -28,7 +28,8 @@ import org.apache.flink.statefun.flink.core.generated.Payload;
 
 public final class MessagePayloadSerializerKryo implements MessagePayloadSerializer {
 
-  private KryoSerializer<Object> kryo = new KryoSerializer<>(Object.class, new ExecutionConfig());
+  private KryoSerializer<Object> kryo =
+      new KryoSerializer<>(Object.class, new ExecutionConfig().getSerializerConfig());
   private DataInputDeserializer source = new DataInputDeserializer();
   private DataOutputSerializer target = new DataOutputSerializer(4096);
 

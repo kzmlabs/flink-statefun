@@ -66,8 +66,8 @@ public final class FeedbackSinkOperator<V> extends AbstractStreamOperator<Void>
   @Override
   public void open() throws Exception {
     super.open();
-    final int indexOfThisSubtask = getRuntimeContext().getIndexOfThisSubtask();
-    final int attemptNum = getRuntimeContext().getAttemptNumber();
+    final int indexOfThisSubtask = getRuntimeContext().getTaskInfo().getIndexOfThisSubtask();
+    final int attemptNum = getRuntimeContext().getTaskInfo().getAttemptNumber();
     final SubtaskFeedbackKey<V> key = this.key.withSubTaskIndex(indexOfThisSubtask, attemptNum);
 
     FeedbackChannelBroker broker = FeedbackChannelBroker.get();

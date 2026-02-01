@@ -22,9 +22,20 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 
+# IDE
 .DS_Store
 *.iml
-.idea
+.idea/
+*.ipr
+*.iws
+bin/
+.project
+.settings/
+.classpath
+.factorypath
+*.swp
+*~
+.vscode/
 
 # maven shade plugin
 dependency-reduced-pom.xml
@@ -53,3 +64,7 @@ statefun-e2e-tests/*/statefun-app-checkpoints-*
 statefun-sdk-js/package-lock.json
 statefun-sdk-js/node_modules/*
 statefun-sdk-js/dist/*
+.claude/settings.local.json
+.vscode/settings.json
+dev/
+.cache/

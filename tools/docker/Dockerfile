@@ -13,12 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM apache/flink:1.16.2-scala_2.12-java8
+FROM apache/flink:2.2.0-java21
 
-ENV ROLE worker
-ENV MASTER_HOST localhost
-ENV STATEFUN_HOME /opt/statefun
-ENV STATEFUN_MODULES $STATEFUN_HOME/modules
+ENV ROLE=worker
+ENV MASTER_HOST=localhost
+ENV STATEFUN_HOME=/opt/statefun
+ENV STATEFUN_MODULES=$STATEFUN_HOME/modules
+
+# Switch to root for all modifications
+USER root
 
 # cleanup flink-lib
 RUN rm -fr $FLINK_HOME/lib/flink-table*jar
@@ -26,9 +29,10 @@ RUN rm -fr $FLINK_HOME/lib/flink-table*jar
 # copy our distriubtion template
 COPY flink/ $FLINK_HOME/
 
-# add user modules
-USER root
+# fix CRLF line endings in shell scripts (for Windows builds)
+RUN find $FLINK_HOME/bin -name "*.sh" -exec sed -i 's/\r$//' {} \;
 
+# add user modules
 RUN mkdir -p $STATEFUN_MODULES && \
     useradd --system --home-dir $STATEFUN_HOME --uid=9998 --gid=flink statefun && \
     chown -R statefun:flink $STATEFUN_HOME && \
@@ -45,7 +49,10 @@ RUN mkdir -p $FLINK_HOME/plugins/azure-fs-hadoop && \
 # add tcnative
 RUN mv $FLINK_HOME/opt/flink-shaded-netty-tcnative-dynamic-*.jar  $FLINK_HOME/lib/
 
-# entry point 
-ADD docker-entry-point.sh /docker-entry-point.sh
+# entry point - convert CRLF to LF for Windows builds
+ADD docker-entry-point.sh /tmp/docker-entry-point.sh
+RUN sed -i 's/\r$//' /tmp/docker-entry-point.sh && \
+    mv /tmp/docker-entry-point.sh /docker-entry-point.sh && \
+    chmod +x /docker-entry-point.sh
 
 ENTRYPOINT ["/docker-entry-point.sh"]

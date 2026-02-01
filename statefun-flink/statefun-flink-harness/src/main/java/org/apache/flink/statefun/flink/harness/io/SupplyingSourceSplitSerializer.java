@@ -15,19 +15,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.flink.statefun.flink.harness.io;
 
-package org.apache.flink.statefun.flink.io.kinesis.binders.egress.v1;
+import java.io.IOException;
+import org.apache.flink.core.io.SimpleVersionedSerializer;
+import org.apache.flink.util.InstantiationUtil;
 
-import com.google.auto.service.AutoService;
-import java.util.Map;
-import org.apache.flink.statefun.extensions.ExtensionModule;
-
-@AutoService(ExtensionModule.class)
-public final class Module implements ExtensionModule {
+public class SupplyingSourceSplitSerializer<T>
+    implements SimpleVersionedSerializer<SupplyingSourceSplit<T>> {
 
   @Override
-  public void configure(Map<String, String> globalConfigurations, Binder universeBinder) {
-    universeBinder.bindExtension(
-        GenericKinesisEgressBinderV1.KIND_TYPE, GenericKinesisEgressBinderV1.INSTANCE);
+  public int getVersion() {
+    return 0;
+  }
+
+  @Override
+  public byte[] serialize(SupplyingSourceSplit<T> split) throws IOException {
+    return InstantiationUtil.serializeObject(split);
+  }
+
+  @Override
+  public SupplyingSourceSplit<T> deserialize(int version, byte[] serialized) throws IOException {
+    try {
+      return InstantiationUtil.deserializeObject(serialized, getClass().getClassLoader());
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException("Failed to deserialize the split.", e);
+    }
   }
 }

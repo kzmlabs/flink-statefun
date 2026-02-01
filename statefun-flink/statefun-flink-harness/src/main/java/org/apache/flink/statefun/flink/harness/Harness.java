@@ -20,9 +20,11 @@ package org.apache.flink.statefun.flink.harness;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import org.apache.flink.api.connector.source.Source;
+import org.apache.flink.configuration.CheckpointingOptions;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.CoreOptions;
-import org.apache.flink.runtime.jobgraph.SavepointConfigOptions;
+import org.apache.flink.configuration.StateRecoveryOptions;
 import org.apache.flink.statefun.flink.core.StatefulFunctionsConfig;
 import org.apache.flink.statefun.flink.core.StatefulFunctionsConfigValidator;
 import org.apache.flink.statefun.flink.core.StatefulFunctionsJob;
@@ -39,9 +41,7 @@ import org.apache.flink.statefun.sdk.io.EgressIdentifier;
 import org.apache.flink.statefun.sdk.io.EgressSpec;
 import org.apache.flink.statefun.sdk.io.IngressIdentifier;
 import org.apache.flink.statefun.sdk.io.IngressSpec;
-import org.apache.flink.streaming.api.environment.ExecutionCheckpointingOptions;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.api.functions.source.SourceFunction;
 
 public class Harness {
   private final Configuration flinkConfig;
@@ -65,7 +65,7 @@ public class Harness {
   }
 
   public <T> Harness withFlinkSourceFunction(
-      IngressIdentifier<T> identifier, SourceFunction<T> supplier) {
+      IngressIdentifier<T> identifier, Source<T, ?, ?> supplier) {
     Objects.requireNonNull(identifier);
     Objects.requireNonNull(supplier);
     overrideIngress.put(identifier, new SourceFunctionSpec<>(identifier, supplier));
@@ -105,7 +105,7 @@ public class Harness {
 
   /** Set the desired parallelism. */
   public Harness withParallelism(int parallelism) {
-    flinkConfig.setInteger(CoreOptions.DEFAULT_PARALLELISM, parallelism);
+    flinkConfig.set(CoreOptions.DEFAULT_PARALLELISM, parallelism);
     return this;
   }
 
@@ -121,7 +121,7 @@ public class Harness {
   /** Sets the path to the savepoint location to restore from, when this harness starts. */
   public Harness withSavepointLocation(String savepointLocation) {
     Objects.requireNonNull(savepointLocation);
-    flinkConfig.set(SavepointConfigOptions.SAVEPOINT_PATH, savepointLocation);
+    flinkConfig.set(StateRecoveryOptions.SAVEPOINT_PATH, savepointLocation);
     return this;
   }
 
@@ -145,7 +145,7 @@ public class Harness {
   private static int getParallelism(Configuration config) {
     final int parallelism;
     if (config.contains(CoreOptions.DEFAULT_PARALLELISM)) {
-      parallelism = config.getInteger(CoreOptions.DEFAULT_PARALLELISM);
+      parallelism = config.get(CoreOptions.DEFAULT_PARALLELISM);
     } else {
       parallelism = Runtime.getRuntime().availableProcessors();
     }
@@ -191,7 +191,7 @@ public class Harness {
         CoreOptions.ALWAYS_PARENT_FIRST_LOADER_PATTERNS_ADDITIONAL,
         StatefulFunctionsConfigValidator.PARENT_FIRST_CLASSLOADER_PATTERNS);
     flinkConfig.set(
-        ExecutionCheckpointingOptions.MAX_CONCURRENT_CHECKPOINTS,
+        CheckpointingOptions.MAX_CONCURRENT_CHECKPOINTS,
         StatefulFunctionsConfigValidator.MAX_CONCURRENT_CHECKPOINTS);
   }
 }

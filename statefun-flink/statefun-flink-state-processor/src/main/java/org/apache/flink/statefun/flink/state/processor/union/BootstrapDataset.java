@@ -18,8 +18,8 @@
 package org.apache.flink.statefun.flink.state.processor.union;
 
 import java.util.Objects;
-import org.apache.flink.api.java.DataSet;
 import org.apache.flink.statefun.flink.state.processor.BootstrapDataRouterProvider;
+import org.apache.flink.streaming.api.datastream.DataStream;
 
 /**
  * Represents a single registered bootstrap dataset, containing pre-tagged/routed bootstrap data
@@ -27,15 +27,15 @@ import org.apache.flink.statefun.flink.state.processor.BootstrapDataRouterProvid
  */
 public class BootstrapDataset<T> {
 
-  private final DataSet<T> dataSet;
+  private final DataStream<T> dataSet;
   private final BootstrapDataRouterProvider<T> routerProvider;
 
-  public BootstrapDataset(DataSet<T> dataSet, BootstrapDataRouterProvider<T> routerProvider) {
+  public BootstrapDataset(DataStream<T> dataSet, BootstrapDataRouterProvider<T> routerProvider) {
     this.dataSet = Objects.requireNonNull(dataSet);
     this.routerProvider = Objects.requireNonNull(routerProvider);
   }
 
-  DataSet<T> getDataSet() {
+  DataStream<T> getDataSet() {
     return dataSet;
   }
 

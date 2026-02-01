@@ -21,9 +21,9 @@ under the License.
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.apache.flink</groupId>
+        <groupId>io.github.kzmlabs</groupId>
         <artifactId>statefun-flink</artifactId>
-        <version>3.4-SNAPSHOT</version>
+        <version>3.4.0-KZM-1.0-SNAPSHOT</version>
         <relativePath>..</relativePath>
     </parent>
 
@@ -32,34 +32,34 @@ under the License.
     <properties>
         <okhttp.version>3.14.6</okhttp.version>
         <additional-sources.dir>target/additional-sources</additional-sources.dir>
-        <flink-shaded-netty.version>4.1.70.Final-15.0</flink-shaded-netty.version>
+        <flink-shaded-netty.version>4.1.91.Final-17.0</flink-shaded-netty.version>
     </properties>
 
     <dependencies>
 
         <!-- sdk -->
         <dependency>
-            <groupId>org.apache.flink</groupId>
+            <groupId>io.github.kzmlabs</groupId>
             <artifactId>statefun-sdk-embedded</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.flink</groupId>
+            <groupId>io.github.kzmlabs</groupId>
             <artifactId>statefun-sdk-protos</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.flink</groupId>
+            <groupId>io.github.kzmlabs</groupId>
             <artifactId>statefun-flink-io</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.flink</groupId>
+            <groupId>io.github.kzmlabs</groupId>
             <artifactId>statefun-flink-common</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.flink</groupId>
+            <groupId>io.github.kzmlabs</groupId>
             <artifactId>statefun-flink-extensions</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -166,7 +166,7 @@ under the License.
                         <configuration>
                             <artifactItems>
                                 <artifactItem>
-                                    <groupId>org.apache.flink</groupId>
+                                    <groupId>io.github.kzmlabs</groupId>
                                     <artifactId>statefun-sdk-protos</artifactId>
                                     <version>${project.version}</version>
                                     <type>jar</type>

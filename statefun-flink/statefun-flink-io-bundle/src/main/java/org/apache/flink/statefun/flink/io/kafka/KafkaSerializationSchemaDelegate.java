@@ -19,11 +19,11 @@ package org.apache.flink.statefun.flink.io.kafka;
 
 import java.util.Objects;
 import javax.annotation.Nullable;
+import org.apache.flink.connector.kafka.sink.KafkaRecordSerializationSchema;
 import org.apache.flink.statefun.sdk.kafka.KafkaEgressSerializer;
-import org.apache.flink.streaming.connectors.kafka.KafkaSerializationSchema;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
-final class KafkaSerializationSchemaDelegate<T> implements KafkaSerializationSchema<T> {
+final class KafkaSerializationSchemaDelegate<T> implements KafkaRecordSerializationSchema<T> {
 
   private static final long serialVersionUID = 1L;
 
@@ -33,8 +33,10 @@ final class KafkaSerializationSchemaDelegate<T> implements KafkaSerializationSch
     this.serializer = Objects.requireNonNull(serializer);
   }
 
+  @Nullable
   @Override
-  public ProducerRecord<byte[], byte[]> serialize(T t, @Nullable Long aLong) {
+  public ProducerRecord<byte[], byte[]> serialize(
+      T t, KafkaSinkContext kafkaSinkContext, Long aLong) {
     return serializer.serialize(t);
   }
 }

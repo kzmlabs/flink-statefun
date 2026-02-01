@@ -17,24 +17,24 @@
  */
 package org.apache.flink.statefun.flink.core.translation;
 
+import org.apache.flink.api.connector.sink2.Sink;
 import org.apache.flink.statefun.sdk.io.EgressIdentifier;
 import org.apache.flink.statefun.sdk.io.EgressSpec;
-import org.apache.flink.streaming.api.functions.sink.SinkFunction;
 
 final class DecoratedSink {
   final String name;
 
   final String uid;
 
-  final SinkFunction<?> sink;
+  final Sink<?> sink;
 
-  private DecoratedSink(String name, String uid, SinkFunction<?> sink) {
+  private DecoratedSink(String name, String uid, Sink<?> sink) {
     this.name = name;
     this.uid = uid;
     this.sink = sink;
   }
 
-  public static DecoratedSink of(EgressSpec<?> spec, SinkFunction<?> sink) {
+  public static DecoratedSink of(EgressSpec<?> spec, Sink<?> sink) {
     EgressIdentifier<?> identifier = spec.id();
     String name = String.format("%s-%s-egress", identifier.namespace(), identifier.name());
     String uid =

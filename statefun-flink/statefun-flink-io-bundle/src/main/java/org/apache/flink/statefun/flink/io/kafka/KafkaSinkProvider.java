@@ -17,60 +17,58 @@
  */
 package org.apache.flink.statefun.flink.io.kafka;
 
-import static org.apache.flink.util.StringUtils.generateRandomAlphanumericString;
-
-import java.util.Properties;
-import java.util.concurrent.ThreadLocalRandom;
+import org.apache.flink.api.connector.sink2.Sink;
+import org.apache.flink.connector.base.DeliveryGuarantee;
+import org.apache.flink.connector.kafka.sink.KafkaRecordSerializationSchema;
+import org.apache.flink.connector.kafka.sink.KafkaSink;
+import org.apache.flink.connector.kafka.sink.KafkaSinkBuilder;
 import org.apache.flink.statefun.flink.io.common.ReflectionUtil;
 import org.apache.flink.statefun.flink.io.spi.SinkProvider;
 import org.apache.flink.statefun.sdk.io.EgressSpec;
 import org.apache.flink.statefun.sdk.kafka.KafkaEgressSerializer;
 import org.apache.flink.statefun.sdk.kafka.KafkaEgressSpec;
 import org.apache.flink.statefun.sdk.kafka.KafkaProducerSemantic;
-import org.apache.flink.streaming.api.functions.sink.SinkFunction;
-import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer;
-import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer.Semantic;
-import org.apache.flink.streaming.connectors.kafka.KafkaSerializationSchema;
 import org.apache.kafka.clients.producer.ProducerConfig;
 
 public class KafkaSinkProvider implements SinkProvider {
 
   @Override
-  public <T> SinkFunction<T> forSpec(EgressSpec<T> egressSpec) {
+  public <T> Sink<T> forSpec(EgressSpec<T> egressSpec) {
     KafkaEgressSpec<T> spec = asSpec(egressSpec);
+    DeliveryGuarantee producerSemantic = semanticFromSpec(spec);
 
-    Properties properties = new Properties();
-    properties.putAll(spec.properties());
-    properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, spec.kafkaAddress());
+    KafkaSinkBuilder<T> sinkBuilder =
+        KafkaSink.<T>builder()
+            .setBootstrapServers(spec.kafkaAddress())
+            .setRecordSerializer(serializationSchemaFromSpec(spec))
+            .setDeliveryGuarantee(producerSemantic);
 
-    Semantic producerSemantic = semanticFromSpec(spec);
-    if (producerSemantic == Semantic.EXACTLY_ONCE) {
-      properties.setProperty(
-          ProducerConfig.TRANSACTION_TIMEOUT_CONFIG,
-          String.valueOf(spec.semantic().asExactlyOnceSemantic().transactionTimeout().toMillis()));
+    spec.properties().forEach((k, v) -> sinkBuilder.setProperty(k.toString(), v.toString()));
+
+    if (producerSemantic == DeliveryGuarantee.EXACTLY_ONCE) {
+      long transactionTimeout =
+          spec.semantic().asExactlyOnceSemantic().transactionTimeout().toMillis();
+      sinkBuilder.setProperty(
+          ProducerConfig.TRANSACTION_TIMEOUT_CONFIG, String.valueOf(transactionTimeout));
     }
 
-    return new FlinkKafkaProducer<>(
-        randomKafkaTopic(),
-        serializerFromSpec(spec),
-        properties,
-        producerSemantic,
-        spec.kafkaProducerPoolSize());
+    return sinkBuilder.build();
   }
 
-  private <T> KafkaSerializationSchema<T> serializerFromSpec(KafkaEgressSpec<T> spec) {
+  private <T> KafkaRecordSerializationSchema<T> serializationSchemaFromSpec(
+      KafkaEgressSpec<T> spec) {
     KafkaEgressSerializer<T> serializer = ReflectionUtil.instantiate(spec.serializerClass());
     return new KafkaSerializationSchemaDelegate<>(serializer);
   }
 
-  private static <T> Semantic semanticFromSpec(KafkaEgressSpec<T> spec) {
+  private static <T> DeliveryGuarantee semanticFromSpec(KafkaEgressSpec<T> spec) {
     final KafkaProducerSemantic semantic = spec.semantic();
     if (semantic.isExactlyOnceSemantic()) {
-      return Semantic.EXACTLY_ONCE;
+      return DeliveryGuarantee.EXACTLY_ONCE;
     } else if (semantic.isAtLeastOnceSemantic()) {
-      return Semantic.AT_LEAST_ONCE;
+      return DeliveryGuarantee.AT_LEAST_ONCE;
     } else if (semantic.isNoSemantic()) {
-      return Semantic.NONE;
+      return DeliveryGuarantee.NONE;
     } else {
       throw new IllegalArgumentException("Unknown producer semantic " + semantic.getClass());
     }
@@ -84,10 +82,5 @@ public class KafkaSinkProvider implements SinkProvider {
       throw new NullPointerException("Unable to translate a NULL spec");
     }
     throw new IllegalArgumentException(String.format("Wrong type %s", spec.type()));
-  }
-
-  private static String randomKafkaTopic() {
-    return "__stateful_functions_random_topic_"
-        + generateRandomAlphanumericString(ThreadLocalRandom.current(), 16);
   }
 }

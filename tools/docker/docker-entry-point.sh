@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
@@ -24,7 +24,7 @@ MASTER="master"
 
 #
 # Environment
-# 
+#
 FLINK_HOME=${FLINK_HOME:-"/opt/flink/bin"}
 ROLE=${ROLE:-"worker"}
 MASTER_HOST=${MASTER_HOST:-"localhost"}

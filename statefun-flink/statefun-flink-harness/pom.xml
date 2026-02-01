@@ -21,9 +21,9 @@ under the License.
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.apache.flink</groupId>
+        <groupId>io.github.kzmlabs</groupId>
         <artifactId>statefun-flink</artifactId>
-        <version>3.4-SNAPSHOT</version>
+        <version>3.4.0-KZM-1.0-SNAPSHOT</version>
         <relativePath>..</relativePath>
     </parent>
 
@@ -31,7 +31,7 @@ under the License.
 
     <dependencies>
         <dependency>
-            <groupId>org.apache.flink</groupId>
+            <groupId>io.github.kzmlabs</groupId>
             <artifactId>statefun-flink-distribution</artifactId>
             <version>${project.version}</version>
         </dependency>

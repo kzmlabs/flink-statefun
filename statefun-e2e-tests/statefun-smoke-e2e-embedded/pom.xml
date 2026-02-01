@@ -20,8 +20,8 @@ under the License.
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>statefun-e2e-tests</artifactId>
-        <groupId>org.apache.flink</groupId>
-        <version>3.4-SNAPSHOT</version>
+        <groupId>io.github.kzmlabs</groupId>
+        <version>3.4.0-KZM-1.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -29,7 +29,7 @@ under the License.
 
     <dependencies>
         <dependency>
-            <groupId>org.apache.flink</groupId>
+            <groupId>io.github.kzmlabs</groupId>
             <artifactId>statefun-flink-harness</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
@@ -48,16 +48,16 @@ under the License.
 
         <!-- smoke end-to-end common -->
         <dependency>
-            <groupId>org.apache.flink</groupId>
+            <groupId>io.github.kzmlabs</groupId>
             <artifactId>statefun-smoke-e2e-common</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <!-- Reusing some classes from the driver module, e.g. Ids and Types -->
         <dependency>
-            <groupId>org.apache.flink</groupId>
+            <groupId>io.github.kzmlabs</groupId>
             <artifactId>statefun-smoke-e2e-driver</artifactId>
-            <version>3.4-SNAPSHOT</version>
+            <version>3.4.0-KZM-1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
 

@@ -25,8 +25,7 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
-import org.apache.flink.api.common.ExecutionConfig;
-import org.apache.flink.api.common.JobID;
+import org.apache.flink.api.common.*;
 import org.apache.flink.api.common.accumulators.*;
 import org.apache.flink.api.common.accumulators.Histogram;
 import org.apache.flink.api.common.cache.DistributedCache;
@@ -34,14 +33,16 @@ import org.apache.flink.api.common.externalresource.ExternalResourceInfo;
 import org.apache.flink.api.common.functions.BroadcastVariableInitializer;
 import org.apache.flink.api.common.functions.RuntimeContext;
 import org.apache.flink.api.common.state.*;
+import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeutils.TypeSerializer;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.metrics.*;
 import org.apache.flink.metrics.groups.OperatorMetricGroup;
+import org.apache.flink.runtime.event.WatermarkEvent;
 import org.apache.flink.runtime.state.*;
 import org.apache.flink.runtime.state.heap.HeapPriorityQueueElement;
 import org.apache.flink.runtime.state.internal.InternalListState;
-import org.apache.flink.shaded.guava30.com.google.common.util.concurrent.MoreExecutors;
+import org.apache.flink.shaded.guava33.com.google.common.util.concurrent.MoreExecutors;
 import org.apache.flink.statefun.flink.core.StatefulFunctionsUniverse;
 import org.apache.flink.statefun.flink.core.TestUtils;
 import org.apache.flink.statefun.flink.core.backpressure.ThresholdBackPressureValve;
@@ -53,6 +54,7 @@ import org.apache.flink.streaming.api.operators.Output;
 import org.apache.flink.streaming.api.operators.Triggerable;
 import org.apache.flink.streaming.api.watermark.Watermark;
 import org.apache.flink.streaming.runtime.streamrecord.LatencyMarker;
+import org.apache.flink.streaming.runtime.streamrecord.RecordAttributes;
 import org.apache.flink.streaming.runtime.streamrecord.StreamRecord;
 import org.apache.flink.streaming.runtime.watermarkstatus.WatermarkStatus;
 import org.apache.flink.util.OutputTag;
@@ -155,44 +157,51 @@ public class ReductionsTest {
     }
 
     @Override
-    public ExecutionConfig getExecutionConfig() {
-      return new ExecutionConfig();
+    public <T> org.apache.flink.api.common.state.v2.ValueState<T> getState(
+        org.apache.flink.api.common.state.v2.ValueStateDescriptor<T> valueStateDescriptor) {
+      return null;
+    }
+
+    @Override
+    public <T> org.apache.flink.api.common.state.v2.ListState<T> getListState(
+        org.apache.flink.api.common.state.v2.ListStateDescriptor<T> listStateDescriptor) {
+      return null;
+    }
+
+    @Override
+    public <T> org.apache.flink.api.common.state.v2.ReducingState<T> getReducingState(
+        org.apache.flink.api.common.state.v2.ReducingStateDescriptor<T> reducingStateDescriptor) {
+      return null;
+    }
+
+    @Override
+    public <IN, ACC, OUT>
+        org.apache.flink.api.common.state.v2.AggregatingState<IN, OUT> getAggregatingState(
+            org.apache.flink.api.common.state.v2.AggregatingStateDescriptor<IN, ACC, OUT>
+                aggregatingStateDescriptor) {
+      return null;
+    }
+
+    @Override
+    public <UK, UV> org.apache.flink.api.common.state.v2.MapState<UK, UV> getMapState(
+        org.apache.flink.api.common.state.v2.MapStateDescriptor<UK, UV> mapStateDescriptor) {
+      return null;
+    }
+
+    @Override
+    public Map<String, String> getGlobalJobParameters() {
+      return Collections.emptyMap();
+    }
+
+    @Override
+    public boolean isObjectReuseEnabled() {
+      return false;
     }
 
     // everything below this line would throw UnspportedOperationException()
 
     @Override
-    public String getTaskName() {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
     public OperatorMetricGroup getMetricGroup() {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public int getNumberOfParallelSubtasks() {
-      return 0;
-    }
-
-    @Override
-    public int getMaxNumberOfParallelSubtasks() {
-      return 0;
-    }
-
-    @Override
-    public int getIndexOfThisSubtask() {
-      return 0;
-    }
-
-    @Override
-    public int getAttemptNumber() {
-      return 0;
-    }
-
-    @Override
-    public String getTaskNameWithSubtasks() {
       throw new UnsupportedOperationException();
     }
 
@@ -278,8 +287,56 @@ public class ReductionsTest {
     }
 
     @Override
-    public JobID getJobId() {
+    public JobInfo getJobInfo() {
       throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public TaskInfo getTaskInfo() {
+      return new FakeTaskInfo();
+    }
+
+    @Override
+    public <T> TypeSerializer<T> createSerializer(TypeInformation<T> typeInformation) {
+      throw new UnsupportedOperationException();
+    }
+  }
+
+  private static final class FakeTaskInfo implements TaskInfo {
+
+    @Override
+    public String getTaskName() {
+      return "";
+    }
+
+    @Override
+    public int getMaxNumberOfParallelSubtasks() {
+      return 0;
+    }
+
+    @Override
+    public int getIndexOfThisSubtask() {
+      return 0;
+    }
+
+    @Override
+    public int getNumberOfParallelSubtasks() {
+      return 0;
+    }
+
+    @Override
+    public int getAttemptNumber() {
+      return 0;
+    }
+
+    @Override
+    public String getTaskNameWithSubtasks() {
+      return "";
+    }
+
+    @Override
+    public String getAllocationIDAsString() {
+      return "";
     }
   }
 
@@ -295,6 +352,11 @@ public class ReductionsTest {
     @Override
     public <N> Stream<Object> getKeys(String state, N namespace) {
       throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public <N> Stream<Object> getKeys(List<String> list, N n) {
+      return Stream.empty();
     }
 
     @Override
@@ -318,6 +380,11 @@ public class ReductionsTest {
     @Override
     public boolean deregisterKeySelectionListener(KeySelectionListener<Object> listener) {
       return false;
+    }
+
+    @Override
+    public String getBackendTypeIdentifier() {
+      return "";
     }
 
     @Nonnull
@@ -346,7 +413,14 @@ public class ReductionsTest {
     }
 
     @Override
-    public void setCurrentKey(Object newKey) {}
+    public void setCurrentKeyAndKeyGroup(Object o, int i) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void setCurrentKey(Object newKey) {
+      throw new UnsupportedOperationException();
+    }
 
     @Override
     public TypeSerializer<Object> getKeySerializer() {
@@ -379,6 +453,9 @@ public class ReductionsTest {
     public long currentWatermark() {
       return 0;
     }
+
+    @Override
+    public void initializeWatermark(long l) {}
 
     @Override
     public void registerEventTimeTimer(VoidNamespace namespace, long time) {
@@ -556,6 +633,12 @@ public class ReductionsTest {
 
     @Override
     public void emitLatencyMarker(LatencyMarker latencyMarker) {}
+
+    @Override
+    public void emitRecordAttributes(RecordAttributes recordAttributes) {}
+
+    @Override
+    public void emitWatermark(WatermarkEvent watermarkEvent) {}
 
     @Override
     public void collect(StreamRecord<Message> record) {}

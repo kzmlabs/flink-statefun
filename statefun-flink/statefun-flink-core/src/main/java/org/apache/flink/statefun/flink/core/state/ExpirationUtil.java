@@ -18,13 +18,13 @@
 
 package org.apache.flink.statefun.flink.core.state;
 
+import java.time.Duration;
 import org.apache.flink.api.common.state.StateDescriptor;
 import org.apache.flink.api.common.state.StateTtlConfig;
 import org.apache.flink.api.common.state.StateTtlConfig.Builder;
 import org.apache.flink.api.common.state.StateTtlConfig.StateVisibility;
 import org.apache.flink.api.common.state.StateTtlConfig.TtlTimeCharacteristic;
 import org.apache.flink.api.common.state.StateTtlConfig.UpdateType;
-import org.apache.flink.api.common.time.Time;
 import org.apache.flink.statefun.sdk.state.Expiration;
 import org.apache.flink.statefun.sdk.state.Expiration.Mode;
 
@@ -41,7 +41,7 @@ final class ExpirationUtil {
 
   private static StateTtlConfig from(Expiration expiration) {
     final long millis = expiration.duration().toMillis();
-    Builder builder = StateTtlConfig.newBuilder(Time.milliseconds(millis));
+    Builder builder = StateTtlConfig.newBuilder(Duration.ofMillis(millis));
     builder.setTtlTimeCharacteristic(TtlTimeCharacteristic.ProcessingTime);
     builder.setStateVisibility(StateVisibility.NeverReturnExpired);
     switch (expiration.mode()) {

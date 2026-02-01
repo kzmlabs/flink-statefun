@@ -1,0 +1,64 @@
+name: Release to Maven Central
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    name: Release to Maven Central
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+          server-id: ossrh
+          server-username: OSSRH_USERNAME
+          server-password: OSSRH_PASSWORD
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          gpg-passphrase: GPG_PASSPHRASE
+
+      - name: Build and test
+        run: mvn clean verify -B
+
+      - name: Deploy to Maven Central
+        run: mvn deploy -Prelease -DskipTests -B
+        env:
+          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+
+      - name: Extract version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Release ${{ steps.get_version.outputs.VERSION }}
+          body: |
+            ## Kzmlabs StateFun ${{ steps.get_version.outputs.VERSION }}
+
+            ### Maven Coordinates
+            ```xml
+            <dependency>
+                <groupId>io.github.kzmlabs</groupId>
+                <artifactId>statefun-sdk-java</artifactId>
+                <version>${{ steps.get_version.outputs.VERSION }}</version>
+            </dependency>
+            ```
+
+            ### Changes
+            See [CHANGELOG](https://github.com/kzmlabs/flink-statefun/blob/release/CHANGELOG.md) for details.
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

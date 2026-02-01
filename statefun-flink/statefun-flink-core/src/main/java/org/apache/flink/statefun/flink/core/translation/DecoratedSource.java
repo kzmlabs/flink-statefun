@@ -17,24 +17,24 @@
  */
 package org.apache.flink.statefun.flink.core.translation;
 
+import org.apache.flink.api.connector.source.Source;
 import org.apache.flink.statefun.sdk.io.IngressIdentifier;
 import org.apache.flink.statefun.sdk.io.IngressSpec;
-import org.apache.flink.streaming.api.functions.source.SourceFunction;
 
 final class DecoratedSource {
   final String name;
 
   final String uid;
 
-  final SourceFunction<?> source;
+  final Source<?, ?, ?> source;
 
-  private DecoratedSource(String name, String uid, SourceFunction<?> source) {
+  private DecoratedSource(String name, String uid, Source<?, ?, ?> source) {
     this.name = name;
     this.uid = uid;
     this.source = source;
   }
 
-  public static DecoratedSource of(IngressSpec<?> spec, SourceFunction<?> source) {
+  public static DecoratedSource of(IngressSpec<?> spec, Source<?, ?, ?> source) {
     IngressIdentifier<?> identifier = spec.id();
     String name = String.format("%s-%s-ingress", identifier.namespace(), identifier.name());
     String uid =

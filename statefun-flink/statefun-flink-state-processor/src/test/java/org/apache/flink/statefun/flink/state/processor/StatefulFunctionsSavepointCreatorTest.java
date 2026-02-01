@@ -18,9 +18,9 @@
 
 package org.apache.flink.statefun.flink.state.processor;
 
-import org.apache.flink.api.java.ExecutionEnvironment;
 import org.apache.flink.statefun.sdk.FunctionType;
 import org.apache.flink.statefun.sdk.io.Router;
+import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.junit.Test;
 
 public class StatefulFunctionsSavepointCreatorTest {
@@ -51,7 +51,7 @@ public class StatefulFunctionsSavepointCreatorTest {
 
   @Test(expected = IllegalStateException.class)
   public void noStateBootstrapFunctionProvidersOnWrite() {
-    final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
+    final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
     final StatefulFunctionsSavepointCreator testCreator = new StatefulFunctionsSavepointCreator(1);
 
     testCreator.withBootstrapData(env.fromElements("foobar"), NoOpBootstrapDataRouter::new);

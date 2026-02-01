@@ -86,6 +86,23 @@ final class StatefulFunctionsJobGraphRetriever implements JobGraphRetriever {
     }
   }
 
+  public PackagedProgram createPackagedProgram() {
+    File mainJar = new File(Constants.FLINK_JOB_JAR_PATH);
+    if (!mainJar.exists()) {
+      throw new IllegalStateException("Unable to locate the launcher jar");
+    }
+    try {
+      return PackagedProgram.newBuilder()
+          .setJarFile(mainJar)
+          .setUserClassPaths(obtainModuleAdditionalClassPath())
+          .setEntryPointClassName(StatefulFunctionsJob.class.getName())
+          .setArguments(programArguments)
+          .build();
+    } catch (ProgramInvocationException e) {
+      throw new RuntimeException("Unable to construct a packaged program", e);
+    }
+  }
+
   @Override
   public JobGraph retrieveJobGraph(Configuration configuration) throws FlinkException {
     final PackagedProgram packagedProgram = createPackagedProgram();
@@ -108,26 +125,9 @@ final class StatefulFunctionsJobGraphRetriever implements JobGraphRetriever {
     }
   }
 
-  private PackagedProgram createPackagedProgram() {
-    File mainJar = new File(Constants.FLINK_JOB_JAR_PATH);
-    if (!mainJar.exists()) {
-      throw new IllegalStateException("Unable to locate the launcher jar");
-    }
-    try {
-      return PackagedProgram.newBuilder()
-          .setJarFile(mainJar)
-          .setUserClassPaths(obtainModuleAdditionalClassPath())
-          .setEntryPointClassName(StatefulFunctionsJob.class.getName())
-          .setArguments(programArguments)
-          .build();
-    } catch (ProgramInvocationException e) {
-      throw new RuntimeException("Unable to construct a packaged program", e);
-    }
-  }
-
   private static int resolveParallelism(int parallelism, Configuration configuration) {
     return (parallelism == ExecutionConfig.PARALLELISM_DEFAULT)
-        ? configuration.getInteger(CoreOptions.DEFAULT_PARALLELISM)
+        ? configuration.get(CoreOptions.DEFAULT_PARALLELISM)
         : parallelism;
   }
 }

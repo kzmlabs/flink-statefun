@@ -18,9 +18,11 @@
 package org.apache.flink.statefun.flink.harness.io;
 
 import java.util.Objects;
-import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
+import org.apache.flink.api.connector.sink2.Sink;
+import org.apache.flink.api.connector.sink2.SinkWriter;
+import org.apache.flink.api.connector.sink2.WriterInitContext;
 
-final class ConsumingSink<T> extends RichSinkFunction<T> {
+final class ConsumingSink<T> implements Sink<T> {
 
   private static final long serialVersionUID = 1;
 
@@ -30,8 +32,17 @@ final class ConsumingSink<T> extends RichSinkFunction<T> {
     this.consumer = Objects.requireNonNull(consumer);
   }
 
-  @Override
-  public void invoke(T value, Context context) {
-    consumer.accept(value);
+  public SinkWriter<T> createWriter(WriterInitContext context) {
+    return new ConsumingElementWriter();
+  }
+
+  private class ConsumingElementWriter implements SinkWriter<T> {
+    public void write(T value, SinkWriter.Context context) {
+      consumer.accept(value);
+    }
+
+    public void flush(boolean endOfInput) {}
+
+    public void close() {}
   }
 }

@@ -19,13 +19,13 @@ package org.apache.flink.statefun.flink.io.datastream;
 
 import java.io.Serializable;
 import java.util.Objects;
+import org.apache.flink.api.connector.sink2.Sink;
 import org.apache.flink.statefun.sdk.EgressType;
 import org.apache.flink.statefun.sdk.io.EgressIdentifier;
 import org.apache.flink.statefun.sdk.io.EgressSpec;
-import org.apache.flink.streaming.api.functions.sink.SinkFunction;
 
 /**
- * An {@link EgressSpec} that can run any Apache Flink {@link SinkFunction}.
+ * An {@link EgressSpec} that can run any Apache Flink {@link Sink}.
  *
  * @param <T> The input type output by the sink.
  */
@@ -36,13 +36,13 @@ public final class SinkFunctionSpec<T> implements EgressSpec<T>, Serializable {
       new EgressType("org.apache.flink.statefun.flink.io", "sink-function-spec");
 
   private final EgressIdentifier<T> id;
-  private final SinkFunction<T> delegate;
+  private final Sink<T> delegate;
 
   /**
    * @param id A unique egress identifier.
    * @param delegate The underlying sink that the egress will delegate to at runtime.
    */
-  public SinkFunctionSpec(EgressIdentifier<T> id, SinkFunction<T> delegate) {
+  public SinkFunctionSpec(EgressIdentifier<T> id, Sink<T> delegate) {
     this.id = Objects.requireNonNull(id);
     this.delegate = Objects.requireNonNull(delegate);
   }
@@ -57,7 +57,7 @@ public final class SinkFunctionSpec<T> implements EgressSpec<T>, Serializable {
     return TYPE;
   }
 
-  SinkFunction<T> delegate() {
+  Sink<T> delegate() {
     return delegate;
   }
 }
