@@ -15,19 +15,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.flink.statefun.e2e.smoke.driver;
 
-package org.apache.flink.statefun.flink.io.kinesis.binders.ingress.v1;
+import java.io.Serializable;
+import org.apache.flink.api.connector.source.SourceSplit;
 
-import com.google.auto.service.AutoService;
-import java.util.Map;
-import org.apache.flink.statefun.extensions.ExtensionModule;
+public class CommandFlinkSourceSplit implements SourceSplit, Serializable {
+  private static final long serialVersionUID = 1L;
 
-@AutoService(ExtensionModule.class)
-public final class Module implements ExtensionModule {
+  private final int id;
+
+  public CommandFlinkSourceSplit(int id) {
+    this.id = id;
+  }
 
   @Override
-  public void configure(Map<String, String> globalConfigurations, Binder universeBinder) {
-    universeBinder.bindExtension(
-        RoutableKinesisIngressBinderV1.KIND_TYPE, RoutableKinesisIngressBinderV1.INSTANCE);
+  public String splitId() {
+    return Integer.toString(id);
   }
 }

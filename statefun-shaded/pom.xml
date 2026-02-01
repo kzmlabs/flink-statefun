@@ -22,8 +22,8 @@ under the License.
 
     <parent>
         <artifactId>statefun-parent</artifactId>
-        <groupId>org.apache.flink</groupId>
-        <version>3.4-SNAPSHOT</version>
+        <groupId>io.github.kzmlabs</groupId>
+        <version>3.4.0-KZM-1.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>statefun-shaded</artifactId>

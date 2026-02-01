@@ -19,12 +19,12 @@ package org.apache.flink.statefun.flink.core;
 
 import java.util.Arrays;
 import java.util.Optional;
+import org.apache.flink.configuration.CheckpointingOptions;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.CoreOptions;
 import org.apache.flink.configuration.MemorySize;
 import org.apache.flink.statefun.flink.core.exceptions.StatefulFunctionsInvalidConfigException;
 import org.apache.flink.statefun.flink.core.message.MessageFactoryType;
-import org.apache.flink.streaming.api.environment.ExecutionCheckpointingOptions;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
@@ -50,7 +50,7 @@ public class StatefulFunctionsConfigTest {
     configuration.set(
         CoreOptions.ALWAYS_PARENT_FIRST_LOADER_PATTERNS_ADDITIONAL,
         Arrays.asList("org.apache.flink.statefun", "org.apache.kafka", "com.google.protobuf"));
-    configuration.set(ExecutionCheckpointingOptions.MAX_CONCURRENT_CHECKPOINTS, 1);
+    configuration.set(CheckpointingOptions.MAX_CONCURRENT_CHECKPOINTS, 1);
     configuration.setString("statefun.module.global-config.key1", "value1");
     configuration.setString("statefun.module.global-config.key2", "value2");
 
@@ -83,7 +83,7 @@ public class StatefulFunctionsConfigTest {
     configuration.set(
         CoreOptions.ALWAYS_PARENT_FIRST_LOADER_PATTERNS_ADDITIONAL,
         Arrays.asList("org.apache.flink.statefun", "org.apache.kafka", "com.google.protobuf"));
-    configuration.set(ExecutionCheckpointingOptions.MAX_CONCURRENT_CHECKPOINTS, 1);
+    configuration.set(CheckpointingOptions.MAX_CONCURRENT_CHECKPOINTS, 1);
     return configuration;
   }
 

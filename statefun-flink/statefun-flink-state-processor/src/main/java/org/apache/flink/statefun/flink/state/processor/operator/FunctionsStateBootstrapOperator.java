@@ -18,6 +18,7 @@
 package org.apache.flink.statefun.flink.state.processor.operator;
 
 import org.apache.flink.api.common.functions.RuntimeContext;
+import org.apache.flink.core.execution.CheckpointingMode;
 import org.apache.flink.core.fs.Path;
 import org.apache.flink.runtime.state.KeyedStateBackend;
 import org.apache.flink.state.api.output.SnapshotUtils;
@@ -79,10 +80,11 @@ public final class FunctionsStateBootstrapOperator
     // take a snapshot of the function states
     final TaggedOperatorSubtaskState state =
         SnapshotUtils.snapshot(
+            0L,
             this,
-            getRuntimeContext().getIndexOfThisSubtask(),
+            getRuntimeContext().getTaskInfo().getIndexOfThisSubtask(),
             snapshotTimestamp,
-            true,
+            CheckpointingMode.EXACTLY_ONCE,
             false,
             getContainingTask().getEnvironment().getTaskManagerInfo().getConfiguration(),
             snapshotPath);

@@ -19,14 +19,12 @@ package org.apache.flink.statefun.flink.core.feedback;
 
 import java.util.Objects;
 import java.util.OptionalLong;
-import org.apache.flink.api.common.operators.MailboxExecutor;
 import org.apache.flink.api.common.typeutils.TypeSerializer;
 import org.apache.flink.statefun.flink.core.StatefulFunctionsConfig;
 import org.apache.flink.statefun.flink.core.common.SerializableFunction;
 import org.apache.flink.streaming.api.operators.*;
 
-public final class FeedbackUnionOperatorFactory<E>
-    implements OneInputStreamOperatorFactory<E, E>, YieldingOperatorFactory<E> {
+public final class FeedbackUnionOperatorFactory<E> implements OneInputStreamOperatorFactory<E, E> {
 
   private static final long serialVersionUID = 1;
 
@@ -35,8 +33,6 @@ public final class FeedbackUnionOperatorFactory<E>
   private final FeedbackKey<E> feedbackKey;
   private final SerializableFunction<E, OptionalLong> isBarrierMessage;
   private final SerializableFunction<E, ?> keySelector;
-
-  private transient MailboxExecutor mailboxExecutor;
 
   public FeedbackUnionOperatorFactory(
       StatefulFunctionsConfig configuration,
@@ -66,21 +62,9 @@ public final class FeedbackUnionOperatorFactory<E>
             keySelector,
             configuration.getFeedbackBufferSize().getBytes(),
             serializer,
-            mailboxExecutor,
-            streamOperatorParameters.getProcessingTimeService());
-
-    op.setup(
-        streamOperatorParameters.getContainingTask(),
-        streamOperatorParameters.getStreamConfig(),
-        streamOperatorParameters.getOutput());
+            streamOperatorParameters);
 
     return (T) op;
-  }
-
-  @Override
-  public void setMailboxExecutor(MailboxExecutor mailboxExecutor) {
-    this.mailboxExecutor =
-        Objects.requireNonNull(mailboxExecutor, "Mailbox executor can't be NULL");
   }
 
   @Override

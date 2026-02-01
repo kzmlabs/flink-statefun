@@ -17,10 +17,12 @@
  */
 package org.apache.flink.statefun.flink.io.spi;
 
+import org.apache.flink.api.connector.source.Source;
+import org.apache.flink.api.connector.source.SourceSplit;
 import org.apache.flink.statefun.sdk.io.IngressSpec;
-import org.apache.flink.streaming.api.functions.source.SourceFunction;
 
 public interface SourceProvider {
 
-  <T> SourceFunction<T> forSpec(IngressSpec<T> spec);
+  <T, SplitT extends SourceSplit, EnumChckT> Source<T, SplitT, EnumChckT> forSpec(
+      IngressSpec<T> spec);
 }

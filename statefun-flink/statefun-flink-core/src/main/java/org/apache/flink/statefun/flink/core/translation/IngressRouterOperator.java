@@ -35,7 +35,6 @@ import org.apache.flink.statefun.sdk.io.Router;
 import org.apache.flink.statefun.sdk.io.Router.Downstream;
 import org.apache.flink.statefun.sdk.metrics.Metrics;
 import org.apache.flink.streaming.api.operators.AbstractStreamOperator;
-import org.apache.flink.streaming.api.operators.ChainingStrategy;
 import org.apache.flink.streaming.api.operators.OneInputStreamOperator;
 import org.apache.flink.streaming.api.operators.Output;
 import org.apache.flink.streaming.runtime.streamrecord.StreamRecord;
@@ -58,7 +57,6 @@ public final class IngressRouterOperator<T> extends AbstractStreamOperator<Messa
   IngressRouterOperator(StatefulFunctionsConfig configuration, IngressIdentifier<T> id) {
     this.configuration = configuration;
     this.id = Objects.requireNonNull(id);
-    this.chainingStrategy = ChainingStrategy.ALWAYS;
   }
 
   @Override

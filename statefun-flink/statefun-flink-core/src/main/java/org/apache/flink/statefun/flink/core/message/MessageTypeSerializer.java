@@ -167,7 +167,10 @@ public final class MessageTypeSerializer extends TypeSerializer<Message> {
 
     @Override
     public TypeSerializerSchemaCompatibility<Message> resolveSchemaCompatibility(
-        TypeSerializer<Message> typeSerializer) {
+        TypeSerializerSnapshot<Message> typeSerializerSnapshot) {
+
+      TypeSerializer<Message> typeSerializer = typeSerializerSnapshot.restoreSerializer();
+
       if (!(typeSerializer instanceof MessageTypeSerializer)) {
         return TypeSerializerSchemaCompatibility.incompatible();
       }

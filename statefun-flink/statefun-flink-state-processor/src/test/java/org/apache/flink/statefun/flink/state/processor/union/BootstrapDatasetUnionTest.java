@@ -27,12 +27,12 @@ import java.util.Collections;
 import java.util.List;
 import org.apache.flink.api.common.typeinfo.BasicTypeInfo;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
-import org.apache.flink.api.java.DataSet;
-import org.apache.flink.api.java.ExecutionEnvironment;
 import org.apache.flink.statefun.flink.state.processor.BootstrapDataRouterProvider;
 import org.apache.flink.statefun.sdk.Address;
 import org.apache.flink.statefun.sdk.FunctionType;
 import org.apache.flink.statefun.sdk.io.Router;
+import org.apache.flink.streaming.api.datastream.DataStream;
+import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
@@ -43,14 +43,14 @@ public class BootstrapDatasetUnionTest {
 
   @Test
   public void correctTypeInformation() {
-    final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
+    final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
     final List<BootstrapDataset<?>> bootstrapDatasets = new ArrayList<>(2);
     bootstrapDatasets.add(
         createBootstrapDataset(env, Collections.singletonList(1), TestRouter::noOp));
     bootstrapDatasets.add(
         createBootstrapDataset(env, Collections.singletonList(true), TestRouter::noOp));
 
-    final DataSet<TaggedBootstrapData> test = BootstrapDatasetUnion.apply(bootstrapDatasets);
+    final DataStream<TaggedBootstrapData> test = BootstrapDatasetUnion.apply(bootstrapDatasets);
 
     assertThat(
         test.getType(),
@@ -59,7 +59,7 @@ public class BootstrapDatasetUnionTest {
 
   @Test
   public void correctUnion() throws Exception {
-    final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
+    final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
     final List<BootstrapDataset<?>> bootstrapDatasets = new ArrayList<>(2);
     bootstrapDatasets.add(
         createBootstrapDataset(
@@ -72,7 +72,8 @@ public class BootstrapDatasetUnionTest {
             Arrays.asList(true, false),
             () -> new TestRouter<>(addressOf("ns", "name-2", "id-99"), 1)));
 
-    final List<TaggedBootstrapData> test = BootstrapDatasetUnion.apply(bootstrapDatasets).collect();
+    final List<TaggedBootstrapData> test =
+        BootstrapDatasetUnion.apply(bootstrapDatasets).executeAndCollect(100);
 
     assertThat(
         test,
@@ -84,7 +85,7 @@ public class BootstrapDatasetUnionTest {
   }
 
   private static <T> BootstrapDataset<T> createBootstrapDataset(
-      ExecutionEnvironment env,
+      StreamExecutionEnvironment env,
       Collection<T> bootstrapDataset,
       BootstrapDataRouterProvider<T> routerProvider) {
     return new BootstrapDataset<>(env.fromCollection(bootstrapDataset), routerProvider);

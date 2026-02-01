@@ -18,7 +18,6 @@
 package org.apache.flink.statefun.flink.core.functions;
 
 import java.util.Map;
-import java.util.Objects;
 import org.apache.flink.api.common.operators.MailboxExecutor;
 import org.apache.flink.statefun.flink.core.StatefulFunctionsConfig;
 import org.apache.flink.statefun.flink.core.message.Message;
@@ -27,7 +26,7 @@ import org.apache.flink.streaming.api.operators.*;
 import org.apache.flink.util.OutputTag;
 
 public final class FunctionGroupDispatchFactory
-    implements OneInputStreamOperatorFactory<Message, Message>, YieldingOperatorFactory<Message> {
+    implements OneInputStreamOperatorFactory<Message, Message> {
 
   private static final long serialVersionUID = 1;
 
@@ -45,25 +44,10 @@ public final class FunctionGroupDispatchFactory
   }
 
   @Override
-  public void setMailboxExecutor(MailboxExecutor mailboxExecutor) {
-    this.mailboxExecutor =
-        Objects.requireNonNull(mailboxExecutor, "Mailbox executor can't be NULL");
-  }
-
-  @Override
   public <T extends StreamOperator<Message>> T createStreamOperator(
       StreamOperatorParameters<Message> streamOperatorParameters) {
     FunctionGroupOperator fn =
-        new FunctionGroupOperator(
-            sideOutputs,
-            configuration,
-            mailboxExecutor,
-            ChainingStrategy.ALWAYS,
-            streamOperatorParameters.getProcessingTimeService());
-    fn.setup(
-        streamOperatorParameters.getContainingTask(),
-        streamOperatorParameters.getStreamConfig(),
-        streamOperatorParameters.getOutput());
+        new FunctionGroupOperator(sideOutputs, configuration, streamOperatorParameters);
 
     return (T) fn;
   }

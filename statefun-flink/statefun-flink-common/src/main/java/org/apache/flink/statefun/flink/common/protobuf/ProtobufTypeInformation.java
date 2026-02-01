@@ -19,7 +19,7 @@ package org.apache.flink.statefun.flink.common.protobuf;
 
 import com.google.protobuf.Message;
 import java.util.Objects;
-import org.apache.flink.api.common.ExecutionConfig;
+import org.apache.flink.api.common.serialization.SerializerConfig;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeutils.TypeSerializer;
 
@@ -64,7 +64,7 @@ public class ProtobufTypeInformation<M extends Message> extends TypeInformation<
   }
 
   @Override
-  public TypeSerializer<M> createSerializer(ExecutionConfig config) {
+  public TypeSerializer<M> createSerializer(SerializerConfig config) {
     return new ProtobufTypeSerializer<>(messageTypeClass);
   }
 

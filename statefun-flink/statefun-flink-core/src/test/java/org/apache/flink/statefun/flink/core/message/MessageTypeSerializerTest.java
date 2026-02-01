@@ -61,7 +61,7 @@ public class MessageTypeSerializerTest extends SerializerTestBase<Message> {
   protected TypeSerializer<Message> createSerializer() {
     return new MessageTypeInformation(
             MessageFactoryKey.forType(MessageFactoryType.WITH_KRYO_PAYLOADS, null))
-        .createSerializer(new ExecutionConfig());
+        .createSerializer(new ExecutionConfig().getSerializerConfig());
   }
 
   @Override

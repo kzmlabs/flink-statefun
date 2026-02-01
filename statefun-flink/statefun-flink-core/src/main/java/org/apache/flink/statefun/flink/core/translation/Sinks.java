@@ -20,6 +20,7 @@ package org.apache.flink.statefun.flink.core.translation;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
+import org.apache.flink.api.connector.sink2.Sink;
 import org.apache.flink.statefun.flink.core.StatefulFunctionsUniverse;
 import org.apache.flink.statefun.flink.core.common.Maps;
 import org.apache.flink.statefun.flink.core.types.StaticallyRegisteredTypes;
@@ -27,7 +28,6 @@ import org.apache.flink.statefun.sdk.io.EgressIdentifier;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSink;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
-import org.apache.flink.streaming.api.functions.sink.SinkFunction;
 import org.apache.flink.util.OutputTag;
 
 final class Sinks {
@@ -79,12 +79,12 @@ final class Sinks {
           DecoratedSink decoratedSink = sinks.get(egressIdentifier);
 
           @SuppressWarnings("unchecked")
-          SinkFunction<Object> sink = (SinkFunction<Object>) decoratedSink.sink;
+          Sink<Object> sink = (Sink<Object>) decoratedSink.sink;
 
           @SuppressWarnings("unchecked")
           DataStream<Object> sideOutputStream = (DataStream<Object>) rawSideOutputStream;
 
-          DataStreamSink<Object> streamSink = sideOutputStream.addSink(sink);
+          DataStreamSink<Object> streamSink = sideOutputStream.sinkTo(sink);
           streamSink.name(decoratedSink.name);
           streamSink.uid(decoratedSink.uid);
         });

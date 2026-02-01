@@ -43,12 +43,10 @@ final class StatefulFunctionsClusterConfiguration extends EntrypointClusterConfi
       @Nonnull String configDir,
       @Nonnull Properties dynamicProperties,
       @Nonnull String[] args,
-      @Nullable String hostname,
-      int restPort,
       @Nonnull SavepointRestoreSettings savepointRestoreSettings,
       @Nullable JobID jobId,
       int parallelism) {
-    super(configDir, dynamicProperties, args, hostname, restPort);
+    super(configDir, dynamicProperties, args);
     this.savepointRestoreSettings =
         requireNonNull(savepointRestoreSettings, "savepointRestoreSettings");
     this.jobId = jobId;

@@ -20,6 +20,7 @@ package org.apache.flink.statefun.flink.core.httpfn;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
+import java.io.File;
 import java.net.URI;
 import org.junit.Test;
 
@@ -30,7 +31,8 @@ public class UnixDomainHttpEndpointTest {
     UnixDomainHttpEndpoint out =
         UnixDomainHttpEndpoint.parseFrom(URI.create("http+unix:///some/path.sock"));
 
-    assertEquals("/some/path.sock", out.unixDomainFile.toString());
+    // Compare using File to handle platform-specific path separators
+    assertEquals(new File("/some/path.sock"), out.unixDomainFile);
     assertEquals("/", out.pathSegment);
   }
 
@@ -39,7 +41,8 @@ public class UnixDomainHttpEndpointTest {
     UnixDomainHttpEndpoint out =
         UnixDomainHttpEndpoint.parseFrom(URI.create("http+unix:///some/path.sock/hello"));
 
-    assertEquals("/some/path.sock", out.unixDomainFile.toString());
+    // Compare using File to handle platform-specific path separators
+    assertEquals(new File("/some/path.sock"), out.unixDomainFile);
     assertEquals("/hello", out.pathSegment);
   }
 

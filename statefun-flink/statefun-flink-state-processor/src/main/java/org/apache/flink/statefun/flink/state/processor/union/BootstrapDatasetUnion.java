@@ -21,15 +21,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import org.apache.flink.api.common.functions.OpenContext;
 import org.apache.flink.api.common.functions.RichFlatMapFunction;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
-import org.apache.flink.api.java.DataSet;
-import org.apache.flink.configuration.Configuration;
 import org.apache.flink.statefun.flink.state.processor.BootstrapDataRouterProvider;
 import org.apache.flink.statefun.sdk.Address;
 import org.apache.flink.statefun.sdk.FunctionType;
 import org.apache.flink.statefun.sdk.io.Router;
 import org.apache.flink.statefun.sdk.metrics.Metrics;
+import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.Preconditions;
 
@@ -57,11 +57,11 @@ public final class BootstrapDatasetUnion {
    * @param bootstrapDatasets pre-tagged, user-registered bootstrap datasets to union.
    * @return the union, tagged bootstrap dataset.
    */
-  public static DataSet<TaggedBootstrapData> apply(List<BootstrapDataset<?>> bootstrapDatasets) {
+  public static DataStream<TaggedBootstrapData> apply(List<BootstrapDataset<?>> bootstrapDatasets) {
     Objects.requireNonNull(bootstrapDatasets);
     Preconditions.checkArgument(bootstrapDatasets.size() > 0);
 
-    final List<DataSet<TaggedBootstrapData>> unionBootstrapDataset =
+    final List<DataStream<TaggedBootstrapData>> unionBootstrapDataset =
         new ArrayList<>(bootstrapDatasets.size());
 
     final TypeInformation<TaggedBootstrapData> unionTypeInfo =
@@ -85,7 +85,7 @@ public final class BootstrapDatasetUnion {
     return new TaggedBootstrapDataTypeInfo(payloadTypeInfos);
   }
 
-  private static <T> DataSet<TaggedBootstrapData> toTaggedFlinkDataSet(
+  private static <T> DataStream<TaggedBootstrapData> toTaggedFlinkDataSet(
       BootstrapDataset<T> bootstrapDataset,
       int unionIndex,
       TypeInformation<TaggedBootstrapData> unionTypeInfo) {
@@ -95,10 +95,10 @@ public final class BootstrapDatasetUnion {
         .returns(unionTypeInfo);
   }
 
-  private static DataSet<TaggedBootstrapData> unionTaggedBootstrapDataSets(
-      List<DataSet<TaggedBootstrapData>> taggedBootstrapDatasets) {
-    DataSet<TaggedBootstrapData> result = null;
-    for (DataSet<TaggedBootstrapData> taggedBootstrapDataDataset : taggedBootstrapDatasets) {
+  private static DataStream<TaggedBootstrapData> unionTaggedBootstrapDataSets(
+      List<DataStream<TaggedBootstrapData>> taggedBootstrapDatasets) {
+    DataStream<TaggedBootstrapData> result = null;
+    for (DataStream<TaggedBootstrapData> taggedBootstrapDataDataset : taggedBootstrapDatasets) {
       if (result != null) {
         result = result.union(taggedBootstrapDataDataset);
       } else {
@@ -127,13 +127,13 @@ public final class BootstrapDatasetUnion {
     }
 
     @Override
-    public void open(Configuration parameters) throws Exception {
-      super.open(parameters);
+    public void open(OpenContext context) throws Exception {
+      super.open(context);
       this.router = routerProvider.provide();
     }
 
     @Override
-    public void flatMap(T data, Collector<TaggedBootstrapData> collector) throws Exception {
+    public void flatMap(T data, Collector<TaggedBootstrapData> collector) {
       router.route(data, new TaggingBootstrapDataCollector<>(collector, unionIndex));
     }
   }

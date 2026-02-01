@@ -20,7 +20,7 @@ package org.apache.flink.statefun.flink.state.processor.union;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import org.apache.flink.api.common.ExecutionConfig;
+import org.apache.flink.api.common.serialization.SerializerConfig;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeutils.TypeSerializer;
 import org.apache.flink.util.Preconditions;
@@ -39,10 +39,10 @@ public final class TaggedBootstrapDataTypeInfo extends TypeInformation<TaggedBoo
   }
 
   @Override
-  public TypeSerializer<TaggedBootstrapData> createSerializer(ExecutionConfig executionConfig) {
+  public TypeSerializer<TaggedBootstrapData> createSerializer(SerializerConfig serializerConfig) {
     final List<TypeSerializer<?>> payloadSerializers =
         payloadTypeInfos.stream()
-            .map(typeInfo -> typeInfo.createSerializer(executionConfig))
+            .map(typeInfo -> typeInfo.createSerializer(serializerConfig))
             .collect(Collectors.toList());
 
     return new TaggedBootstrapDataSerializer(payloadSerializers);

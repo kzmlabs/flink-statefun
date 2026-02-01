@@ -21,9 +21,9 @@ under the License.
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.apache.flink</groupId>
+        <groupId>io.github.kzmlabs</groupId>
         <artifactId>statefun-flink</artifactId>
-        <version>3.4-SNAPSHOT</version>
+        <version>3.4.0-KZM-1.0-SNAPSHOT</version>
         <relativePath>..</relativePath>
     </parent>
 
@@ -48,29 +48,29 @@ under the License.
 
         <!-- Stateful Functions sdk -->
         <dependency>
-            <groupId>org.apache.flink</groupId>
+            <groupId>io.github.kzmlabs</groupId>
             <artifactId>statefun-sdk-embedded</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <!-- statefun-flink -->
         <dependency>
-            <groupId>org.apache.flink</groupId>
+            <groupId>io.github.kzmlabs</groupId>
             <artifactId>statefun-flink-io</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.flink</groupId>
+            <groupId>io.github.kzmlabs</groupId>
             <artifactId>statefun-flink-io-bundle</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.flink</groupId>
+            <groupId>io.github.kzmlabs</groupId>
             <artifactId>statefun-flink-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.flink</groupId>
+            <groupId>io.github.kzmlabs</groupId>
             <artifactId>statefun-flink-launcher</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -91,12 +91,6 @@ under the License.
         </dependency>
         <dependency>
             <groupId>org.apache.flink</groupId>
-            <artifactId>flink-java</artifactId>
-            <version>${flink.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.flink</groupId>
             <artifactId>flink-streaming-java</artifactId>
             <version>${flink.version}</version>
             <scope>provided</scope>
@@ -104,12 +98,6 @@ under the License.
         <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-runtime</artifactId>
-            <version>${flink.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.flink</groupId>
-            <artifactId>flink-optimizer</artifactId>
             <version>${flink.version}</version>
             <scope>provided</scope>
         </dependency>

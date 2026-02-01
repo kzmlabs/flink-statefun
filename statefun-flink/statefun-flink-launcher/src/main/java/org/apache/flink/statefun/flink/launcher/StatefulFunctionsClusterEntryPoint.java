@@ -17,21 +17,18 @@
  */
 package org.apache.flink.statefun.flink.launcher;
 
-import static java.util.Objects.requireNonNull;
-
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import org.apache.flink.annotation.VisibleForTesting;
 import org.apache.flink.api.common.JobID;
+import org.apache.flink.client.deployment.application.ApplicationClusterEntryPoint;
+import org.apache.flink.client.program.PackagedProgram;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.CoreOptions;
 import org.apache.flink.runtime.entrypoint.ClusterEntrypoint;
-import org.apache.flink.runtime.entrypoint.JobClusterEntrypoint;
-import org.apache.flink.runtime.entrypoint.component.DefaultDispatcherResourceManagerComponentFactory;
-import org.apache.flink.runtime.entrypoint.component.DispatcherResourceManagerComponentFactory;
 import org.apache.flink.runtime.entrypoint.parser.CommandLineParser;
-import org.apache.flink.runtime.jobgraph.SavepointRestoreSettings;
 import org.apache.flink.runtime.jobmanager.HighAvailabilityMode;
 import org.apache.flink.runtime.resourcemanager.StandaloneResourceManagerFactory;
 import org.apache.flink.runtime.util.EnvironmentInformation;
@@ -39,31 +36,14 @@ import org.apache.flink.runtime.util.JvmShutdownSafeguard;
 import org.apache.flink.runtime.util.SignalHandler;
 import org.apache.flink.statefun.flink.core.spi.Constants;
 
-/** {@link JobClusterEntrypoint} which is started with a job in a predefined location. */
-public final class StatefulFunctionsClusterEntryPoint extends JobClusterEntrypoint {
+/** {@link ApplicationClusterEntryPoint} which is started with a job in a predefined location. */
+public final class StatefulFunctionsClusterEntryPoint extends ApplicationClusterEntryPoint {
 
   public static final JobID ZERO_JOB_ID = new JobID(0, 0);
 
-  @Nonnull private final JobID jobId;
-
-  @Nonnull private final SavepointRestoreSettings savepointRestoreSettings;
-
-  private final int parallelism;
-
-  @Nonnull private final String[] programArguments;
-
   private StatefulFunctionsClusterEntryPoint(
-      Configuration configuration,
-      @Nonnull JobID jobId,
-      @Nonnull SavepointRestoreSettings savepointRestoreSettings,
-      int parallelism,
-      @Nonnull String[] programArguments) {
-    super(configuration);
-    this.jobId = requireNonNull(jobId, "jobId");
-    this.savepointRestoreSettings =
-        requireNonNull(savepointRestoreSettings, "savepointRestoreSettings");
-    this.programArguments = requireNonNull(programArguments, "programArguments");
-    this.parallelism = parallelism;
+      final Configuration configuration, final PackagedProgram program) {
+    super(configuration, program, StandaloneResourceManagerFactory.getInstance());
   }
 
   public static void main(String[] args) {
@@ -85,17 +65,36 @@ public final class StatefulFunctionsClusterEntryPoint extends JobClusterEntrypoi
     }
 
     Configuration configuration = loadConfiguration(clusterConfiguration);
+    LOG.info("Loaded configuration {}.", configuration);
+
     addStatefulFunctionsConfiguration(configuration);
     setDefaultExecutionModeIfNotConfigured(configuration);
 
+    PackagedProgram packagedProgram = null;
+    try {
+      packagedProgram =
+          new StatefulFunctionsJobGraphRetriever(
+                  resolveJobIdForCluster(
+                      Optional.ofNullable(clusterConfiguration.getJobId()), configuration),
+                  clusterConfiguration.getSavepointRestoreSettings(),
+                  clusterConfiguration.getParallelism(),
+                  clusterConfiguration.getArgs())
+              .createPackagedProgram();
+    } catch (Exception e) {
+      LOG.error("Could not create packaged program.", e);
+      System.exit(1);
+    }
+
+    try {
+      configureExecution(configuration, packagedProgram);
+      LOG.info("Applied configuration {}.", configuration);
+    } catch (Exception e) {
+      LOG.error("Could not apply application configuration.", e);
+      System.exit(1);
+    }
+
     StatefulFunctionsClusterEntryPoint entrypoint =
-        new StatefulFunctionsClusterEntryPoint(
-            configuration,
-            resolveJobIdForCluster(
-                Optional.ofNullable(clusterConfiguration.getJobId()), configuration),
-            clusterConfiguration.getSavepointRestoreSettings(),
-            clusterConfiguration.getParallelism(),
-            clusterConfiguration.getArgs());
+        new StatefulFunctionsClusterEntryPoint(configuration, packagedProgram);
 
     ClusterEntrypoint.runClusterEntrypoint(entrypoint);
   }
@@ -120,30 +119,22 @@ public final class StatefulFunctionsClusterEntryPoint extends JobClusterEntrypoi
     if (isNoExecutionModeConfigured(configuration)) {
       // In contrast to other places, the default for standalone job clusters is
       // ExecutionMode.DETACHED
-      configuration.setString(
+      configuration.set(
           ClusterEntrypoint.INTERNAL_CLUSTER_EXECUTION_MODE, ExecutionMode.DETACHED.toString());
     }
   }
 
   private static boolean isNoExecutionModeConfigured(Configuration configuration) {
-    return configuration.getString(ClusterEntrypoint.INTERNAL_CLUSTER_EXECUTION_MODE, null) == null;
+    return configuration.get(ClusterEntrypoint.INTERNAL_CLUSTER_EXECUTION_MODE, null) == null;
   }
 
   private static void addStatefulFunctionsConfiguration(Configuration configuration) {
     List<String> patterns =
-        configuration.get(CoreOptions.ALWAYS_PARENT_FIRST_LOADER_PATTERNS_ADDITIONAL);
+        configuration.get(
+            CoreOptions.ALWAYS_PARENT_FIRST_LOADER_PATTERNS_ADDITIONAL, new ArrayList<>());
     if (!patterns.contains(Constants.STATEFUL_FUNCTIONS_PACKAGE)) {
       patterns.add(Constants.STATEFUL_FUNCTIONS_PACKAGE);
     }
     configuration.set(CoreOptions.ALWAYS_PARENT_FIRST_LOADER_PATTERNS_ADDITIONAL, patterns);
-  }
-
-  @Override
-  protected DispatcherResourceManagerComponentFactory
-      createDispatcherResourceManagerComponentFactory(Configuration configuration) {
-    return DefaultDispatcherResourceManagerComponentFactory.createJobComponentFactory(
-        StandaloneResourceManagerFactory.getInstance(),
-        new StatefulFunctionsJobGraphRetriever(
-            jobId, savepointRestoreSettings, parallelism, programArguments));
   }
 }

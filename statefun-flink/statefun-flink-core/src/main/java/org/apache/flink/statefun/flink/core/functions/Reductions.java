@@ -94,9 +94,9 @@ final class Reductions {
 
     container.add(
         new Partition(
-            context.getMaxNumberOfParallelSubtasks(),
-            context.getNumberOfParallelSubtasks(),
-            context.getIndexOfThisSubtask()));
+            context.getTaskInfo().getMaxNumberOfParallelSubtasks(),
+            context.getTaskInfo().getNumberOfParallelSubtasks(),
+            context.getTaskInfo().getIndexOfThisSubtask()));
 
     container.add(new RemoteSink(output));
     container.add(new SideOutputSink(sideOutputs, output));

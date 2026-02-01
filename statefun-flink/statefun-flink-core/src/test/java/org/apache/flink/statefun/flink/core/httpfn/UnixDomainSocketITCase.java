@@ -22,11 +22,13 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
+import java.util.Locale;
 import javax.net.ServerSocketFactory;
 import okhttp3.OkHttpClient;
 import okhttp3.OkHttpClient.Builder;
@@ -34,11 +36,22 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
+import org.junit.Before;
 import org.junit.Test;
 import org.newsclub.net.unix.AFUNIXServerSocket;
 import org.newsclub.net.unix.AFUNIXSocketAddress;
 
 public class UnixDomainSocketITCase {
+
+  private static boolean isWindows() {
+    return System.getProperty("os.name").toLowerCase(Locale.ROOT).contains("windows");
+  }
+
+  @Before
+  public void skipOnWindows() {
+    // Unix domain sockets are not supported on Windows
+    assumeFalse("Skipping Unix domain socket test on Windows", isWindows());
+  }
 
   @Test(timeout = 10 * 1_000)
   public void unixDomainSocket() throws IOException {

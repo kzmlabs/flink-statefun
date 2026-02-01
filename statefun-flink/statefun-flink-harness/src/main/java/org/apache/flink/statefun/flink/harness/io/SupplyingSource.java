@@ -17,35 +17,55 @@
  */
 package org.apache.flink.statefun.flink.harness.io;
 
-import org.apache.flink.streaming.api.functions.source.RichParallelSourceFunction;
+import java.util.HashSet;
+import org.apache.flink.api.connector.source.*;
+import org.apache.flink.core.io.SimpleVersionedSerializer;
 
-final class SupplyingSource<T> extends RichParallelSourceFunction<T> {
+final class SupplyingSource<T>
+    implements Source<T, SupplyingSourceSplit<T>, HashSet<SupplyingSourceSplit<T>>> {
   private static final long serialVersionUID = 1;
 
   private final SerializableSupplier<T> supplier;
-  private final long delayInMilliseconds;
-  private transient volatile boolean done;
 
-  SupplyingSource(SerializableSupplier<T> supplier, long delayInMilliseconds) {
+  SupplyingSource(SerializableSupplier<T> supplier) {
     this.supplier = supplier;
-    this.delayInMilliseconds = delayInMilliseconds;
   }
 
   @Override
-  public void run(SourceContext<T> sourceContext) throws Exception {
-    while (!done) {
-      final T nextElement = supplier.get();
-      synchronized (sourceContext.getCheckpointLock()) {
-        sourceContext.collect(nextElement);
-      }
-      if (delayInMilliseconds > 0) {
-        Thread.sleep(delayInMilliseconds);
-      }
-    }
+  public Boundedness getBoundedness() {
+    return Boundedness.CONTINUOUS_UNBOUNDED;
   }
 
   @Override
-  public void cancel() {
-    done = true;
+  public SplitEnumerator<SupplyingSourceSplit<T>, HashSet<SupplyingSourceSplit<T>>>
+      createEnumerator(SplitEnumeratorContext<SupplyingSourceSplit<T>> splitEnumeratorContext)
+          throws Exception {
+    return new SupplyingSourceSplitEnumerator<>();
+  }
+
+  @Override
+  public SplitEnumerator<SupplyingSourceSplit<T>, HashSet<SupplyingSourceSplit<T>>>
+      restoreEnumerator(
+          SplitEnumeratorContext<SupplyingSourceSplit<T>> splitEnumeratorContext,
+          HashSet<SupplyingSourceSplit<T>> enumChck)
+          throws Exception {
+    return new SupplyingSourceSplitEnumerator<>();
+  }
+
+  @Override
+  public SimpleVersionedSerializer<SupplyingSourceSplit<T>> getSplitSerializer() {
+    return new SupplyingSourceSplitSerializer<>();
+  }
+
+  @Override
+  public SimpleVersionedSerializer<HashSet<SupplyingSourceSplit<T>>>
+      getEnumeratorCheckpointSerializer() {
+    return null;
+  }
+
+  @Override
+  public SourceReader<T, SupplyingSourceSplit<T>> createReader(
+      SourceReaderContext sourceReaderContext) {
+    return new SupplyingSourceReader<>(this.supplier);
   }
 }
