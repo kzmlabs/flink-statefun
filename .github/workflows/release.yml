@@ -44,8 +44,9 @@ jobs:
         run: |
           echo "Starting Maven Central deployment..."
           # Explicitly list modules to publish (excludes e2e tests and non-Java SDKs)
+          # Include root pom (.) as it's the parent for all modules
           mvn deploy -Prelease -DskipTests -B -e \
-            -pl 'statefun-sdk-embedded,statefun-sdk-protos,statefun-sdk-java,statefun-kafka-io,statefun-kinesis-io,statefun-flink,statefun-shaded,statefun-testutil'
+            -pl '.,statefun-sdk-embedded,statefun-sdk-protos,statefun-sdk-java,statefun-kafka-io,statefun-kinesis-io,statefun-flink,statefun-shaded,statefun-testutil'
           echo "Maven Central deployment completed successfully!"
         env:
           CENTRAL_USERNAME: ${{ secrets.OSSRH_USERNAME }}

@@ -22,7 +22,7 @@ under the License.
     <parent>
         <artifactId>statefun-parent</artifactId>
         <groupId>io.github.kzmlabs</groupId>
-        <version>3.4.0-KZM-1.0-RC14</version>
+        <version>3.4.0-KZM-1.0-RC15</version>
         <relativePath>..</relativePath>
     </parent>
 
