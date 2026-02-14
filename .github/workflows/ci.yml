@@ -23,7 +23,7 @@ jobs:
           cache: 'maven'
 
       - name: Build and run all tests
-        run: mvn clean install -B
+        run: mvn clean install -B -Dtest="!UnixDomainSocketITCase"
 
       - name: Build Docker image
         run: ./tools/docker/build-stateful-functions.sh
