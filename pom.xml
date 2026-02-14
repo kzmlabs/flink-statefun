@@ -346,6 +346,8 @@ under the License.
                         <exclude>**/KZMLABS-GUIDE.md</exclude>
                         <exclude>**/CHANGELOG.md</exclude>
                         <exclude>**/CLAUDE.md</exclude>
+                        <exclude>**/RELEASE-SETUP.md</exclude>
+                        <exclude>tools/release.sh</exclude>
                         <exclude>.github/**</exclude>
                         <exclude>.claude/**</exclude>
                         <!-- IDE files. -->
