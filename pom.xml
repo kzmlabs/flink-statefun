@@ -23,7 +23,7 @@ under the License.
     <groupId>io.github.kzmlabs</groupId>
     <artifactId>statefun-parent</artifactId>
     <name>Kzmlabs StateFun Parent</name>
-    <version>3.4.0-KZM-1.0-RC3</version>
+    <version>3.4.0-KZM-1.0-RC4</version>
     <packaging>pom</packaging>
     <description>Kzmlabs fork of Apache Flink Stateful Functions</description>
 
