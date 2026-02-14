@@ -41,7 +41,10 @@ jobs:
         run: mvn clean install -DskipTests -B
 
       - name: Deploy to Maven Central
-        run: mvn deploy -Prelease -DskipTests -B
+        run: |
+          # Exclude e2e tests and non-Java SDKs from deployment
+          mvn deploy -Prelease -DskipTests -B \
+            -pl '!:statefun-e2e-tests,!:statefun-e2e-tests-common,!:statefun-smoke-e2e-common,!:statefun-smoke-e2e-driver,!:statefun-smoke-e2e-embedded,!:statefun-smoke-e2e-multilang-base,!:statefun-smoke-e2e-multilang-harness,!:statefun-smoke-e2e-java,!:statefun-smoke-e2e-golang,!:statefun-smoke-e2e-js,!:statefun-sdk-python,!:statefun-sdk-go,!:statefun-sdk-js'
         env:
           CENTRAL_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           CENTRAL_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
