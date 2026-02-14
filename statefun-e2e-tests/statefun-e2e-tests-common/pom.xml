@@ -21,7 +21,7 @@ under the License.
     <parent>
         <artifactId>statefun-e2e-tests</artifactId>
         <groupId>io.github.kzmlabs</groupId>
-        <version>3.4.0-KZM-1.0-RC11</version>
+        <version>3.4.0-KZM-1.0-RC12</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -29,6 +29,7 @@ under the License.
 
     <properties>
         <kafka.version>2.4.1</kafka.version>
+        <central.skip>true</central.skip>
     </properties>
 
     <dependencies>
