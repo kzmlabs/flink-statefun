@@ -23,7 +23,7 @@ under the License.
     <groupId>io.github.kzmlabs</groupId>
     <artifactId>statefun-parent</artifactId>
     <name>Kzmlabs StateFun Parent</name>
-    <version>3.4.0-KZM-1.0-RC9</version>
+    <version>3.4.0-KZM-1.0-RC10</version>
     <packaging>pom</packaging>
     <description>Kzmlabs fork of Apache Flink Stateful Functions</description>
 
@@ -88,6 +88,8 @@ under the License.
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>21</java.version>
+        <!-- Central publishing skip flag - modules can override to true -->
+        <central.skip>false</central.skip>
         <spotless-maven-plugin.version>1.20.0</spotless-maven-plugin.version>
         <auto-service.version>1.0-rc6</auto-service.version>
         <protobuf.version>3.7.1</protobuf.version>
@@ -216,6 +218,7 @@ under the License.
                             <publishingServerId>central</publishingServerId>
                             <autoPublish>true</autoPublish>
                             <waitUntil>published</waitUntil>
+                            <skipPublishing>${central.skip}</skipPublishing>
                         </configuration>
                     </plugin>
                 </plugins>
