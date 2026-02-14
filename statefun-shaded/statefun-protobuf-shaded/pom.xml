@@ -23,7 +23,7 @@ under the License.
     <parent>
         <artifactId>statefun-shaded</artifactId>
         <groupId>io.github.kzmlabs</groupId>
-        <version>3.4.0-KZM-1.0-RC8</version>
+        <version>3.4.0-KZM-1.0-RC9</version>
     </parent>
 
     <artifactId>statefun-protobuf-shaded</artifactId>
