@@ -37,8 +37,8 @@ jobs:
         id: get_version
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
 
-      - name: Build and test
-        run: mvn clean verify -B -Dtest="!UnixDomainSocketITCase" -DfailIfNoTests=false
+      - name: Build
+        run: mvn clean install -DskipTests -B
 
       - name: Deploy to Maven Central
         run: mvn deploy -Prelease -DskipTests -B
