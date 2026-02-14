@@ -1,10 +1,10 @@
 # Kzmlabs Flink StateFun
 
 [![Build Status](https://github.com/kzmlabs/flink-statefun/workflows/CI/badge.svg)](https://github.com/kzmlabs/flink-statefun/actions)
-[![Maven Central](https://img.shields.io/maven-central/v/io.github.kzmlabs/statefun-sdk-java.svg)](https://search.maven.org/search?q=g:io.github.kzmlabs)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.kzmlabs.flinkstatefun/statefun-sdk-java.svg)](https://search.maven.org/search?q=g:io.github.kzmlabs.flinkstatefun)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
-A fork of [Apache Flink Stateful Functions](https://github.com/apache/flink-statefun) updated for **Flink 2.2.0** and **Java 21**, published to Maven Central under the `io.github.kzmlabs` group ID.
+A fork of [Apache Flink Stateful Functions](https://github.com/apache/flink-statefun) updated for **Flink 2.2.0** and **Java 21**, published to Maven Central under the `io.github.kzmlabs.flinkstatefun` group ID.
 
 ## Why This Fork?
 
@@ -12,7 +12,7 @@ The upstream Apache Flink StateFun project has been archived and is no longer ac
 
 - **Updates to Flink 2.2.0** - The latest stable Flink release
 - **Requires Java 21** - Modern Java runtime with improved performance
-- **Published to Maven Central** - Easy dependency management via `io.github.kzmlabs` coordinates
+- **Published to Maven Central** - Easy dependency management via `io.github.kzmlabs.flinkstatefun` coordinates
 - **Maintains compatibility** - Same API as Apache StateFun 3.3.x
 
 ## Quick Start
@@ -21,9 +21,9 @@ The upstream Apache Flink StateFun project has been archived and is no longer ac
 
 ```xml
 <dependency>
-    <groupId>io.github.kzmlabs</groupId>
+    <groupId>io.github.kzmlabs.flinkstatefun</groupId>
     <artifactId>statefun-sdk-java</artifactId>
-    <version>3.4.0-KZM-1.0-SNAPSHOT</version>
+    <version>3.4.0-KZM-2.0</version>
 </dependency>
 ```
 
@@ -85,9 +85,9 @@ A _module_ is the entry point for adding primitives (ingresses, egresses, router
 
 ```xml
 <dependency>
-    <groupId>io.github.kzmlabs</groupId>
+    <groupId>io.github.kzmlabs.flinkstatefun</groupId>
     <artifactId>statefun-sdk-java</artifactId>
-    <version>3.4.0-KZM-1.0-SNAPSHOT</version>
+    <version>3.4.0-KZM-2.0</version>
 </dependency>
 ```
 
@@ -142,7 +142,7 @@ mvn install -DskipTests -B
 ./tools/docker/build-stateful-functions.sh
 ```
 
-For local development, the image will be tagged as `flink-statefun:3.4.0-KZM-1.0-SNAPSHOT`.
+For local development, the image will be tagged as `flink-statefun:3.4.0-KZM-2.0`.
 
 Official releases are published to GitHub Container Registry: `ghcr.io/kzmlabs/flink-statefun:<version>`
 
@@ -184,7 +184,7 @@ docker logs statefun-remote-function
 |---------|-----------------|--------------|
 | Flink Version | 1.16.x | 2.2.0 |
 | Java Version | 8/11 | 21 |
-| Maven Group ID | `org.apache.flink` | `io.github.kzmlabs` |
+| Maven Group ID | `org.apache.flink` | `io.github.kzmlabs.flinkstatefun` |
 | Kinesis Connector | Included | Removed (separate repo in Flink 2.x) |
 | Status | Archived | Actively maintained |
 

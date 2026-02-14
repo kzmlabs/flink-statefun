@@ -20,8 +20,8 @@ under the License.
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>statefun-e2e-tests</artifactId>
-        <groupId>io.github.kzmlabs</groupId>
-        <version>3.4.0-KZM-1.0-RC20</version>
+        <groupId>io.github.kzmlabs.flinkstatefun</groupId>
+        <version>3.4.0-KZM-2.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -36,22 +36,22 @@ under the License.
     <dependencies>
         <!-- Stateful Functions SDK for composing and binding the driver components -->
         <dependency>
-            <groupId>io.github.kzmlabs</groupId>
+            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
             <artifactId>statefun-sdk-embedded</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.github.kzmlabs</groupId>
+            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
             <artifactId>statefun-sdk-protos</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.github.kzmlabs</groupId>
+            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
             <artifactId>statefun-protocol-shaded</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.github.kzmlabs</groupId>
+            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
             <artifactId>statefun-flink-io</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -63,7 +63,7 @@ under the License.
             <version>${commons-math3.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.github.kzmlabs</groupId>
+            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
             <artifactId>statefun-smoke-e2e-common</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -128,7 +128,7 @@ under the License.
                         <configuration>
                             <artifactItems>
                                 <artifactItem>
-                                    <groupId>io.github.kzmlabs</groupId>
+                                    <groupId>io.github.kzmlabs.flinkstatefun</groupId>
                                     <artifactId>statefun-sdk-protos</artifactId>
                                     <version>${project.version}</version>
                                     <type>jar</type>

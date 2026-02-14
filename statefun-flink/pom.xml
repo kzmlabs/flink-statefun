@@ -21,8 +21,8 @@ under the License.
 
     <parent>
         <artifactId>statefun-parent</artifactId>
-        <groupId>io.github.kzmlabs</groupId>
-        <version>3.4.0-KZM-1.0-RC20</version>
+        <groupId>io.github.kzmlabs.flinkstatefun</groupId>
+        <version>3.4.0-KZM-2.0</version>
         <relativePath>..</relativePath>
     </parent>
 
@@ -113,7 +113,7 @@ under the License.
 
             <!-- Statefun -->
             <dependency>
-                <groupId>io.github.kzmlabs</groupId>
+                <groupId>io.github.kzmlabs.flinkstatefun</groupId>
                 <artifactId>statefun-kafka-io</artifactId>
                 <version>${project.version}</version>
                 <exclusions>

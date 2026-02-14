@@ -20,10 +20,10 @@ under the License.
 
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>io.github.kzmlabs</groupId>
+    <groupId>io.github.kzmlabs.flinkstatefun</groupId>
     <artifactId>statefun-parent</artifactId>
     <name>Kzmlabs StateFun Parent</name>
-    <version>3.4.0-KZM-1.0-RC20</version>
+    <version>3.4.0-KZM-2.0</version>
     <packaging>pom</packaging>
     <description>Kzmlabs fork of Apache Flink Stateful Functions</description>
 

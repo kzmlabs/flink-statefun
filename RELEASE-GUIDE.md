@@ -38,85 +38,18 @@ This runs `.github/workflows/release.yml` which:
 
 ### 2. Docker Only Release (No Maven Central)
 
-Create a new workflow file `.github/workflows/docker-release.yml`:
+Triggered by pushing a tag starting with `docker-`. Uses the same `release.yml` workflow
+but skips Maven Central deploy and GitHub Release creation.
 
-```yaml
-name: Docker Release Only
-
-on:
-  workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version tag for Docker image'
-        required: true
-        default: 'latest'
-
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: kzmlabs/flink-statefun
-
-jobs:
-  docker:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-          cache: 'maven'
-
-      - name: Build
-        run: mvn clean install -DskipTests -B
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Prepare Docker build context
-        run: |
-          DISTRIBUTION_JAR=$(find . -path "*/statefun-flink-distribution/target/statefun-flink-distribution*.jar" -not -name "original-*" -not -name "*sources*" -not -name "*javadoc*" | head -1)
-          CORE_JAR=$(find . -path "*/statefun-flink-core/target/statefun-flink-core*.jar" -not -name "*javadoc*" -not -name "*sources*" | head -1)
-
-          mkdir -p docker-context/flink/lib
-          cp -r tools/docker/flink-distribution-template/* docker-context/flink/
-          cp "$DISTRIBUTION_JAR" docker-context/flink/lib/statefun-flink-distribution.jar
-          cp "$CORE_JAR" docker-context/flink/lib/statefun-flink-core.jar
-          cp tools/docker/Dockerfile docker-context/
-          cp tools/docker/docker-entry-point.sh docker-context/
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: docker-context
-          push: true
-          tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.event.inputs.version }}
-          labels: |
-            org.opencontainers.image.title=Kzmlabs Flink StateFun
-            org.opencontainers.image.description=Kzmlabs fork of Apache Flink Stateful Functions
-            org.opencontainers.image.version=${{ github.event.inputs.version }}
-            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+```bash
+# Tag for Docker-only release
+git tag docker-3.4.0-KZM-2.0-test1
+git push origin docker-3.4.0-KZM-2.0-test1
 ```
 
-**To trigger Docker-only release:**
-1. Go to Actions → "Docker Release Only"
-2. Click "Run workflow"
-3. Enter version tag (e.g., `3.4.0-KZM-1.0-RC21-docker`)
-4. Click "Run workflow"
+This pushes the image as `ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-2.0-test1`.
+
+There is also a `docker-release.yml` workflow with `workflow_dispatch` for manual triggers via the GitHub Actions UI.
 
 ---
 

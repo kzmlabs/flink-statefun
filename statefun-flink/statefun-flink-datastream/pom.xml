@@ -21,9 +21,9 @@ under the License.
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>io.github.kzmlabs</groupId>
+        <groupId>io.github.kzmlabs.flinkstatefun</groupId>
         <artifactId>statefun-flink</artifactId>
-        <version>3.4.0-KZM-1.0-RC20</version>
+        <version>3.4.0-KZM-2.0</version>
         <relativePath>..</relativePath>
     </parent>
 
@@ -32,7 +32,7 @@ under the License.
 
     <dependencies>
         <dependency>
-            <groupId>io.github.kzmlabs</groupId>
+            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
             <artifactId>statefun-sdk-embedded</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -43,12 +43,12 @@ under the License.
 
         <!-- statefun-flink -->
         <dependency>
-            <groupId>io.github.kzmlabs</groupId>
+            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
             <artifactId>statefun-flink-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.github.kzmlabs</groupId>
+            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
             <artifactId>statefun-flink-io</artifactId>
             <version>${project.version}</version>
         </dependency>
