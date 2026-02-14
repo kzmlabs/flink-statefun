@@ -33,7 +33,7 @@ flink_template="${basedir}/flink-distribution-template"
 #
 # check if the artifacts were build
 #
-distribution_jar=$(find ${project_root} -type f -name "statefun-flink-distribution*-shaded.jar" -not -name "*example*" -not -name "*sources*" -not -name "*javadoc*")
+distribution_jar=$(find ${project_root} -path "*/statefun-flink-distribution/target/statefun-flink-distribution*.jar" -not -name "original-*" -not -name "*example*" -not -name "*sources*" -not -name "*javadoc*")
 if [[ -z "${distribution_jar}" ]]; then
 	echo "unable to find statefun-flink-distribution jar, please build the maven project first"
 	exit 1
