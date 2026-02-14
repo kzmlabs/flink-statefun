@@ -21,7 +21,7 @@ under the License.
     <parent>
         <artifactId>statefun-e2e-tests</artifactId>
         <groupId>io.github.kzmlabs</groupId>
-        <version>3.4.0-KZM-1.0-RC11</version>
+        <version>3.4.0-KZM-1.0-RC12</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -30,6 +30,7 @@ under the License.
     <properties>
         <commons-math3.version>3.6.1</commons-math3.version>
         <additional-sources.dir>target/additional-sources</additional-sources.dir>
+        <central.skip>true</central.skip>
     </properties>
 
     <dependencies>

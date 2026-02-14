@@ -21,10 +21,14 @@ under the License.
     <parent>
         <groupId>io.github.kzmlabs</groupId>
         <artifactId>statefun-smoke-e2e-multilang-base</artifactId>
-        <version>3.4.0-KZM-1.0-RC11</version>
+        <version>3.4.0-KZM-1.0-RC12</version>
         <relativePath>../statefun-smoke-e2e-multilang-base/pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>statefun-smoke-e2e-golang</artifactId>
+
+    <properties>
+        <central.skip>true</central.skip>
+    </properties>
 </project>
