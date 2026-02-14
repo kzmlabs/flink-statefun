@@ -43,9 +43,9 @@ jobs:
       - name: Deploy to Maven Central
         run: |
           echo "Starting Maven Central deployment..."
-          # Exclude e2e tests and non-Java SDKs from deployment
+          # Explicitly list modules to publish (excludes e2e tests and non-Java SDKs)
           mvn deploy -Prelease -DskipTests -B -e \
-            -pl '!statefun-e2e-tests,!statefun-sdk-python,!statefun-sdk-go,!statefun-sdk-js'
+            -pl 'statefun-sdk-embedded,statefun-sdk-protos,statefun-sdk-java,statefun-kafka-io,statefun-kinesis-io,statefun-flink,statefun-shaded,statefun-testutil'
           echo "Maven Central deployment completed successfully!"
         env:
           CENTRAL_USERNAME: ${{ secrets.OSSRH_USERNAME }}

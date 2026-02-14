@@ -21,7 +21,7 @@ under the License.
     <parent>
         <groupId>io.github.kzmlabs</groupId>
         <artifactId>statefun-smoke-e2e-multilang-base</artifactId>
-        <version>3.4.0-KZM-1.0-RC13</version>
+        <version>3.4.0-KZM-1.0-RC14</version>
         <relativePath>../statefun-smoke-e2e-multilang-base/pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
