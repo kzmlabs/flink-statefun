@@ -21,7 +21,7 @@ under the License.
     <parent>
         <artifactId>statefun-flink</artifactId>
         <groupId>io.github.kzmlabs</groupId>
-        <version>3.4.0-KZM-1.0-RC16</version>
+        <version>3.4.0-KZM-1.0-RC17</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 

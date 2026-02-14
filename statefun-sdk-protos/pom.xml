@@ -21,17 +21,13 @@ under the License.
     <parent>
         <artifactId>statefun-parent</artifactId>
         <groupId>io.github.kzmlabs</groupId>
-        <version>3.4.0-KZM-1.0-RC16</version>
+        <version>3.4.0-KZM-1.0-RC17</version>
         <relativePath>..</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>statefun-sdk-protos</artifactId>
 
-    <properties>
-        <!-- Skip javadoc for generated protobuf code -->
-        <maven.javadoc.skip>true</maven.javadoc.skip>
-    </properties>
 
     <build>
         <plugins>
