@@ -20,8 +20,8 @@ under the License.
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>statefun-e2e-tests</artifactId>
-        <groupId>io.github.kzmlabs</groupId>
-        <version>3.4.0-KZM-1.0-RC20</version>
+        <groupId>io.github.kzmlabs.flinkstatefun</groupId>
+        <version>3.4.0-KZM-2.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -35,7 +35,7 @@ under the License.
     <dependencies>
         <!-- Testcontainer test utilities, e.g. StatefulFunctionsAppContainers -->
         <dependency>
-            <groupId>io.github.kzmlabs</groupId>
+            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
             <artifactId>statefun-e2e-tests-common</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
@@ -43,7 +43,7 @@ under the License.
 
         <!-- Smoke E2E test utilities, e.g. SmokeRunner -->
         <dependency>
-            <groupId>io.github.kzmlabs</groupId>
+            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
             <artifactId>statefun-smoke-e2e-common</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
@@ -67,7 +67,7 @@ under the License.
                 <configuration>
                     <artifactItems>
                         <artifactItem>
-                            <groupId>io.github.kzmlabs</groupId>
+                            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
                             <artifactId>statefun-smoke-e2e-driver</artifactId>
                             <version>${project.version}</version>
                             <type>jar</type>

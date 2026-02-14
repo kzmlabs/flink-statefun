@@ -1,9 +1,13 @@
 name: Release to Maven Central & GHCR
 
+# Trigger on:
+#   v* tags   → full release (Maven Central + Docker + GitHub Release)
+#   docker-*  → Docker-only release (build + push image, no Maven Central)
 on:
   push:
     tags:
       - 'v*'
+      - 'docker-*'
 
 env:
   REGISTRY: ghcr.io
@@ -12,7 +16,7 @@ env:
 jobs:
   release:
     runs-on: ubuntu-latest
-    name: Release to Maven Central & GHCR
+    name: Release
     permissions:
       contents: write
       packages: write
@@ -20,6 +24,18 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Determine release type
+        id: release_type
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          if [[ "$TAG" == v* ]]; then
+            echo "type=full" >> $GITHUB_OUTPUT
+            echo "version=${TAG#v}" >> $GITHUB_OUTPUT
+          elif [[ "$TAG" == docker-* ]]; then
+            echo "type=docker-only" >> $GITHUB_OUTPUT
+            echo "version=${TAG#docker-}" >> $GITHUB_OUTPUT
+          fi
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -33,14 +49,11 @@ jobs:
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
           gpg-passphrase: GPG_PASSPHRASE
 
-      - name: Extract version from tag
-        id: get_version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
-
       - name: Build
         run: mvn clean install -DskipTests -B
 
       - name: Deploy to Maven Central
+        if: steps.release_type.outputs.type == 'full'
         run: |
           # Exclude e2e tests and non-Java SDKs from deployment
           mvn deploy -Prelease -DskipTests -B \
@@ -50,7 +63,6 @@ jobs:
           CENTRAL_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
 
-      # Docker build and push to GitHub Container Registry (only runs if Maven Central succeeds)
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -81,33 +93,34 @@ jobs:
           context: docker-context
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.get_version.outputs.VERSION }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.release_type.outputs.version }}
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
           labels: |
             org.opencontainers.image.title=Kzmlabs Flink StateFun
             org.opencontainers.image.description=Kzmlabs fork of Apache Flink Stateful Functions
-            org.opencontainers.image.version=${{ steps.get_version.outputs.VERSION }}
+            org.opencontainers.image.version=${{ steps.release_type.outputs.version }}
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
 
       - name: Create GitHub Release
+        if: steps.release_type.outputs.type == 'full'
         uses: softprops/action-gh-release@v1
         with:
-          name: Release ${{ steps.get_version.outputs.VERSION }}
+          name: Release ${{ steps.release_type.outputs.version }}
           body: |
-            ## Kzmlabs StateFun ${{ steps.get_version.outputs.VERSION }}
+            ## Kzmlabs StateFun ${{ steps.release_type.outputs.version }}
 
             ### Maven Coordinates
             ```xml
             <dependency>
-                <groupId>io.github.kzmlabs</groupId>
+                <groupId>io.github.kzmlabs.flinkstatefun</groupId>
                 <artifactId>statefun-sdk-java</artifactId>
-                <version>${{ steps.get_version.outputs.VERSION }}</version>
+                <version>${{ steps.release_type.outputs.version }}</version>
             </dependency>
             ```
 
             ### Docker Image
             ```bash
-            docker pull ghcr.io/kzmlabs/flink-statefun:${{ steps.get_version.outputs.VERSION }}
+            docker pull ghcr.io/kzmlabs/flink-statefun:${{ steps.release_type.outputs.version }}
             ```
 
             ### Changes

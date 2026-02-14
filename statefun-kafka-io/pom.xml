@@ -20,8 +20,8 @@ under the License.
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>statefun-parent</artifactId>
-        <groupId>io.github.kzmlabs</groupId>
-        <version>3.4.0-KZM-1.0-RC20</version>
+        <groupId>io.github.kzmlabs.flinkstatefun</groupId>
+        <version>3.4.0-KZM-2.0</version>
         <relativePath>..</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -34,7 +34,7 @@ under the License.
     <name>statefun-kafka-io</name>
     <dependencies>
         <dependency>
-            <groupId>io.github.kzmlabs</groupId>
+            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
             <artifactId>statefun-sdk-embedded</artifactId>
             <version>${project.version}</version>
         </dependency>

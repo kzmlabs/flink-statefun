@@ -22,8 +22,8 @@ under the License.
 
     <parent>
         <artifactId>statefun-shaded</artifactId>
-        <groupId>io.github.kzmlabs</groupId>
-        <version>3.4.0-KZM-1.0-RC20</version>
+        <groupId>io.github.kzmlabs.flinkstatefun</groupId>
+        <version>3.4.0-KZM-2.0</version>
     </parent>
 
     <artifactId>statefun-protocol-shaded</artifactId>
@@ -38,12 +38,12 @@ under the License.
 
     <dependencies>
         <dependency>
-            <groupId>io.github.kzmlabs</groupId>
+            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
             <artifactId>statefun-sdk-protos</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.github.kzmlabs</groupId>
+            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
             <artifactId>statefun-protobuf-shaded</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -66,7 +66,7 @@ under the License.
                         <configuration>
                             <artifactItems>
                                 <artifactItem>
-                                    <groupId>io.github.kzmlabs</groupId>
+                                    <groupId>io.github.kzmlabs.flinkstatefun</groupId>
                                     <artifactId>statefun-sdk-protos</artifactId>
                                     <version>${project.version}</version>
                                     <type>jar</type>
