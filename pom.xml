@@ -23,7 +23,7 @@ under the License.
     <groupId>io.github.kzmlabs</groupId>
     <artifactId>statefun-parent</artifactId>
     <name>Kzmlabs StateFun Parent</name>
-    <version>3.4.0-KZM-1.0-RC15</version>
+    <version>3.4.0-KZM-1.0-RC16</version>
     <packaging>pom</packaging>
     <description>Kzmlabs fork of Apache Flink Stateful Functions</description>
 
@@ -74,14 +74,10 @@ under the License.
         <module>statefun-kinesis-io</module>
         <module>statefun-flink</module>
         <module>statefun-shaded</module>
-        <module>statefun-testutil</module>
 
-        <!--
-            Always build the end-to-end tests module last,
-            since the module builds the base Stateful Functions image with the
-            built project artifacts before running the end-to-end tests.
-        -->
+        <!-- e2e tests before testutil so a publishable module is last for Central -->
         <module>statefun-e2e-tests</module>
+        <module>statefun-testutil</module>
     </modules>
 
     <properties>
