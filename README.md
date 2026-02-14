@@ -27,6 +27,12 @@ The upstream Apache Flink StateFun project has been archived and is no longer ac
 </dependency>
 ```
 
+### Docker Image
+
+```bash
+docker pull ghcr.io/kzmlabs/flink-statefun:latest
+```
+
 ### What is Stateful Functions?
 
 Stateful Functions is an API that simplifies building **distributed stateful applications** with a **runtime built for serverless architectures**. It brings together the benefits of stateful stream processing with a runtime for modeling stateful entities that supports location transparency, concurrency, scaling, and resiliency.
@@ -136,7 +142,9 @@ mvn install -DskipTests -B
 ./tools/docker/build-stateful-functions.sh
 ```
 
-The Docker image will be tagged as `flink-statefun:3.4.0-KZM-1.0-SNAPSHOT`.
+For local development, the image will be tagged as `flink-statefun:3.4.0-KZM-1.0-SNAPSHOT`.
+
+Official releases are published to GitHub Container Registry: `ghcr.io/kzmlabs/flink-statefun:<version>`
 
 ### Running the Dev Environment
 
