@@ -41,13 +41,16 @@ jobs:
         run: mvn clean install -DskipTests -B
 
       - name: Deploy to Maven Central
-        run: mvn deploy -Prelease -DskipTests -B
+        run: |
+          echo "Starting Maven Central deployment..."
+          mvn deploy -Prelease -DskipTests -B -e
+          echo "Maven Central deployment completed successfully!"
         env:
           CENTRAL_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           CENTRAL_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
 
-      # Docker build and push to GitHub Container Registry
+      # Docker build and push to GitHub Container Registry (only runs if Maven Central succeeds)
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 

@@ -23,7 +23,7 @@ under the License.
     <groupId>io.github.kzmlabs</groupId>
     <artifactId>statefun-parent</artifactId>
     <name>Kzmlabs StateFun Parent</name>
-    <version>3.4.0-KZM-1.0-RC10</version>
+    <version>3.4.0-KZM-1.0-RC11</version>
     <packaging>pom</packaging>
     <description>Kzmlabs fork of Apache Flink Stateful Functions</description>
 
@@ -218,6 +218,8 @@ under the License.
                             <publishingServerId>central</publishingServerId>
                             <autoPublish>true</autoPublish>
                             <waitUntil>published</waitUntil>
+                            <waitMaxTime>600</waitMaxTime>
+                            <checksums>required</checksums>
                             <skipPublishing>${central.skip}</skipPublishing>
                         </configuration>
                     </plugin>

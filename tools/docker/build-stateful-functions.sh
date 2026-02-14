@@ -21,7 +21,7 @@ set -e
 # Do not change the name of this variable;
 # it is referenced in the tools/releasing/update_branch_version.sh script
 #
-VERSION_TAG=3.4.0-KZM-1.0-RC10
+VERSION_TAG=3.4.0-KZM-1.0-RC11
 
 #
 # setup the environment 
