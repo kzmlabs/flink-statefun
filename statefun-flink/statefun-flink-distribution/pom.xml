@@ -23,7 +23,7 @@ under the License.
     <parent>
         <groupId>io.github.kzmlabs</groupId>
         <artifactId>statefun-flink</artifactId>
-        <version>3.4.0-KZM-1.0-RC19</version>
+        <version>3.4.0-KZM-1.0-RC20</version>
         <relativePath>..</relativePath>
     </parent>
 
@@ -112,6 +112,24 @@ under the License.
 
     <build>
         <plugins>
+            <!-- Generate empty javadoc jar for Maven Central (no Java sources in this module) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>empty-javadoc-jar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <classifier>javadoc</classifier>
+                            <classesDirectory>${project.basedir}/src/main/resources</classesDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <!-- We use the maven-shade plugin to create a fat jar that contains all necessary dependencies. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
