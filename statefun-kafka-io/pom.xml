@@ -21,7 +21,7 @@ under the License.
     <parent>
         <artifactId>statefun-parent</artifactId>
         <groupId>io.github.kzmlabs</groupId>
-        <version>3.4.0-KZM-1.0-RC18</version>
+        <version>3.4.0-KZM-1.0-RC19</version>
         <relativePath>..</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -31,6 +31,7 @@ under the License.
     </properties>
 
     <artifactId>statefun-kafka-io</artifactId>
+    <name>statefun-kafka-io</name>
     <dependencies>
         <dependency>
             <groupId>io.github.kzmlabs</groupId>

@@ -21,12 +21,13 @@ under the License.
     <parent>
         <artifactId>statefun-parent</artifactId>
         <groupId>io.github.kzmlabs</groupId>
-        <version>3.4.0-KZM-1.0-RC18</version>
+        <version>3.4.0-KZM-1.0-RC19</version>
         <relativePath>..</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>statefun-sdk-protos</artifactId>
+    <name>statefun-sdk-protos</name>
 
 
     <build>
@@ -41,6 +42,24 @@ under the License.
                         <goals>
                             <goal>jar-no-fork</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- Generate empty javadoc jar for Maven Central (no Java sources in this module) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>empty-javadoc-jar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <classifier>javadoc</classifier>
+                            <classesDirectory>${project.basedir}/src/main/protobuf</classesDirectory>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

@@ -23,11 +23,12 @@ under the License.
     <parent>
         <groupId>io.github.kzmlabs</groupId>
         <artifactId>statefun-flink</artifactId>
-        <version>3.4.0-KZM-1.0-RC18</version>
+        <version>3.4.0-KZM-1.0-RC19</version>
         <relativePath>..</relativePath>
     </parent>
 
     <artifactId>statefun-flink-distribution</artifactId>
+    <name>statefun-flink-distribution</name>
 
     <dependencies>
         <!-- 3rd party -->

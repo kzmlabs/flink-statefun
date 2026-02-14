@@ -22,12 +22,13 @@ under the License.
     <parent>
         <artifactId>statefun-parent</artifactId>
         <groupId>io.github.kzmlabs</groupId>
-        <version>3.4.0-KZM-1.0-RC18</version>
+        <version>3.4.0-KZM-1.0-RC19</version>
         <relativePath>..</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>statefun-flink</artifactId>
+    <name>statefun-flink</name>
     <packaging>pom</packaging>
 
     <modules>
