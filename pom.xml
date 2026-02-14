@@ -346,6 +346,7 @@ under the License.
                         <exclude>**/CODE_OF_CONDUCT.md</exclude>
                         <exclude>**/KZMLABS-GUIDE.md</exclude>
                         <exclude>**/CHANGELOG.md</exclude>
+                        <exclude>**/RELEASE-GUIDE.md</exclude>
                         <exclude>**/CLAUDE.md</exclude>
                         <exclude>.github/**</exclude>
                         <exclude>.claude/**</exclude>
