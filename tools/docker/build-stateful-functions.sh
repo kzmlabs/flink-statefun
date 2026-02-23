@@ -21,47 +21,49 @@ set -e
 # Do not change the name of this variable;
 # it is referenced in the tools/releasing/update_branch_version.sh script
 #
-VERSION_TAG=3.4.0-KZM-1.0-RC18
+VERSION_TAG=3.4.0-KZM-2.0-RC1
 
 #
-# setup the environment 
+# setup the environment
 #
 basedir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 project_root="${basedir}/../../" # ditch tools/docker
-flink_template="${basedir}/flink-distribution-template"
 
 #
-# check if the artifacts were build
+# check if the artifacts were built
 #
-distribution_jar=$(find ${project_root} -path "*/statefun-flink-distribution/target/statefun-flink-distribution*.jar" -not -name "original-*" -not -name "*example*" -not -name "*sources*" -not -name "*javadoc*")
-if [[ -z "${distribution_jar}" ]]; then
-	echo "unable to find statefun-flink-distribution jar, please build the maven project first"
+uber_jar=$(find ${project_root} -path "*/statefun-flink-runner/target/statefun-flink-runner*.jar" -not -name "original-*" -not -name "*example*" -not -name "*sources*" -not -name "*javadoc*")
+if [[ -z "${uber_jar}" ]]; then
+	echo "unable to find statefun-flink-runner uber jar, please build the maven project first"
 	exit 1
 fi
 core_jar=$(find ${project_root} -path "*/statefun-flink-core/target/statefun-flink-core*.jar" -not -name "*javadoc*" -not -name "*sources*")
 if [[ -z "${core_jar}" ]]; then
 	echo "unable to find statefun-flink-core jar, please build the maven project first"
-	exit 2 
+	exit 2
+fi
+dist_jar=$(find ${project_root} -path "*/statefun-flink-distribution/target/statefun-flink-distribution*.jar" -not -name "original-*" -not -name "*sources*" -not -name "*javadoc*")
+if [[ -z "${dist_jar}" ]]; then
+	echo "unable to find statefun-flink-distribution jar, please build the maven project first"
+	exit 3
 fi
 
 #
 # create a scratch space for a minimal docker context
 #
 docker_context_root=`mktemp -d 2>/dev/null || mktemp -d -t 'statefun-docker-context'`
-docker_context_flink="${docker_context_root}/flink"
 
 #
-# prepare the adjustments to the vanilla flink distribution
+# prepare the docker context
 #
-mkdir -p ${docker_context_flink}
-cp -r ${flink_template}/* ${docker_context_flink}/
-mkdir -p ${docker_context_flink}/lib
-cp ${distribution_jar} ${docker_context_flink}/lib/statefun-flink-distribution.jar
-cp ${core_jar} ${docker_context_flink}/lib/statefun-flink-core.jar
+mkdir -p ${docker_context_root}/flink/lib
+cp ${core_jar} ${docker_context_root}/flink/lib/statefun-flink-core.jar
+cp ${dist_jar} ${docker_context_root}/flink/lib/statefun-flink-distribution.jar
+cp ${uber_jar} ${docker_context_root}/statefun.jar
+
 # build the docker image
 cd ${docker_context_root}
 cp ${basedir}/Dockerfile ${docker_context_root}
-cp ${basedir}/docker-entry-point.sh ${docker_context_root}
 docker build . -t flink-statefun:${VERSION_TAG}
 
 # clean again

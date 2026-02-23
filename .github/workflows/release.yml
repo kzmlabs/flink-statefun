@@ -57,7 +57,7 @@ jobs:
         run: |
           # Exclude e2e tests and non-Java SDKs from deployment
           mvn deploy -Prelease -DskipTests -B \
-            -pl '!:statefun-e2e-tests,!:statefun-e2e-tests-common,!:statefun-smoke-e2e-common,!:statefun-smoke-e2e-driver,!:statefun-smoke-e2e-embedded,!:statefun-smoke-e2e-multilang-base,!:statefun-smoke-e2e-multilang-harness,!:statefun-smoke-e2e-java,!:statefun-smoke-e2e-golang,!:statefun-smoke-e2e-js,!:statefun-sdk-python,!:statefun-sdk-go,!:statefun-sdk-js'
+            -pl '!:statefun-flink-runner,!:statefun-e2e-tests,!:statefun-e2e-tests-common,!:statefun-smoke-e2e-common,!:statefun-smoke-e2e-driver,!:statefun-smoke-e2e-embedded,!:statefun-smoke-e2e-multilang-base,!:statefun-smoke-e2e-multilang-harness,!:statefun-smoke-e2e-java,!:statefun-smoke-e2e-golang,!:statefun-smoke-e2e-js,!:statefun-sdk-python,!:statefun-sdk-go,!:statefun-sdk-js'
         env:
           CENTRAL_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           CENTRAL_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
@@ -75,17 +75,15 @@ jobs:
 
       - name: Prepare Docker build context
         run: |
-          # Find the built JARs
-          DISTRIBUTION_JAR=$(find . -path "*/statefun-flink-distribution/target/statefun-flink-distribution*.jar" -not -name "original-*" -not -name "*sources*" -not -name "*javadoc*" | head -1)
+          UBER_JAR=$(find . -path "*/statefun-flink-runner/target/statefun-flink-runner*.jar" -not -name "original-*" -not -name "*sources*" -not -name "*javadoc*" | head -1)
           CORE_JAR=$(find . -path "*/statefun-flink-core/target/statefun-flink-core*.jar" -not -name "*javadoc*" -not -name "*sources*" | head -1)
+          DIST_JAR=$(find . -path "*/statefun-flink-distribution/target/statefun-flink-distribution*.jar" -not -name "original-*" -not -name "*sources*" -not -name "*javadoc*" | head -1)
 
-          # Prepare Docker context
           mkdir -p docker-context/flink/lib
-          cp -r tools/docker/flink-distribution-template/* docker-context/flink/
-          cp "$DISTRIBUTION_JAR" docker-context/flink/lib/statefun-flink-distribution.jar
           cp "$CORE_JAR" docker-context/flink/lib/statefun-flink-core.jar
+          cp "$DIST_JAR" docker-context/flink/lib/statefun-flink-distribution.jar
+          cp "$UBER_JAR" docker-context/statefun.jar
           cp tools/docker/Dockerfile docker-context/
-          cp tools/docker/docker-entry-point.sh docker-context/
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5

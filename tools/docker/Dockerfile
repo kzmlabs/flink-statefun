@@ -15,44 +15,51 @@
 
 FROM apache/flink:2.2.0-java21
 
-ENV ROLE=worker
-ENV MASTER_HOST=localhost
-ENV STATEFUN_HOME=/opt/statefun
-ENV STATEFUN_MODULES=$STATEFUN_HOME/modules
+# Logging library versions (downloaded from Maven Central)
+ARG LOGBACK_VERSION=1.4.14
+ARG LOGSTASH_LOGBACK_ENCODER_VERSION=7.4
+ARG SLF4J_VERSION=2.0.9
 
-# Switch to root for all modifications
-USER root
+ARG MAVEN_CENTRAL=https://repo1.maven.org/maven2
 
-# cleanup flink-lib
-RUN rm -fr $FLINK_HOME/lib/flink-table*jar
+# StateFun JARs (copied from Maven build output)
+ARG STATEFUN_CORE_JAR=flink/lib/statefun-flink-core.jar
+ARG STATEFUN_DIST_JAR=flink/lib/statefun-flink-distribution.jar
+ARG STATEFUN_RUNNER_JAR=statefun.jar
 
-# copy our distriubtion template
-COPY flink/ $FLINK_HOME/
+# Remove unnecessary Flink libs
+RUN rm -rf ${FLINK_HOME}/lib/flink-table*jar \
+    && rm -rf ${FLINK_HOME}/lib/log4j-slf4j-impl*jar
 
-# fix CRLF line endings in shell scripts (for Windows builds)
-RUN find $FLINK_HOME/bin -name "*.sh" -exec sed -i 's/\r$//' {} \;
+# Download logging JARs from Maven Central
+RUN curl -fSL "${MAVEN_CENTRAL}/ch/qos/logback/logback-classic/${LOGBACK_VERSION}/logback-classic-${LOGBACK_VERSION}.jar" \
+        -o ${FLINK_HOME}/lib/logback-classic.jar \
+    && curl -fSL "${MAVEN_CENTRAL}/ch/qos/logback/logback-core/${LOGBACK_VERSION}/logback-core-${LOGBACK_VERSION}.jar" \
+        -o ${FLINK_HOME}/lib/logback-core.jar \
+    && curl -fSL "${MAVEN_CENTRAL}/net/logstash/logback/logstash-logback-encoder/${LOGSTASH_LOGBACK_ENCODER_VERSION}/logstash-logback-encoder-${LOGSTASH_LOGBACK_ENCODER_VERSION}.jar" \
+        -o ${FLINK_HOME}/lib/logstash-logback-encoder.jar \
+    && curl -fSL "${MAVEN_CENTRAL}/org/slf4j/slf4j-api/${SLF4J_VERSION}/slf4j-api-${SLF4J_VERSION}.jar" \
+        -o ${FLINK_HOME}/lib/slf4j-api.jar
 
-# add user modules
-RUN mkdir -p $STATEFUN_MODULES && \
-    useradd --system --home-dir $STATEFUN_HOME --uid=9998 --gid=flink statefun && \
-    chown -R statefun:flink $STATEFUN_HOME && \
-    chmod -R g+rw $STATEFUN_HOME
+# Copy StateFun JARs to Flink lib (parent classloader)
+COPY ${STATEFUN_CORE_JAR} ${FLINK_HOME}/lib/
+COPY ${STATEFUN_DIST_JAR} ${FLINK_HOME}/lib/
 
-# add filesystem plugins
-RUN mkdir -p $FLINK_HOME/plugins/s3-fs-presto && \
-    mv $FLINK_HOME/opt/flink-s3-fs-presto-*.jar $FLINK_HOME/plugins/s3-fs-presto
-RUN mkdir -p $FLINK_HOME/plugins/oss-fs-hadoop && \
-    mv $FLINK_HOME/opt/flink-oss-fs-hadoop-*.jar $FLINK_HOME/plugins/oss-fs-hadoop
-RUN mkdir -p $FLINK_HOME/plugins/azure-fs-hadoop && \
-    mv $FLINK_HOME/opt/flink-azure-fs-hadoop-*.jar $FLINK_HOME/plugins/azure-fs-hadoop
+# Configure storage plugins
+RUN mkdir -p ${FLINK_HOME}/plugins/s3-fs-presto \
+    && mv ${FLINK_HOME}/opt/flink-s3-fs-presto-*.jar ${FLINK_HOME}/plugins/s3-fs-presto
+RUN mkdir -p ${FLINK_HOME}/plugins/oss-fs-hadoop \
+    && mv ${FLINK_HOME}/opt/flink-oss-fs-hadoop-*.jar ${FLINK_HOME}/plugins/oss-fs-hadoop
+RUN mkdir -p ${FLINK_HOME}/plugins/azure-fs-hadoop \
+    && mv ${FLINK_HOME}/opt/flink-azure-fs-hadoop-*.jar ${FLINK_HOME}/plugins/azure-fs-hadoop
 
-# add tcnative
-RUN mv $FLINK_HOME/opt/flink-shaded-netty-tcnative-dynamic-*.jar  $FLINK_HOME/lib/
+# Move netty tcnative to lib
+RUN mv ${FLINK_HOME}/opt/flink-shaded-netty-tcnative-dynamic-*.jar ${FLINK_HOME}/lib/
 
-# entry point - convert CRLF to LF for Windows builds
-ADD docker-entry-point.sh /tmp/docker-entry-point.sh
-RUN sed -i 's/\r$//' /tmp/docker-entry-point.sh && \
-    mv /tmp/docker-entry-point.sh /docker-entry-point.sh && \
-    chmod +x /docker-entry-point.sh
+# Copy uber JAR as the StateFun job JAR
+COPY ${STATEFUN_RUNNER_JAR} ${FLINK_HOME}/statefun.jar
 
-ENTRYPOINT ["/docker-entry-point.sh"]
+USER flink
+
+# Standard Flink entrypoint (K8s Operator compatible)
+ENTRYPOINT ["/docker-entrypoint.sh"]
