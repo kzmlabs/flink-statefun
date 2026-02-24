@@ -31,79 +31,61 @@ under the License.
     <packaging>jar</packaging>
 
     <properties>
-        <protobuf-sources.dir>${generated-sources.basedir}/shaded-protobuf-java/</protobuf-sources.dir>
         <protobuf.version>3.7.1</protobuf.version>
     </properties>
 
     <dependencies>
         <!--
-            Need this dependency for the protoc maven plugin;
-            scope is provided so that is isn't pulled in as a
-            transitive dependency by dependant projects.
+            Declared as optional so it is NOT transitive to downstream modules.
+            The shade plugin relocates its classes into the output JAR under
+            org.apache.flink.statefun.sdk.shaded.com.google.protobuf.
+            Downstream modules (e.g. statefun-protocol-shaded) only see the
+            shaded classes — never the original com.google.protobuf package.
         -->
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
             <version>${protobuf.version}</version>
-            <scope>provided</scope>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 
     <build>
         <plugins>
-            <!-- Step 1: (generate-sources) unpack Protobuf sources -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.6.0</version>
                 <executions>
                     <execution>
-                        <id>unpack-protobuf</id>
-                        <phase>generate-sources</phase>
+                        <phase>package</phase>
                         <goals>
-                            <goal>unpack</goal>
+                            <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>com.google.protobuf</groupId>
-                                    <artifactId>protobuf-java</artifactId>
-                                    <version>${protobuf.version}</version>
-                                    <classifier>sources</classifier>
-                                    <type>jar</type>
-                                    <overWrite>true</overWrite>
-                                    <!-- extract them under org/apache/flink/statefun/sdk/shaded/ so that package paths are correct -->
-                                    <outputDirectory>${protobuf-sources.dir}/org/apache/flink/statefun/sdk/shaded/</outputDirectory>
-                                    <includes>**/**</includes>
-                                </artifactItem>
-                            </artifactItems>
+                            <artifactSet>
+                                <includes>
+                                    <include>com.google.protobuf:protobuf-java</include>
+                                </includes>
+                            </artifactSet>
+                            <filters>
+                                <filter>
+                                    <artifact>com.google.protobuf:protobuf-java</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/maven/**</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                            <relocations>
+                                <relocation>
+                                    <pattern>com.google.protobuf</pattern>
+                                    <shadedPattern>org.apache.flink.statefun.sdk.shaded.com.google.protobuf</shadedPattern>
+                                </relocation>
+                            </relocations>
+                            <createDependencyReducedPom>true</createDependencyReducedPom>
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <version>3.0.0</version>
-                <executions>
-                    <execution>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>add-source</goal>
-                        </goals>
-                        <configuration>
-                            <sources>
-                                <source>${protobuf-sources.dir}</source>
-                            </sources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <!-- Step 2: (process-sources) shade Protobuf sources -->
-            <plugin>
-                <groupId>com.google.code.maven-replacer-plugin</groupId>
-                <artifactId>replacer</artifactId>
             </plugin>
         </plugins>
     </build>

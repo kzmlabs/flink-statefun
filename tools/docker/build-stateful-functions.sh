@@ -21,7 +21,7 @@ set -e
 # Do not change the name of this variable;
 # it is referenced in the tools/releasing/update_branch_version.sh script
 #
-VERSION_TAG=3.4.0-KZM-2.0-RC1
+VERSION_TAG=${1:-3.4.0-KZM-2.0-RC1}
 
 #
 # setup the environment
@@ -32,17 +32,17 @@ project_root="${basedir}/../../" # ditch tools/docker
 #
 # check if the artifacts were built
 #
-uber_jar=$(find ${project_root} -path "*/statefun-flink-runner/target/statefun-flink-runner*.jar" -not -name "original-*" -not -name "*example*" -not -name "*sources*" -not -name "*javadoc*")
+uber_jar=$(find ${project_root} -path "*/statefun-flink-runner/target/statefun-flink-runner*.jar" -not -name "original-*" -not -name "*example*" -not -name "*sources*" -not -name "*javadoc*" | head -1)
 if [[ -z "${uber_jar}" ]]; then
-	echo "unable to find statefun-flink-runner uber jar, please build the maven project first"
+	echo "unable to find statefun-flink-runner jar, please build the maven project first"
 	exit 1
 fi
-core_jar=$(find ${project_root} -path "*/statefun-flink-core/target/statefun-flink-core*.jar" -not -name "*javadoc*" -not -name "*sources*")
+core_jar=$(find ${project_root} -path "*/statefun-flink-core/target/statefun-flink-core*.jar" -not -name "*javadoc*" -not -name "*sources*" | head -1)
 if [[ -z "${core_jar}" ]]; then
 	echo "unable to find statefun-flink-core jar, please build the maven project first"
 	exit 2
 fi
-dist_jar=$(find ${project_root} -path "*/statefun-flink-distribution/target/statefun-flink-distribution*.jar" -not -name "original-*" -not -name "*sources*" -not -name "*javadoc*")
+dist_jar=$(find ${project_root} -path "*/statefun-flink-distribution/target/statefun-flink-distribution*.jar" -not -name "original-*" -not -name "*sources*" -not -name "*javadoc*" | head -1)
 if [[ -z "${dist_jar}" ]]; then
 	echo "unable to find statefun-flink-distribution jar, please build the maven project first"
 	exit 3

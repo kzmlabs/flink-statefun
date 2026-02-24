@@ -132,10 +132,13 @@ For complete examples, see the [Apache Flink StateFun Playground](https://github
 ### Build Commands
 
 ```bash
-# Build with tests
+# Full build with all tests including K8s E2E
 mvn install -B
 
-# Build without tests (faster)
+# Build with unit tests only (skip K8s E2E)
+mvn install -Dskip.k8s.e2e -B
+
+# Build without any tests
 mvn install -DskipTests -B
 
 # Build Docker image (after Maven build)
@@ -145,6 +148,44 @@ mvn install -DskipTests -B
 For local development, the image will be tagged as `flink-statefun:3.4.0-KZM-2.0`.
 
 Official releases are published to GitHub Container Registry: `ghcr.io/kzmlabs/flink-statefun:<version>`
+
+### Kubernetes E2E Tests (`statefun-k8s-native-e2e`)
+
+The project includes a full Kubernetes end-to-end test suite that validates StateFun running on a real Flink cluster with Kafka, MinIO, and the Flink Kubernetes Operator — the same topology you'd use in production.
+
+**What it tests:**
+
+1. **Protobuf remote function** — Sends `CounterCommand` messages through Kafka ingress, a stateful `CounterFn` sums the deltas, and the result is verified on the Kafka egress topic
+2. **JSON remote function** — Sends a JSON greeting command through Kafka, a stateless `GreeterFn` responds with a greeting, verified on a separate egress topic
+3. **Checkpoint persistence** — Verifies that RocksDB incremental checkpoints are written to MinIO (S3-compatible storage)
+
+**Infrastructure created (via [kind](https://kind.sigs.k8s.io/)):**
+
+- kind cluster with Flink Kubernetes Operator 1.11
+- Kafka (KRaft mode, single broker)
+- MinIO (S3-compatible checkpoint storage)
+- Remote function HTTP server (CounterFn + GreeterFn)
+- FlinkDeployment CR with RocksDB state backend
+
+**How to run:**
+
+```bash
+# Full build including E2E (creates kind cluster, runs tests, tears down)
+mvn clean install
+
+# Build with all unit tests but skip K8s E2E
+mvn clean install -Dskip.k8s.e2e
+
+# Build without any tests
+mvn clean install -DskipTests
+
+# Run only the E2E module (JARs must be built already)
+mvn verify -pl statefun-k8s-native-e2e
+```
+
+**Prerequisites for E2E:** Docker running, ~10 min for cluster setup + tests. The setup script auto-installs `kubectl`, `kind`, and `helm` if missing (via scoop on Windows, direct download on Linux/macOS).
+
+**CI:** E2E tests are a mandatory gate for all releases — Maven Central publish and Docker image push are blocked until E2E passes green.
 
 ### Running the Dev Environment
 
@@ -177,6 +218,8 @@ docker logs statefun-remote-function
 | `statefun-flink-distribution` | Distribution JAR for deployment |
 | `statefun-kafka-io` | Kafka ingress/egress connectors |
 | `statefun-flink-harness` | Local testing harness |
+| `statefun-flink-runner` | Uber JAR for K8s deployment via Flink Operator |
+| `statefun-k8s-native-e2e` | Kubernetes end-to-end tests |
 
 ## Differences from Upstream
 

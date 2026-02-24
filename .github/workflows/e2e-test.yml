@@ -1,0 +1,57 @@
+name: K8s E2E Test
+
+on:
+  workflow_call:    # reusable by release workflows
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'statefun-k8s-native-e2e/**'
+      - 'statefun-flink-runner/**'
+      - 'tools/docker/**'
+
+jobs:
+  k8s-e2e:
+    runs-on: ubuntu-latest
+    name: K8s End-to-End Test
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Build all modules (skip tests)
+        run: mvn install -DskipTests -B
+
+      - name: Run K8s E2E (build images, setup cluster, test, teardown)
+        run: mvn verify -pl statefun-k8s-native-e2e -B
+
+      - name: Collect logs on failure
+        if: failure()
+        run: |
+          echo "=== Flink Operator logs ==="
+          kubectl logs -n flink-operator -l app.kubernetes.io/name=flink-kubernetes-operator --tail=200 || true
+          echo "=== FlinkDeployment status ==="
+          kubectl get flinkdeployment -n statefun-e2e -o yaml || true
+          echo "=== JobManager logs ==="
+          kubectl logs -n statefun-e2e -l component=jobmanager --tail=200 || true
+          echo "=== TaskManager logs ==="
+          kubectl logs -n statefun-e2e -l component=taskmanager --tail=200 || true
+          echo "=== Remote function logs ==="
+          kubectl logs -n statefun-e2e -l app=remote-function --tail=200 || true
+          echo "=== Kafka logs ==="
+          kubectl logs -n statefun-e2e -l app=kafka --tail=100 || true
+          echo "=== All pods ==="
+          kubectl get pods -A || true
+          echo "=== Events ==="
+          kubectl get events -n statefun-e2e --sort-by='.lastTimestamp' || true
+
+      - name: Teardown cluster
+        if: always()
+        run: bash statefun-k8s-native-e2e/scripts/teardown-cluster.sh

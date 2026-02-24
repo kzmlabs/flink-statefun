@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.flink.statefun.sdk.shaded.com.google.protobuf;
+package com.google.protobuf;
 
 import java.nio.ByteBuffer;
 

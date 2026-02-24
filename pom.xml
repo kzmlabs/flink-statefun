@@ -78,6 +78,7 @@ under the License.
 
         <!-- e2e tests before testutil so a publishable module is last for Central -->
         <module>statefun-e2e-tests</module>
+        <module>statefun-k8s-native-e2e</module>
         <module>statefun-testutil</module>
     </modules>
 

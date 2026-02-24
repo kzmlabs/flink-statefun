@@ -1,0 +1,181 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: flink.apache.org/v1beta1
+kind: FlinkDeployment
+metadata:
+  name: statefun-jobmanager
+  namespace: statefun-e2e
+spec:
+  image: flink-statefun:e2e
+  imagePullPolicy: Never
+  flinkVersion: "v2_0"
+  serviceAccount: flink
+  flinkConfiguration:
+    # --- Classloader ---
+    classloader.parent-first-patterns.additional: "org.apache.flink.statefun;org.apache.kafka;com.google.protobuf"
+    classloader.resolve-order: parent-first
+    # --- Task slots ---
+    taskmanager.numberOfTaskSlots: "2"
+    # --- Checkpointing ---
+    execution.checkpointing.mode: EXACTLY_ONCE
+    execution.checkpointing.interval: "5000"
+    execution.checkpointing.min-pause: "50"
+    execution.checkpointing.max-concurrent-checkpoints: "1"
+    execution.checkpointing.timeout: "1200000"
+    execution.checkpointing.externalized-checkpoint-retention: RETAIN_ON_CANCELLATION
+    execution.checkpointing.tolerable-failed-checkpoints: "3"
+    execution.checkpointing.checkpoints-after-tasks-finish.enabled: "false"
+    # --- State backend ---
+    state.backend.type: rocksdb
+    state.backend.async: "true"
+    state.backend.incremental: "true"
+    state.checkpoints.num-retained: "10"
+    state.checkpoints.dir: s3://statefun-e2e/checkpoints
+    state.savepoints.dir: s3://statefun-e2e/savepoints
+    state.backend.changelog.enabled: "true"
+    state.backend.changelog.storage: filesystem
+    dstl.dfs.base-path: s3://statefun-e2e/dfs
+    # --- S3 (MinIO) ---
+    s3.endpoint: http://minio.statefun-e2e:9000
+    s3.path-style-access: "true"
+    s3.access-key: minioadmin
+    s3.secret-key: minioadmin
+    # --- High Availability ---
+    high-availability.type: org.apache.flink.kubernetes.highavailability.KubernetesHaServicesFactory
+    high-availability.storageDir: s3://statefun-e2e/ha
+    high-availability.kubernetes.leader-election.lease-duration: "15s"
+    high-availability.kubernetes.leader-election.renew-deadline: "10s"
+    high-availability.kubernetes.leader-election.retry-period: "2s"
+    # --- StateFun ---
+    statefun.flink-job-name: statefun-e2e
+    statefun.remote.module-name: "file:///opt/statefun/module.yaml"
+    # --- Restart strategy ---
+    execution.restart-strategy.type: fixed-delay
+    execution.restart-strategy.fixed-delay.attempts: "3"
+    execution.restart-strategy.fixed-delay.delay: "5s"
+    # --- Pipeline ---
+    pipeline.auto-generate-uids: "false"
+    execution.savepoint.ignore-unclaimed-state: "true"
+    # --- Network ---
+    taskmanager.network.memory.buffer-debloat.enabled: "true"
+    # --- Metrics ---
+    metrics.reporter.prom.factory.class: org.apache.flink.metrics.prometheus.PrometheusReporterFactory
+    metrics.reporter.prom.port: "9249"
+    # --- K8s Operator ---
+    kubernetes.operator.jm-deployment-recovery.enabled: "true"
+    kubernetes.operator.periodic.savepoint.interval: "0ms"
+    kubernetes.operator.savepoint.history.max.count: "2"
+    kubernetes.transactional-operation.max-retries: "60"
+    kubernetes.client.io-pool.size: "8"
+    # --- JobManager / REST tuning ---
+    jobmanager.io-pool.size: "10"
+    jobmanager.future-pool.size: "10"
+    web.cancel.enable: "false"
+    rest.await-leader-timeout: "90000"
+    rest.retry.max-attempts: "40"
+    rest.server.numThreads: "10"
+    # --- JVM options ---
+    env.java.opts.all: >-
+      -Daws.java.v1.disableDeprecationAnnouncement=true
+      -Dkubernetes.connection.timeout=35000
+      -Dkubernetes.request.timeout=35000
+      -Dkubernetes.request.retry.backoffLimit=60
+      --add-exports=java.rmi/sun.rmi.registry=ALL-UNNAMED
+      --add-exports=java.security.jgss/sun.security.krb5=ALL-UNNAMED
+      --add-opens=java.base/java.lang=ALL-UNNAMED
+      --add-opens=java.base/java.net=ALL-UNNAMED
+      --add-opens=java.base/java.io=ALL-UNNAMED
+      --add-opens=java.base/java.nio=ALL-UNNAMED
+      --add-opens=java.base/sun.nio.ch=ALL-UNNAMED
+      --add-opens=java.base/java.lang.reflect=ALL-UNNAMED
+      --add-opens=java.base/java.text=ALL-UNNAMED
+      --add-opens=java.base/java.time=ALL-UNNAMED
+      --add-opens=java.base/java.util=ALL-UNNAMED
+      --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
+      --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED
+      --add-opens=java.base/java.util.concurrent.locks=ALL-UNNAMED
+  logConfiguration:
+    logback-console.xml: |
+      <?xml version="1.0" encoding="UTF-8"?>
+      <configuration>
+        <appender name="JSON" class="ch.qos.logback.core.ConsoleAppender">
+          <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+              <timestamp>
+                <fieldName>ts</fieldName>
+                <timeZone>UTC</timeZone>
+              </timestamp>
+              <logLevel>
+                <fieldName>level</fieldName>
+              </logLevel>
+              <loggerName>
+                <fieldName>logger</fieldName>
+              </loggerName>
+              <callerData>
+                <classFieldName>class</classFieldName>
+                <methodFieldName>method</methodFieldName>
+                <lineFieldName>line</lineFieldName>
+                <fileFieldName>file</fileFieldName>
+              </callerData>
+              <threadName>
+                <fieldName>thread</fieldName>
+              </threadName>
+              <mdc/>
+              <arguments>
+                <includeNonStructuredArguments>false</includeNonStructuredArguments>
+              </arguments>
+              <stackTrace>
+                <fieldName>stack</fieldName>
+              </stackTrace>
+              <message>
+                <fieldName>msg</fieldName>
+              </message>
+            </providers>
+          </encoder>
+        </appender>
+        <root level="INFO">
+          <appender-ref ref="JSON"/>
+        </root>
+        <logger name="org.apache.flink.statefun" level="INFO"/>
+        <logger name="org.apache.flink" level="INFO"/>
+        <logger name="org.apache.kafka" level="WARN"/>
+        <logger name="org.apache.flink.runtime.leaderelection" level="DEBUG"/>
+        <logger name="org.apache.flink.runtime.checkpoint" level="INFO"/>
+        <logger name="com.amazonaws.services.s3.internal.Mimetypes" level="ERROR"/>
+      </configuration>
+  podTemplate:
+    spec:
+      containers:
+        - name: flink-main-container
+          volumeMounts:
+            - name: module-config
+              mountPath: /opt/statefun
+      volumes:
+        - name: module-config
+          configMap:
+            name: statefun-e2e-module
+  jobManager:
+    resource:
+      memory: "1024m"
+      cpu: 0.5
+  taskManager:
+    resource:
+      memory: "2048m"
+      cpu: 1
+  job:
+    jarURI: local:///opt/flink/statefun.jar
+    parallelism: 1
+    upgradeMode: last-state

@@ -1,20 +1,38 @@
 name: Release to Maven Central & GHCR
 
 # Trigger on:
-#   v* tags   → full release (Maven Central + Docker + GitHub Release)
-#   docker-*  → Docker-only release (build + push image, no Maven Central)
+#   v* tags          → full release (Maven Central + Docker + GitHub Release)
+#   docker-*         → Docker-only release (build + push image, no Maven Central)
+#   workflow_dispatch → manual release with chosen type and version
 on:
   push:
     tags:
       - 'v*'
       - 'docker-*'
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Release type'
+        required: true
+        type: choice
+        options:
+          - full
+          - docker-only
+      version:
+        description: 'Version (e.g. 3.4.0-KZM-2.0-RC1)'
+        required: true
 
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: kzmlabs/flink-statefun
 
 jobs:
+  k8s-e2e:
+    name: K8s E2E Gate
+    uses: ./.github/workflows/e2e-test.yml
+
   release:
+    needs: k8s-e2e
     runs-on: ubuntu-latest
     name: Release
     permissions:
@@ -28,13 +46,18 @@ jobs:
       - name: Determine release type
         id: release_type
         run: |
-          TAG="${GITHUB_REF#refs/tags/}"
-          if [[ "$TAG" == v* ]]; then
-            echo "type=full" >> $GITHUB_OUTPUT
-            echo "version=${TAG#v}" >> $GITHUB_OUTPUT
-          elif [[ "$TAG" == docker-* ]]; then
-            echo "type=docker-only" >> $GITHUB_OUTPUT
-            echo "version=${TAG#docker-}" >> $GITHUB_OUTPUT
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "type=${{ github.event.inputs.release_type }}" >> $GITHUB_OUTPUT
+            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            TAG="${GITHUB_REF#refs/tags/}"
+            if [[ "$TAG" == v* ]]; then
+              echo "type=full" >> $GITHUB_OUTPUT
+              echo "version=${TAG#v}" >> $GITHUB_OUTPUT
+            elif [[ "$TAG" == docker-* ]]; then
+              echo "type=docker-only" >> $GITHUB_OUTPUT
+              echo "version=${TAG#docker-}" >> $GITHUB_OUTPUT
+            fi
           fi
 
       - name: Set up JDK 21
@@ -57,7 +80,7 @@ jobs:
         run: |
           # Exclude e2e tests and non-Java SDKs from deployment
           mvn deploy -Prelease -DskipTests -B \
-            -pl '!:statefun-flink-runner,!:statefun-e2e-tests,!:statefun-e2e-tests-common,!:statefun-smoke-e2e-common,!:statefun-smoke-e2e-driver,!:statefun-smoke-e2e-embedded,!:statefun-smoke-e2e-multilang-base,!:statefun-smoke-e2e-multilang-harness,!:statefun-smoke-e2e-java,!:statefun-smoke-e2e-golang,!:statefun-smoke-e2e-js,!:statefun-sdk-python,!:statefun-sdk-go,!:statefun-sdk-js'
+            -pl '!:statefun-flink-runner,!:statefun-e2e-tests,!:statefun-e2e-tests-common,!:statefun-smoke-e2e-common,!:statefun-smoke-e2e-driver,!:statefun-smoke-e2e-embedded,!:statefun-smoke-e2e-multilang-base,!:statefun-smoke-e2e-multilang-harness,!:statefun-smoke-e2e-java,!:statefun-smoke-e2e-golang,!:statefun-smoke-e2e-js,!:statefun-k8s-native-e2e,!:statefun-sdk-python,!:statefun-sdk-go,!:statefun-sdk-js'
         env:
           CENTRAL_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           CENTRAL_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
@@ -73,31 +96,17 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Prepare Docker build context
+      - name: Build Docker image
+        run: ./tools/docker/build-stateful-functions.sh ${{ steps.release_type.outputs.version }}
+
+      - name: Tag and push to GHCR
         run: |
-          UBER_JAR=$(find . -path "*/statefun-flink-runner/target/statefun-flink-runner*.jar" -not -name "original-*" -not -name "*sources*" -not -name "*javadoc*" | head -1)
-          CORE_JAR=$(find . -path "*/statefun-flink-core/target/statefun-flink-core*.jar" -not -name "*javadoc*" -not -name "*sources*" | head -1)
-          DIST_JAR=$(find . -path "*/statefun-flink-distribution/target/statefun-flink-distribution*.jar" -not -name "original-*" -not -name "*sources*" -not -name "*javadoc*" | head -1)
-
-          mkdir -p docker-context/flink/lib
-          cp "$CORE_JAR" docker-context/flink/lib/statefun-flink-core.jar
-          cp "$DIST_JAR" docker-context/flink/lib/statefun-flink-distribution.jar
-          cp "$UBER_JAR" docker-context/statefun.jar
-          cp tools/docker/Dockerfile docker-context/
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: docker-context
-          push: true
-          tags: |
+          docker tag flink-statefun:${{ steps.release_type.outputs.version }} \
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.release_type.outputs.version }}
+          docker tag flink-statefun:${{ steps.release_type.outputs.version }} \
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-          labels: |
-            org.opencontainers.image.title=Kzmlabs Flink StateFun
-            org.opencontainers.image.description=Kzmlabs fork of Apache Flink Stateful Functions
-            org.opencontainers.image.version=${{ steps.release_type.outputs.version }}
-            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.release_type.outputs.version }}
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
 
       - name: Create GitHub Release
         if: steps.release_type.outputs.type == 'full'
