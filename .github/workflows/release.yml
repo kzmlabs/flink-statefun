@@ -19,7 +19,7 @@ on:
           - full
           - docker-only
       version:
-        description: 'Version (e.g. 3.4.0-KZM-2.0-RC1)'
+        description: 'Version (e.g. 3.4.0-KZM-2.0-RC2)'
         required: true
 
 env:
