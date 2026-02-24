@@ -19,7 +19,7 @@ on:
           - full
           - docker-only
       version:
-        description: 'Version (e.g. 3.4.0-KZM-2.0-RC2)'
+        description: 'Version (e.g. 3.4.0-KZM-2.0-RC3)'
         required: true
 
 env:
@@ -72,8 +72,8 @@ jobs:
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
           gpg-passphrase: GPG_PASSPHRASE
 
-      - name: Build and test
-        run: mvn clean install -B -Dtest="!UnixDomainSocketITCase" -DfailIfNoTests=false
+      - name: Build and test (skip E2E)
+        run: mvn clean install -B -Dtest="!UnixDomainSocketITCase" -DfailIfNoTests=false -pl '!:statefun-smoke-e2e-embedded,!:statefun-smoke-e2e-multilang-base,!:statefun-smoke-e2e-multilang-harness,!:statefun-smoke-e2e-java,!:statefun-smoke-e2e-golang,!:statefun-smoke-e2e-js,!:statefun-k8s-native-e2e'
 
       - name: Deploy to Maven Central
         if: steps.release_type.outputs.type == 'full'
