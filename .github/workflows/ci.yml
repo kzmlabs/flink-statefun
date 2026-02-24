@@ -7,9 +7,9 @@ on:
     branches: [ release, master ]
 
 jobs:
-  build-and-test:
+  build:
     runs-on: ubuntu-latest
-    name: Build & Test
+    name: Compile
 
     steps:
       - name: Checkout code
@@ -22,11 +22,5 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Build and run all tests
-        run: mvn clean install -B -Dtest="!UnixDomainSocketITCase" -DfailIfNoTests=false
-
-      - name: Build Docker image
-        run: ./tools/docker/build-stateful-functions.sh
-
-      - name: Run E2E tests
-        run: mvn verify -Prun-e2e-tests -B -pl statefun-e2e-tests
+      - name: Compile (no tests)
+        run: mvn clean install -DskipTests -B

@@ -36,8 +36,8 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Build
-        run: mvn clean install -DskipTests -B
+      - name: Build and test
+        run: mvn clean install -B -Dtest="!UnixDomainSocketITCase" -DfailIfNoTests=false
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
