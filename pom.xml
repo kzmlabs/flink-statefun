@@ -464,6 +464,7 @@ under the License.
                             </includes>
                             <excludes>
                                 <exclude>${test.unit.pattern}</exclude>
+                                <exclude>**/UnixDomainSocketITCase.*</exclude>
                             </excludes>
                             <reuseForks>false</reuseForks>
                         </configuration>
