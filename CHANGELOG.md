@@ -2,6 +2,18 @@
 
 All notable changes to the Kzmlabs StateFun fork are documented in this file.
 
+## [3.4.0-KZM-2.0-RC5] - 2025-02-25
+
+- Add CHANGELOG.md with release history
+- Only push Docker `latest` tag for stable (non-RC) releases
+- Remove empty non-Java SDK modules from Maven reactor
+- Fix FlinkDeployment example: `flinkVersion` v2_2 → v2_0 (Operator 1.11 limit)
+- Remove `UnixDomainSocketITCase` exclusion from surefire (self-skips on Windows)
+- Re-enable `EmbeddedSmokeHarnessTest` with reduced params and Flink 2.2 config fixes
+- Upgrade `maven-compiler-plugin` 3.8.1 → 3.13.0
+- Upgrade `protobuf` 3.7.1 → 3.25.5 and `protoc-jar-maven-plugin` 3.11.1 → 3.11.4
+- Add `statefun-bom` module for dependency management
+
 ## [3.4.0-KZM-2.0-RC4] - 2025-02-25
 
 - Fix CI: remove `-Dtest` override, exclude `UnixDomainSocketITCase` in pom.xml
@@ -29,6 +41,7 @@ All notable changes to the Kzmlabs StateFun fork are documented in this file.
 - Add Docker image publishing to GitHub Container Registry
 - Add release setup guide and release script
 
+[3.4.0-KZM-2.0-RC5]: https://github.com/kzmlabs/flink-statefun/releases/tag/v3.4.0-KZM-2.0-RC5
 [3.4.0-KZM-2.0-RC4]: https://github.com/kzmlabs/flink-statefun/releases/tag/v3.4.0-KZM-2.0-RC4
 [3.4.0-KZM-2.0-RC3]: https://github.com/kzmlabs/flink-statefun/releases/tag/v3.4.0-KZM-2.0-RC3
 [3.4.0-KZM-2.0-RC2]: https://github.com/kzmlabs/flink-statefun/releases/tag/v3.4.0-KZM-2.0-RC2

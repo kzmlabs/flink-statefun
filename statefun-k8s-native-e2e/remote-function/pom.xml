@@ -22,13 +22,13 @@ under the License.
 
     <groupId>io.github.kzmlabs.flinkstatefun</groupId>
     <artifactId>statefun-k8s-native-e2e-remote-function</artifactId>
-    <version>3.4.0-KZM-2.0-RC4</version>
+    <version>3.4.0-KZM-2.0-RC5</version>
     <name>statefun-k8s-native-e2e-remote-function</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>21</java.version>
-        <statefun.version>3.4.0-KZM-2.0-RC4</statefun.version>
+        <statefun.version>3.4.0-KZM-2.0-RC5</statefun.version>
         <protobuf.version>3.25.5</protobuf.version>
         <protoc-jar-maven-plugin.version>3.11.4</protoc-jar-maven-plugin.version>
     </properties>
