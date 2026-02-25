@@ -34,7 +34,7 @@ under the License.
         <kafka-clients.version>3.9.0</kafka-clients.version>
         <awaitility.version>4.2.2</awaitility.version>
         <assertj.version>3.27.3</assertj.version>
-        <junit-jupiter.version>5.11.4</junit-jupiter.version>
+        
         <minio.version>8.5.14</minio.version>
         <slf4j.version>2.0.9</slf4j.version>
     </properties>
@@ -76,7 +76,7 @@ under the License.
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>${junit-jupiter.version}</version>
+            
             <scope>test</scope>
         </dependency>
 

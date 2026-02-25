@@ -17,6 +17,10 @@
  */
 package org.apache.flink.statefun.flink.core;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import java.util.Arrays;
 import java.util.Optional;
 import org.apache.flink.configuration.CheckpointingOptions;
@@ -26,8 +30,7 @@ import org.apache.flink.configuration.MemorySize;
 import org.apache.flink.statefun.flink.core.exceptions.StatefulFunctionsInvalidConfigException;
 import org.apache.flink.statefun.flink.core.message.MessageFactoryType;
 import org.hamcrest.Matchers;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class StatefulFunctionsConfigTest {
 
@@ -57,18 +60,15 @@ public class StatefulFunctionsConfigTest {
     StatefulFunctionsConfig stateFunConfig =
         StatefulFunctionsConfig.fromFlinkConfiguration(configuration);
 
-    Assert.assertEquals(stateFunConfig.getFlinkJobName(), testName);
-    Assert.assertEquals(
-        stateFunConfig.getFactoryKey().getType(), MessageFactoryType.WITH_CUSTOM_PAYLOADS);
-    Assert.assertEquals(
+    assertEquals(stateFunConfig.getFlinkJobName(), testName);
+    assertEquals(stateFunConfig.getFactoryKey().getType(), MessageFactoryType.WITH_CUSTOM_PAYLOADS);
+    assertEquals(
         stateFunConfig.getFactoryKey().getCustomPayloadSerializerClassName(),
         Optional.of(serializerClassName));
-    Assert.assertEquals(stateFunConfig.getFeedbackBufferSize(), MemorySize.ofMebiBytes(100));
-    Assert.assertEquals(stateFunConfig.getMaxAsyncOperationsPerTask(), 100);
-    Assert.assertThat(
-        stateFunConfig.getGlobalConfigurations(), Matchers.hasEntry("key1", "value1"));
-    Assert.assertThat(
-        stateFunConfig.getGlobalConfigurations(), Matchers.hasEntry("key2", "value2"));
+    assertEquals(stateFunConfig.getFeedbackBufferSize(), MemorySize.ofMebiBytes(100));
+    assertEquals(stateFunConfig.getMaxAsyncOperationsPerTask(), 100);
+    assertThat(stateFunConfig.getGlobalConfigurations(), Matchers.hasEntry("key1", "value1"));
+    assertThat(stateFunConfig.getGlobalConfigurations(), Matchers.hasEntry("key2", "value2"));
   }
 
   private static Configuration baseConfiguration() {
@@ -87,21 +87,32 @@ public class StatefulFunctionsConfigTest {
     return configuration;
   }
 
-  @Test(expected = StatefulFunctionsInvalidConfigException.class)
+  @Test
   public void invalidCustomSerializerThrows() {
-    Configuration configuration = baseConfiguration();
-    configuration.set(
-        StatefulFunctionsConfig.USER_MESSAGE_SERIALIZER, MessageFactoryType.WITH_CUSTOM_PAYLOADS);
-    StatefulFunctionsConfigValidator.validate(false, configuration);
+    assertThrows(
+        StatefulFunctionsInvalidConfigException.class,
+        () -> {
+          Configuration configuration = baseConfiguration();
+          configuration.set(
+              StatefulFunctionsConfig.USER_MESSAGE_SERIALIZER,
+              MessageFactoryType.WITH_CUSTOM_PAYLOADS);
+          StatefulFunctionsConfigValidator.validate(false, configuration);
+        });
   }
 
-  @Test(expected = StatefulFunctionsInvalidConfigException.class)
+  @Test
   public void invalidNonCustomSerializerThrows() {
-    Configuration configuration = baseConfiguration();
-    configuration.set(
-        StatefulFunctionsConfig.USER_MESSAGE_SERIALIZER, MessageFactoryType.WITH_KRYO_PAYLOADS);
-    configuration.set(
-        StatefulFunctionsConfig.USER_MESSAGE_CUSTOM_PAYLOAD_SERIALIZER_CLASS, serializerClassName);
-    StatefulFunctionsConfigValidator.validate(false, configuration);
+    assertThrows(
+        StatefulFunctionsInvalidConfigException.class,
+        () -> {
+          Configuration configuration = baseConfiguration();
+          configuration.set(
+              StatefulFunctionsConfig.USER_MESSAGE_SERIALIZER,
+              MessageFactoryType.WITH_KRYO_PAYLOADS);
+          configuration.set(
+              StatefulFunctionsConfig.USER_MESSAGE_CUSTOM_PAYLOAD_SERIALIZER_CLASS,
+              serializerClassName);
+          StatefulFunctionsConfigValidator.validate(false, configuration);
+        });
   }
 }

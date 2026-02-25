@@ -17,7 +17,7 @@
  */
 package org.apache.flink.statefun.sdk.java.types;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -30,8 +30,8 @@ import org.apache.flink.statefun.sdk.types.generated.BooleanWrapper;
 import org.apache.flink.statefun.sdk.types.generated.IntWrapper;
 import org.apache.flink.statefun.sdk.types.generated.LongWrapper;
 import org.apache.flink.statefun.sdk.types.generated.StringWrapper;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 public class SanityPrimitiveTypeTest {
 
@@ -124,7 +124,7 @@ public class SanityPrimitiveTypeTest {
     }
   }
 
-  @Ignore
+  @Disabled
   @Test
   public void testCompatibilityWithAnIntegerWrapper() throws InvalidProtocolBufferException {
     TypeSerializer<Integer> serializer = Types.integerType().typeSerializer();

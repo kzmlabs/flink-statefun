@@ -24,7 +24,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import org.apache.commons.math3.random.JDKRandomGenerator;
 import org.apache.flink.statefun.e2e.smoke.SmokeRunnerParameters;
 import org.apache.flink.statefun.e2e.smoke.generated.SourceCommand;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class CommandGeneratorTest {
 

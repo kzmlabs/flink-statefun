@@ -19,7 +19,8 @@ package org.apache.flink.statefun.flink.core.state;
 
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,7 +42,7 @@ import org.apache.flink.statefun.sdk.state.PersistedTable;
 import org.apache.flink.statefun.sdk.state.PersistedValue;
 import org.apache.flink.statefun.sdk.state.RemotePersistedValue;
 import org.apache.flink.statefun.sdk.state.TableAccessor;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class PersistedStatesTest {
 
@@ -59,9 +60,11 @@ public class PersistedStatesTest {
     assertThat(state.boundNames, hasItems("name", "last"));
   }
 
-  @Test(expected = IllegalStateException.class)
+  @Test
   public void nullValueField() {
-    PersistedStates.findReflectivelyAndBind(new NullValueClass(), binderUnderTest);
+    assertThrows(
+        IllegalStateException.class,
+        () -> PersistedStates.findReflectivelyAndBind(new NullValueClass(), binderUnderTest));
   }
 
   @Test
@@ -78,9 +81,11 @@ public class PersistedStatesTest {
     assertThat(state.boundNames, hasItems("parent", "child"));
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void staticPersistedFieldsAreNotAllowed() {
-    PersistedStates.findReflectivelyAndBind(new StaticPersistedValue(), binderUnderTest);
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> PersistedStates.findReflectivelyAndBind(new StaticPersistedValue(), binderUnderTest));
   }
 
   @Test

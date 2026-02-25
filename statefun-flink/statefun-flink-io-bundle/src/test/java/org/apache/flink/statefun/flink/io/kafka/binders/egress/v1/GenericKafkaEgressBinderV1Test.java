@@ -18,8 +18,8 @@
 
 package org.apache.flink.statefun.flink.io.kafka.binders.egress.v1;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.Assert.assertThat;
 
 import java.net.URL;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,7 +30,7 @@ import org.apache.flink.statefun.flink.io.testutils.TestModuleBinder;
 import org.apache.flink.statefun.sdk.io.EgressIdentifier;
 import org.apache.flink.statefun.sdk.kafka.KafkaEgressSpec;
 import org.apache.flink.statefun.sdk.reqreply.generated.TypedValue;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class GenericKafkaEgressBinderV1Test {
 

@@ -19,15 +19,16 @@
 package org.apache.flink.statefun.sdk.state;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class PersistedAppendingBufferTest {
 
@@ -89,12 +90,17 @@ public class PersistedAppendingBufferTest {
     assertFalse(buffer.view().iterator().hasNext());
   }
 
-  @Test(expected = UnsupportedOperationException.class)
+  @Test
   public void viewUnmodifiable() {
-    PersistedAppendingBuffer<String> buffer = PersistedAppendingBuffer.of("test", String.class);
-    buffer.append("element");
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> {
+          PersistedAppendingBuffer<String> buffer =
+              PersistedAppendingBuffer.of("test", String.class);
+          buffer.append("element");
 
-    Iterator<String> view = buffer.view().iterator();
-    view.remove();
+          Iterator<String> view = buffer.view().iterator();
+          view.remove();
+        });
   }
 }

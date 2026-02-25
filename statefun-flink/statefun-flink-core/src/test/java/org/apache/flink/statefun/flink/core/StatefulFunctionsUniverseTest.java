@@ -18,13 +18,13 @@
 
 package org.apache.flink.statefun.flink.core;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsSame.sameInstance;
-import static org.junit.Assert.assertThat;
 
 import org.apache.flink.statefun.flink.core.message.MessageFactoryKey;
 import org.apache.flink.statefun.flink.core.message.MessageFactoryType;
 import org.apache.flink.statefun.sdk.TypeName;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class StatefulFunctionsUniverseTest {
 

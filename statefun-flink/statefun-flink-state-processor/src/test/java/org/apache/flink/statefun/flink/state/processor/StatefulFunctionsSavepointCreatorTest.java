@@ -18,44 +18,62 @@
 
 package org.apache.flink.statefun.flink.state.processor;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import org.apache.flink.statefun.sdk.FunctionType;
 import org.apache.flink.statefun.sdk.io.Router;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class StatefulFunctionsSavepointCreatorTest {
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void invalidMaxParallelism() {
-    new StatefulFunctionsSavepointCreator(-1);
+    assertThrows(IllegalArgumentException.class, () -> new StatefulFunctionsSavepointCreator(-1));
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void duplicateStateBootstrapFunctionProvider() {
-    final StatefulFunctionsSavepointCreator testCreator = new StatefulFunctionsSavepointCreator(1);
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> {
+          final StatefulFunctionsSavepointCreator testCreator =
+              new StatefulFunctionsSavepointCreator(1);
 
-    testCreator.withStateBootstrapFunctionProvider(
-        new FunctionType("ns", "test"), ignored -> new NoOpStateBootstrapFunction());
-    testCreator.withStateBootstrapFunctionProvider(
-        new FunctionType("ns", "test"), ignored -> new NoOpStateBootstrapFunction());
+          testCreator.withStateBootstrapFunctionProvider(
+              new FunctionType("ns", "test"), ignored -> new NoOpStateBootstrapFunction());
+          testCreator.withStateBootstrapFunctionProvider(
+              new FunctionType("ns", "test"), ignored -> new NoOpStateBootstrapFunction());
+        });
   }
 
-  @Test(expected = IllegalStateException.class)
+  @Test
   public void noBootstrapDataOnWrite() {
-    final StatefulFunctionsSavepointCreator testCreator = new StatefulFunctionsSavepointCreator(1);
+    assertThrows(
+        IllegalStateException.class,
+        () -> {
+          final StatefulFunctionsSavepointCreator testCreator =
+              new StatefulFunctionsSavepointCreator(1);
 
-    testCreator.withStateBootstrapFunctionProvider(
-        new FunctionType("ns", "test"), ignored -> new NoOpStateBootstrapFunction());
-    testCreator.write("ignored");
+          testCreator.withStateBootstrapFunctionProvider(
+              new FunctionType("ns", "test"), ignored -> new NoOpStateBootstrapFunction());
+          testCreator.write("ignored");
+        });
   }
 
-  @Test(expected = IllegalStateException.class)
+  @Test
   public void noStateBootstrapFunctionProvidersOnWrite() {
-    final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-    final StatefulFunctionsSavepointCreator testCreator = new StatefulFunctionsSavepointCreator(1);
+    assertThrows(
+        IllegalStateException.class,
+        () -> {
+          final StreamExecutionEnvironment env =
+              StreamExecutionEnvironment.getExecutionEnvironment();
+          final StatefulFunctionsSavepointCreator testCreator =
+              new StatefulFunctionsSavepointCreator(1);
 
-    testCreator.withBootstrapData(env.fromElements("foobar"), NoOpBootstrapDataRouter::new);
-    testCreator.write("ignored");
+          testCreator.withBootstrapData(env.fromElements("foobar"), NoOpBootstrapDataRouter::new);
+          testCreator.write("ignored");
+        });
   }
 
   private static class NoOpStateBootstrapFunction implements StateBootstrapFunction {

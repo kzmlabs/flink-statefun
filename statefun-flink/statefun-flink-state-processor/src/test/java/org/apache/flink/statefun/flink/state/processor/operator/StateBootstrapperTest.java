@@ -18,9 +18,9 @@
 package org.apache.flink.statefun.flink.state.processor.operator;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -39,7 +39,7 @@ import org.apache.flink.statefun.sdk.state.PersistedTable;
 import org.apache.flink.statefun.sdk.state.PersistedValue;
 import org.apache.flink.statefun.sdk.state.RemotePersistedValue;
 import org.apache.flink.statefun.sdk.state.TableAccessor;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class StateBootstrapperTest {
 
@@ -211,7 +211,7 @@ public class StateBootstrapperTest {
     }
 
     private void assertKeySet() {
-      assertNotNull("Key should have been set before accessing state.", currentKey);
+      assertNotNull(currentKey, "Key should have been set before accessing state.");
     }
 
     Object getState(FunctionType functionType, String stateName, String functionId) {

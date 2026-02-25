@@ -18,8 +18,10 @@
 
 package org.apache.flink.statefun.sdk.state;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import org.apache.flink.statefun.sdk.TypeName;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class PersistedStateRegistryTest {
 
@@ -34,11 +36,15 @@ public class PersistedStateRegistryTest {
         RemotePersistedValue.of("remote", TypeName.parseFrom("io.statefun.types/raw")));
   }
 
-  @Test(expected = IllegalStateException.class)
+  @Test
   public void duplicateRegistration() {
-    final PersistedStateRegistry registry = new PersistedStateRegistry();
+    assertThrows(
+        IllegalStateException.class,
+        () -> {
+          final PersistedStateRegistry registry = new PersistedStateRegistry();
 
-    registry.registerValue(PersistedValue.of("my-state", String.class));
-    registry.registerTable(PersistedTable.of("my-state", String.class, Integer.class));
+          registry.registerValue(PersistedValue.of("my-state", String.class));
+          registry.registerTable(PersistedTable.of("my-state", String.class, Integer.class));
+        });
   }
 }

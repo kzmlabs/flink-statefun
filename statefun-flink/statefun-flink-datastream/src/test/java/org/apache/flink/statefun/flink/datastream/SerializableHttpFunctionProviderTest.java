@@ -18,12 +18,12 @@ package org.apache.flink.statefun.flink.datastream;
  * limitations under the License.
  */
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.apache.flink.statefun.flink.core.httpfn.DefaultHttpRequestReplyClientFactory;
 import org.apache.flink.statefun.flink.core.httpfn.TransportClientConstants;
 import org.apache.flink.statefun.flink.core.nettyclient.NettyRequestReplyClientFactory;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class SerializableHttpFunctionProviderTest {
 

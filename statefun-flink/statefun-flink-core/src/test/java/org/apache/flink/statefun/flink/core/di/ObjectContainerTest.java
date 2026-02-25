@@ -20,7 +20,7 @@ package org.apache.flink.statefun.flink.core.di;
 import static org.hamcrest.CoreMatchers.theInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class ObjectContainerTest {
 

@@ -18,6 +18,7 @@
 package org.apache.flink.statefun.testutils.function;
 
 import static org.apache.flink.statefun.testutils.matchers.StatefulFunctionMatchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -29,8 +30,7 @@ import org.apache.flink.statefun.sdk.Context;
 import org.apache.flink.statefun.sdk.FunctionType;
 import org.apache.flink.statefun.sdk.StatefulFunction;
 import org.apache.flink.statefun.sdk.io.EgressIdentifier;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Simple validation tests of the test harness. */
 public class FunctionTestHarnessTest {
@@ -53,7 +53,7 @@ public class FunctionTestHarnessTest {
     FunctionTestHarness harness =
         FunctionTestHarness.test(ignore -> new BasicFunction(), UNDER_TEST, "id");
 
-    Assert.assertThat(harness.invoke(CALLER, "ping"), sent(messagesTo(CALLER, equalTo("pong"))));
+    assertThat(harness.invoke(CALLER, "ping"), sent(messagesTo(CALLER, equalTo("pong"))));
   }
 
   @Test
@@ -61,7 +61,7 @@ public class FunctionTestHarnessTest {
     FunctionTestHarness harness =
         FunctionTestHarness.test(ignore -> new MultiResponseFunction(), UNDER_TEST, "id");
 
-    Assert.assertThat(
+    assertThat(
         harness.invoke("hello"),
         sent(
             messagesTo(CALLER, equalTo("a"), equalTo("b")),
@@ -73,7 +73,7 @@ public class FunctionTestHarnessTest {
     FunctionTestHarness harness =
         FunctionTestHarness.test(ignore -> new SelfResponseFunction(), UNDER_TEST, "id");
 
-    Assert.assertThat(harness.invoke("hello"), sent(messagesTo(SELF_ADDRESS, equalTo("world"))));
+    assertThat(harness.invoke("hello"), sent(messagesTo(SELF_ADDRESS, equalTo("world"))));
   }
 
   @Test
@@ -81,8 +81,8 @@ public class FunctionTestHarnessTest {
     FunctionTestHarness harness =
         FunctionTestHarness.test(ignore -> new EgressFunction(), UNDER_TEST, "id");
 
-    Assert.assertThat(harness.invoke(CALLER, "ping"), sentNothing());
-    Assert.assertThat(harness.getEgress(EGRESS), contains(equalTo("pong")));
+    assertThat(harness.invoke(CALLER, "ping"), sentNothing());
+    assertThat(harness.getEgress(EGRESS), contains(equalTo("pong")));
   }
 
   @Test
@@ -90,9 +90,8 @@ public class FunctionTestHarnessTest {
     FunctionTestHarness harness =
         FunctionTestHarness.test(ignore -> new DelayedResponse(), UNDER_TEST, "id");
 
-    Assert.assertThat(harness.invoke(CALLER, "ping"), sentNothing());
-    Assert.assertThat(
-        harness.tick(Duration.ofMinutes(1)), sent(messagesTo(CALLER, equalTo("pong"))));
+    assertThat(harness.invoke(CALLER, "ping"), sentNothing());
+    assertThat(harness.tick(Duration.ofMinutes(1)), sent(messagesTo(CALLER, equalTo("pong"))));
   }
 
   @Test
@@ -100,7 +99,7 @@ public class FunctionTestHarnessTest {
     FunctionTestHarness harness =
         FunctionTestHarness.test(ignore -> new AsyncOperation(), UNDER_TEST, "id");
 
-    Assert.assertThat(harness.invoke(CALLER, "ping"), sent(messagesTo(CALLER, equalTo("pong"))));
+    assertThat(harness.invoke(CALLER, "ping"), sent(messagesTo(CALLER, equalTo("pong"))));
   }
 
   private static class BasicFunction implements StatefulFunction {

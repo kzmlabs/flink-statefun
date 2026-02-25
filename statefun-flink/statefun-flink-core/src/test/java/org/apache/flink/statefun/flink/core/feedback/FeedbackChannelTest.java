@@ -24,8 +24,8 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Mode;
@@ -60,7 +60,7 @@ public class FeedbackChannelTest {
     assertThat(results, contains("hello", "world"));
   }
 
-  @Ignore("benchmarks are not run as part of a regular test suite.")
+  @Disabled("benchmarks are not run as part of a regular test suite.")
   @Test
   public void launchBenchmark() throws Exception {
     // The following is the result of comparing 3 different queue implementations for a spsc

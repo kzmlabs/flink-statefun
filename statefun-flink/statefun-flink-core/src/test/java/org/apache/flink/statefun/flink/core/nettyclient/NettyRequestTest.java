@@ -18,8 +18,10 @@
 package org.apache.flink.statefun.flink.core.nettyclient;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.Closeable;
 import java.net.SocketAddress;
@@ -43,8 +45,7 @@ import org.apache.flink.statefun.sdk.Address;
 import org.apache.flink.statefun.sdk.FunctionType;
 import org.apache.flink.statefun.sdk.reqreply.generated.FromFunction;
 import org.apache.flink.statefun.sdk.reqreply.generated.ToFunction;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class NettyRequestTest {
 
@@ -125,7 +126,7 @@ public class NettyRequestTest {
 
     request.start();
 
-    Assert.assertTrue(request.result().isCompletedExceptionally());
+    assertTrue(request.result().isCompletedExceptionally());
   }
 
   @Test
@@ -142,7 +143,7 @@ public class NettyRequestTest {
     // fail the request
     request.completeAttemptExceptionally(DisconnectedException.INSTANCE);
 
-    Assert.assertFalse(request.result().isDone());
+    assertFalse(request.result().isDone());
     assertEquals(Duration.ofMillis(15).toNanos(), request.remainingRequestBudgetNanos());
   }
 
@@ -165,7 +166,7 @@ public class NettyRequestTest {
       fakeClient.TIMEOUTS.pop().run();
     }
 
-    throw new AssertionError();
+    throw new AssertionError("Expected request to eventually fail");
   }
 
   // ---------------------------------------------------------------------------------------------------------

@@ -21,10 +21,10 @@ import static org.apache.flink.statefun.flink.core.TestUtils.FUNCTION_1_ADDR;
 import static org.apache.flink.statefun.flink.core.common.PolyglotUtil.polyglotAddressToSdkAddress;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.protobuf.ByteString;
 import java.time.Duration;
@@ -60,7 +60,7 @@ import org.apache.flink.statefun.sdk.reqreply.generated.FromFunction.PersistedVa
 import org.apache.flink.statefun.sdk.reqreply.generated.ToFunction;
 import org.apache.flink.statefun.sdk.reqreply.generated.ToFunction.Invocation;
 import org.apache.flink.statefun.sdk.reqreply.generated.TypedValue;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class RequestReplyFunctionTest {
   private static final FunctionType FN_TYPE = new FunctionType("foo", "bar");

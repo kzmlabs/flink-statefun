@@ -21,6 +21,7 @@ package org.apache.flink.statefun.sdk.java.storage;
 import static org.apache.flink.statefun.sdk.java.storage.StateValueContexts.StateValueContext;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -32,7 +33,7 @@ import org.apache.flink.statefun.sdk.java.types.Type;
 import org.apache.flink.statefun.sdk.reqreply.generated.ToFunction;
 import org.apache.flink.statefun.sdk.reqreply.generated.TypedValue;
 import org.apache.flink.statefun.sdk.shaded.com.google.protobuf.ByteString;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class ConcurrentAddressScopedStorageTest {
 
@@ -115,68 +116,99 @@ public class ConcurrentAddressScopedStorageTest {
     assertThat(storage.get(stateSpec), is(Optional.empty()));
   }
 
-  @Test(expected = IllegalStorageAccessException.class)
+  @Test
   public void getNonExistingCell() {
-    final AddressScopedStorage storage =
-        new ConcurrentAddressScopedStorage(Collections.emptyList());
+    assertThrows(
+        IllegalStorageAccessException.class,
+        () -> {
+          final AddressScopedStorage storage =
+              new ConcurrentAddressScopedStorage(Collections.emptyList());
 
-    storage.get(ValueSpec.named("does_not_exist").withIntType());
+          storage.get(ValueSpec.named("does_not_exist").withIntType());
+        });
   }
 
-  @Test(expected = IllegalStorageAccessException.class)
+  @Test
   public void setNonExistingCell() {
-    final AddressScopedStorage storage =
-        new ConcurrentAddressScopedStorage(Collections.emptyList());
+    assertThrows(
+        IllegalStorageAccessException.class,
+        () -> {
+          final AddressScopedStorage storage =
+              new ConcurrentAddressScopedStorage(Collections.emptyList());
 
-    storage.set(ValueSpec.named("does_not_exist").withIntType(), 999);
+          storage.set(ValueSpec.named("does_not_exist").withIntType(), 999);
+        });
   }
 
-  @Test(expected = IllegalStorageAccessException.class)
+  @Test
   public void clearNonExistingCell() {
-    final AddressScopedStorage storage =
-        new ConcurrentAddressScopedStorage(Collections.emptyList());
+    assertThrows(
+        IllegalStorageAccessException.class,
+        () -> {
+          final AddressScopedStorage storage =
+              new ConcurrentAddressScopedStorage(Collections.emptyList());
 
-    storage.remove(ValueSpec.named("does_not_exist").withIntType());
+          storage.remove(ValueSpec.named("does_not_exist").withIntType());
+        });
   }
 
-  @Test(expected = IllegalStorageAccessException.class)
+  @Test
   public void setToNull() {
-    final ValueSpec<Integer> stateSpec = ValueSpec.named("state").withIntType();
+    assertThrows(
+        IllegalStorageAccessException.class,
+        () -> {
+          final ValueSpec<Integer> stateSpec = ValueSpec.named("state").withIntType();
 
-    List<StateValueContext<?>> testStateValues = testStateValues(stateValue(stateSpec, 91));
-    final AddressScopedStorage storage = new ConcurrentAddressScopedStorage(testStateValues);
+          List<StateValueContext<?>> testStateValues = testStateValues(stateValue(stateSpec, 91));
+          final AddressScopedStorage storage = new ConcurrentAddressScopedStorage(testStateValues);
 
-    storage.set(stateSpec, null);
+          storage.set(stateSpec, null);
+        });
   }
 
-  @Test(expected = IllegalStorageAccessException.class)
+  @Test
   public void getWithWrongType() {
-    final ValueSpec<Integer> stateSpec = ValueSpec.named("state").withIntType();
+    assertThrows(
+        IllegalStorageAccessException.class,
+        () -> {
+          final ValueSpec<Integer> stateSpec = ValueSpec.named("state").withIntType();
 
-    final List<StateValueContext<?>> testStateValues = testStateValues(stateValue(stateSpec, 91));
-    final AddressScopedStorage storage = new ConcurrentAddressScopedStorage(testStateValues);
+          final List<StateValueContext<?>> testStateValues =
+              testStateValues(stateValue(stateSpec, 91));
+          final AddressScopedStorage storage = new ConcurrentAddressScopedStorage(testStateValues);
 
-    storage.get(ValueSpec.named("state").withBooleanType());
+          storage.get(ValueSpec.named("state").withBooleanType());
+        });
   }
 
-  @Test(expected = IllegalStorageAccessException.class)
+  @Test
   public void setWithWrongType() {
-    final ValueSpec<Integer> stateSpec = ValueSpec.named("state").withIntType();
+    assertThrows(
+        IllegalStorageAccessException.class,
+        () -> {
+          final ValueSpec<Integer> stateSpec = ValueSpec.named("state").withIntType();
 
-    final List<StateValueContext<?>> testStateValues = testStateValues(stateValue(stateSpec, 91));
-    final AddressScopedStorage storage = new ConcurrentAddressScopedStorage(testStateValues);
+          final List<StateValueContext<?>> testStateValues =
+              testStateValues(stateValue(stateSpec, 91));
+          final AddressScopedStorage storage = new ConcurrentAddressScopedStorage(testStateValues);
 
-    storage.set(ValueSpec.named("state").withBooleanType(), true);
+          storage.set(ValueSpec.named("state").withBooleanType(), true);
+        });
   }
 
-  @Test(expected = IllegalStorageAccessException.class)
+  @Test
   public void clearWithWrongType() {
-    final ValueSpec<Integer> stateSpec = ValueSpec.named("state").withIntType();
+    assertThrows(
+        IllegalStorageAccessException.class,
+        () -> {
+          final ValueSpec<Integer> stateSpec = ValueSpec.named("state").withIntType();
 
-    final List<StateValueContext<?>> testStateValues = testStateValues(stateValue(stateSpec, 91));
-    final AddressScopedStorage storage = new ConcurrentAddressScopedStorage(testStateValues);
+          final List<StateValueContext<?>> testStateValues =
+              testStateValues(stateValue(stateSpec, 91));
+          final AddressScopedStorage storage = new ConcurrentAddressScopedStorage(testStateValues);
 
-    storage.remove(ValueSpec.named("state").withBooleanType());
+          storage.remove(ValueSpec.named("state").withBooleanType());
+        });
   }
 
   private static List<StateValueContext<?>> testStateValues(StateValueContext<?>... testValues) {

@@ -18,7 +18,8 @@
 package org.apache.flink.statefun.flink.core.logger;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -31,21 +32,21 @@ import org.apache.flink.runtime.io.disk.iomanager.IOManagerAsync;
 import org.apache.flink.statefun.flink.core.di.ObjectContainer;
 import org.apache.flink.statefun.flink.core.logger.UnboundedFeedbackLogger.Header;
 import org.hamcrest.Matchers;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("SameParameterValue")
 public class UnboundedFeedbackLoggerTest {
   private static IOManagerAsync IO_MANAGER;
 
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
     IO_MANAGER = new IOManagerAsync();
   }
 
-  @AfterClass
+  @AfterAll
   public static void afterClass() throws Exception {
     if (IO_MANAGER != null) {
       IO_MANAGER.close();
@@ -64,11 +65,15 @@ public class UnboundedFeedbackLoggerTest {
     assertThat(output.size(), Matchers.greaterThan(0));
   }
 
-  @Test(expected = IllegalStateException.class)
+  @Test
   public void commitWithoutStartLoggingShouldBeIllegal() {
-    UnboundedFeedbackLogger<Integer> logger = instanceUnderTest(128, 1);
+    assertThrows(
+        IllegalStateException.class,
+        () -> {
+          UnboundedFeedbackLogger<Integer> logger = instanceUnderTest(128, 1);
 
-    logger.commit();
+          logger.commit();
+        });
   }
 
   @Test
@@ -81,7 +86,7 @@ public class UnboundedFeedbackLoggerTest {
     roundTrip(0, 1024);
   }
 
-  @Ignore
+  @Disabled
   @Test
   public void roundTripWithSpill() throws Exception {
     roundTrip(1_000_000, 0);

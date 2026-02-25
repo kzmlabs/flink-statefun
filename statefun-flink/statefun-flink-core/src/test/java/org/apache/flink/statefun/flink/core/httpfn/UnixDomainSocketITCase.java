@@ -20,15 +20,16 @@ package org.apache.flink.statefun.flink.core.httpfn;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeFalse;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 import javax.net.ServerSocketFactory;
 import okhttp3.OkHttpClient;
 import okhttp3.OkHttpClient.Builder;
@@ -36,8 +37,9 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.newsclub.net.unix.AFUNIXServerSocket;
 import org.newsclub.net.unix.AFUNIXSocketAddress;
 
@@ -47,13 +49,14 @@ public class UnixDomainSocketITCase {
     return System.getProperty("os.name").toLowerCase(Locale.ROOT).contains("windows");
   }
 
-  @Before
+  @BeforeEach
   public void skipOnWindows() {
     // Unix domain sockets are not supported on Windows
-    assumeFalse("Skipping Unix domain socket test on Windows", isWindows());
+    assumeFalse(isWindows(), "Skipping Unix domain socket test on Windows");
   }
 
-  @Test(timeout = 10 * 1_000)
+  @Test
+  @Timeout(value = 10 * 1_000, unit = TimeUnit.MILLISECONDS)
   public void unixDomainSocket() throws IOException {
     final File sockFile = new File("/tmp/uds-" + System.nanoTime() + ".sock");
     sockFile.deleteOnExit();

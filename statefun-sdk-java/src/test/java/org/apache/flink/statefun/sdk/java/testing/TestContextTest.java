@@ -31,8 +31,8 @@ import org.apache.flink.statefun.sdk.java.message.Message;
 import org.apache.flink.statefun.sdk.java.message.MessageBuilder;
 import org.apache.flink.statefun.sdk.java.types.SimpleType;
 import org.apache.flink.statefun.sdk.java.types.Type;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class TestContextTest {
 
@@ -40,7 +40,7 @@ public class TestContextTest {
   private Address someone;
   private Address me;
 
-  @Before
+  @BeforeEach
   public void resetContext() {
     me = new Address(TypeName.typeNameOf("com.example", "function"), "me");
     someone = new Address(TypeName.typeNameOf("com.example", "function"), "someone");

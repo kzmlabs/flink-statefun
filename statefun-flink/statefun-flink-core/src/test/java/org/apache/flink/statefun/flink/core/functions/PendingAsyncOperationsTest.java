@@ -21,8 +21,8 @@ import static org.apache.flink.statefun.flink.core.TestUtils.FUNCTION_1_ADDR;
 import static org.apache.flink.statefun.flink.core.TestUtils.FUNCTION_2_ADDR;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasKey;
-import static org.junit.Assert.assertThat;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -36,7 +36,7 @@ import org.apache.flink.statefun.sdk.Address;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class PendingAsyncOperationsTest {
   private final MemoryMapState<Long, Message> miniStateBackend = new MemoryMapState<>();

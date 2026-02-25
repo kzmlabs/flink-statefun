@@ -18,7 +18,7 @@
 package org.apache.flink.statefun.flink.core.nettyclient;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.util.ArrayDeque;
 import java.util.Arrays;
@@ -27,12 +27,12 @@ import java.util.function.IntFunction;
 import org.apache.flink.shaded.netty4.io.netty.buffer.ByteBuf;
 import org.apache.flink.shaded.netty4.io.netty.buffer.ByteBufAllocator;
 import org.apache.flink.statefun.sdk.reqreply.generated.Address;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 public class NettyProtobufTest {
 
-  @After
+  @AfterEach
   public void tearDown() {
     ALLOCATOR.close();
   }

@@ -19,8 +19,8 @@ package org.apache.flink.statefun.sdk.kinesis;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Collections;
 import org.apache.flink.statefun.sdk.io.IngressIdentifier;
@@ -28,7 +28,7 @@ import org.apache.flink.statefun.sdk.kinesis.ingress.IngressRecord;
 import org.apache.flink.statefun.sdk.kinesis.ingress.KinesisIngressBuilder;
 import org.apache.flink.statefun.sdk.kinesis.ingress.KinesisIngressDeserializer;
 import org.apache.flink.statefun.sdk.kinesis.ingress.KinesisIngressSpec;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class KinesisIngressBuilderTest {
 

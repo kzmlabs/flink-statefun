@@ -18,16 +18,16 @@
 package org.apache.flink.statefun.sdk.kinesis;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.flink.statefun.sdk.io.EgressIdentifier;
 import org.apache.flink.statefun.sdk.kinesis.egress.EgressRecord;
 import org.apache.flink.statefun.sdk.kinesis.egress.KinesisEgressBuilder;
 import org.apache.flink.statefun.sdk.kinesis.egress.KinesisEgressSerializer;
 import org.apache.flink.statefun.sdk.kinesis.egress.KinesisEgressSpec;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class KinesisEgressBuilderTest {
 

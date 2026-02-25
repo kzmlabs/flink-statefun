@@ -21,13 +21,14 @@ package org.apache.flink.statefun.flink.core.functions;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.flink.statefun.sdk.*;
 import org.apache.flink.statefun.sdk.StatefulFunction;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class PredefinedFunctionLoaderTest {
 
@@ -63,12 +64,16 @@ public class PredefinedFunctionLoaderTest {
     assertThat(function, instanceOf(StatefulFunctionA.class));
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void nullLoadedFunctions() {
-    PredefinedFunctionLoader loader =
-        new PredefinedFunctionLoader(specificFunctionProviders(), Collections.emptyMap());
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> {
+          PredefinedFunctionLoader loader =
+              new PredefinedFunctionLoader(specificFunctionProviders(), Collections.emptyMap());
 
-    loader.load(new FunctionType("doesn't", "exist"));
+          loader.load(new FunctionType("doesn't", "exist"));
+        });
   }
 
   private static Map<FunctionType, StatefulFunctionProvider> specificFunctionProviders() {

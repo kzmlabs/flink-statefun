@@ -22,7 +22,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import org.apache.flink.statefun.sdk.kafka.KafkaIngressDeserializer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.hamcrest.CoreMatchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class ReflectionUtilTest {
 
