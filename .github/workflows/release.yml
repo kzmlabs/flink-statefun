@@ -101,12 +101,16 @@ jobs:
 
       - name: Tag and push to GHCR
         run: |
-          docker tag flink-statefun:${{ steps.release_type.outputs.version }} \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.release_type.outputs.version }}
-          docker tag flink-statefun:${{ steps.release_type.outputs.version }} \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.release_type.outputs.version }}
-          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          VERSION="${{ steps.release_type.outputs.version }}"
+          docker tag flink-statefun:${VERSION} \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${VERSION}
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${VERSION}
+          # Only tag 'latest' for stable (non-RC) releases
+          if [[ "${VERSION}" != *"RC"* ]]; then
+            docker tag flink-statefun:${VERSION} \
+              ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          fi
 
       - name: Create GitHub Release
         if: steps.release_type.outputs.type == 'full'
