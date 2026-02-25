@@ -8,6 +8,10 @@ on:
         required: true
         default: 'latest'
 
+concurrency:
+  group: docker-release-${{ github.ref }}
+  cancel-in-progress: false
+
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: kzmlabs/flink-statefun

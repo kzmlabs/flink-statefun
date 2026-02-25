@@ -22,6 +22,10 @@ on:
         description: 'Version (e.g. 3.4.0-KZM-2.0-RC5)'
         required: true
 
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: kzmlabs/flink-statefun
