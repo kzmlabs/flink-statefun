@@ -37,9 +37,6 @@ final class InputStreamUtils {
    *   <li>EOF of the input stream is reached.
    * </ul>
    *
-   * <p>TODO we can remove this once we upgrade to Flink 1.12.x, since {@link
-   * org.apache.flink.util.IOUtils} would have a new utility for exactly this.
-   *
    * @param in the input stream to read from
    * @param readBuffer the read buffer to fill
    * @return the total number of bytes read into the read buffer
