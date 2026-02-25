@@ -14,9 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-baseURL = '//nightlies.apache.org/flink/flink-statefun-docs-master'
+baseURL = '//github.com/kzmlabs/flink-statefun'
 languageCode = "en-us"
-title = "Apache Flink Stateful Functions"
+title = "Kzmlabs Flink Stateful Functions"
 enableGitInfo = false
 theme = "book"
 pygmentsUseClasses = true
@@ -34,38 +34,32 @@ pygmentsUseClasses = true
   # we change the version for the complete docs when forking of a release branch
   # etc.
   # The full version string as referenced in Maven (e.g. 1.2.1)
-  Version = "3.4-SNAPSHOT"
+  Version = "3.4.0-KZM-2.0"
 
   # For stable releases, leave the bugfix version out (e.g. 1.2). For snapshot
   # release this should be the same as the regular version
-  VersionTitle = "3.4-SNAPSHOT"
+  VersionTitle = "3.4.0-KZM-2.0"
 
-  # The branch for this version of Apache Flink Stateful Functions
-  Branch = "master"
+  # The branch for this version of Kzmlabs Flink Stateful Functions
+  Branch = "release"
 
-  # The github repository for Apache Flink Stateful Functions
-  Repo = "//github.com/apache/flink-statefun"
+  # The github repository for Kzmlabs Flink Stateful Functions
+  Repo = "//github.com/kzmlabs/flink-statefun"
 
-  GithubRepo = "https://github.com/apache/flink-statefun.git"
+  GithubRepo = "https://github.com/kzmlabs/flink-statefun.git"
 
   # This suffix is appended to the Scala-dependent Maven artifact names
   ScalaVersion = "_2.12"
 
-  ProjectHomepage = "//flink.apache.org"
+  ProjectHomepage = "//github.com/kzmlabs/flink-statefun"
 
   # External links at the bottom
   # of the menu
   MenuLinks = [
-    ["Project Homepage", "//flink.apache.org"],
-    ["JavaDocs", "//nightlies.apache.org/flink/flink-statefun-docs-master/api/java/"],
+    ["GitHub", "//github.com/kzmlabs/flink-statefun"],
   ]
 
   PreviousDocs = [
-    ["3.3", "https://nightlies.apache.org/flink/flink-statefun-docs-release-3.3"],
-    ["3.2", "https://nightlies.apache.org/flink/flink-statefun-docs-release-3.2"],
-    ["3.1", "https://nightlies.apache.org/flink/flink-statefun-docs-release-3.1"],
-    ["3.0", "https://nightlies.apache.org/flink/flink-statefun-docs-release-3.0"],
-    ["2.2", "https://nightlies.apache.org/flink/flink-statefun-docs-release-2.2"]
   ]
 
 [markup]
