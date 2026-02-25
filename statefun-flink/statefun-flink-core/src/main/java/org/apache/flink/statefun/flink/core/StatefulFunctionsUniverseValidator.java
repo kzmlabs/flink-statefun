@@ -20,7 +20,6 @@ package org.apache.flink.statefun.flink.core;
 final class StatefulFunctionsUniverseValidator {
 
   void validate(StatefulFunctionsUniverse statefulFunctionsUniverse) {
-    // TODO: complete this
     if (statefulFunctionsUniverse.ingress().isEmpty()) {
       throw new IllegalStateException("There are no ingress defined.");
     }
