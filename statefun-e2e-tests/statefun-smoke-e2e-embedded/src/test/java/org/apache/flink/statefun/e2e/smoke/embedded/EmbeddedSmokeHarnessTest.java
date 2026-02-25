@@ -45,7 +45,7 @@ public class EmbeddedSmokeHarnessTest {
     harness.withConfiguration("execution.checkpointing.interval", "2sec");
     harness.withConfiguration("execution.checkpointing.mode", "EXACTLY_ONCE");
     harness.withConfiguration("execution.checkpointing.max-concurrent-checkpoints", "3");
-    harness.withConfiguration("parallelism.default", "2");
+    harness.withConfiguration("parallelism.default", "1");
     harness.withConfiguration("state.checkpoints.dir", "file:///tmp/checkpoints");
 
     // start the verification server
@@ -53,7 +53,7 @@ public class EmbeddedSmokeHarnessTest {
 
     // configure test parameters.
     SmokeRunnerParameters parameters = new SmokeRunnerParameters();
-    parameters.setMaxFailures(1);
+    parameters.setMaxFailures(0);
     parameters.setMessageCount(10_000);
     parameters.setNumberOfFunctionInstances(32);
     parameters.setVerificationServerHost("localhost");

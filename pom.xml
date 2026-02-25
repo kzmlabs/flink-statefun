@@ -89,9 +89,9 @@ under the License.
         <central.skip>false</central.skip>
         <spotless-maven-plugin.version>1.20.0</spotless-maven-plugin.version>
         <auto-service.version>1.0-rc6</auto-service.version>
-        <protobuf.version>3.7.1</protobuf.version>
+        <protobuf.version>3.25.5</protobuf.version>
         <unixsocket.version>2.3.2</unixsocket.version>
-        <protoc-jar-maven-plugin.version>3.11.1</protoc-jar-maven-plugin.version>
+        <protoc-jar-maven-plugin.version>3.11.4</protoc-jar-maven-plugin.version>
         <flink.version>2.2.0</flink.version>
         <flink-kafka.version>4.0.1-2.0</flink-kafka.version>
         <scala.binary.version>2.12</scala.binary.version>
@@ -370,6 +370,10 @@ under the License.
                         <exclude>**/venv/**</exclude>
                         <!-- Generated lock file -->
                         <exclude>**/go.sum/**</exclude>
+                        <!-- Non-Java SDKs (not in reactor, kept for reference) -->
+                        <exclude>statefun-sdk-go/**</exclude>
+                        <exclude>statefun-sdk-js/**</exclude>
+                        <exclude>statefun-sdk-python/**</exclude>
                     </excludes>
                 </configuration>
             </plugin>
