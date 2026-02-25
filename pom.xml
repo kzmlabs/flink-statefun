@@ -74,6 +74,7 @@ under the License.
         <module>statefun-flink</module>
         <module>statefun-shaded</module>
         <module>statefun-flink-runner</module>
+        <module>statefun-bom</module>
 
         <!-- e2e tests before testutil so a publishable module is last for Central -->
         <module>statefun-e2e-tests</module>
