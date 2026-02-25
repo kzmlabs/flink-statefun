@@ -23,7 +23,7 @@ under the License.
     <parent>
         <artifactId>statefun-shaded</artifactId>
         <groupId>io.github.kzmlabs.flinkstatefun</groupId>
-        <version>3.4.0-KZM-2.0-RC4</version>
+        <version>3.4.0-KZM-2.0-RC5</version>
     </parent>
 
     <artifactId>statefun-protobuf-shaded</artifactId>
