@@ -29,7 +29,7 @@ under the License.
     <packaging>pom</packaging>
 
     <properties>
-        <testcontainers.version>1.20.4</testcontainers.version>
+        <testcontainers.version>2.0.3</testcontainers.version>
         <central.skip>true</central.skip>
     </properties>
 
@@ -99,7 +99,7 @@ under the License.
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
-                        <version>3.5.0</version>
+                        <version>3.6.3</version>
                         <executions>
                             <execution>
                                 <id>build-statefun-base-image</id>
@@ -127,7 +127,7 @@ under the License.
                     </plugin>
                     <plugin>
                         <artifactId>maven-failsafe-plugin</artifactId>
-                        <version>3.5.2</version>
+                        <version>3.5.5</version>
                         <executions>
                             <execution>
                                 <goals>
