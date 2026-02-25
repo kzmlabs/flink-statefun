@@ -20,7 +20,7 @@ kind: FlinkDeployment
 metadata:
   name: statefun-app
 spec:
-  image: ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-2.0-RC3-k8s
+  image: ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-2.0-RC4-k8s
   flinkVersion: "v2_2"
   flinkConfiguration:
     taskmanager.numberOfTaskSlots: "1"
