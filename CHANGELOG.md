@@ -2,6 +2,33 @@
 
 All notable changes to the Kzmlabs StateFun fork are documented in this file.
 
+## [3.4.0-KZM-2.0-RC7] - 2025-02-25
+
+### Testing
+- Migrate from JUnit 4 to JUnit Jupiter 5.11.4
+- Convert all test annotations to JUnit 5 equivalents
+- Convert parameterized tests to @ParameterizedTest/@MethodSource
+- Add explicit hamcrest 3.0 dependency (no longer transitive from JUnit 5)
+
+### Dependencies
+- Upgrade Testcontainers 1.20.4 → 2.0.3
+- Upgrade Hamcrest 2.2 → 3.0
+- Upgrade junixsocket 2.3.2 → 2.10.1
+- Upgrade LZ4 1.8.0 → 1.8.1
+- Upgrade commons-lang3 3.18.0 → 3.20.0
+- Upgrade commons-compress 1.26.0 → 1.28.0 (pin commons-io to 2.15.1)
+
+### Maven Plugins
+- Upgrade maven-surefire/failsafe 3.5.2 → 3.5.5
+- Upgrade maven-shade-plugin 3.6.0 → 3.6.1
+- Upgrade maven-enforcer-plugin 3.5.0 → 3.6.2
+- Upgrade apache-rat-plugin 0.13 → 0.17
+- Upgrade maven-source-plugin 3.3.0 → 3.4.0
+- Upgrade maven-javadoc-plugin 3.6.3 → 3.12.0
+- Upgrade maven-gpg-plugin 3.1.0 → 3.2.8
+- Upgrade central-publishing-maven-plugin 0.6.0 → 0.10.0
+- Upgrade exec-maven-plugin 3.5.0 → 3.6.3
+
 ## [3.4.0-KZM-2.0-RC6] - 2025-02-25
 
 ### Dependencies
