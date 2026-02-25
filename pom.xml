@@ -468,6 +468,8 @@ under the License.
                             </includes>
                             <excludes>
                                 <exclude>${test.unit.pattern}</exclude>
+                                <!-- junixsocket 2.3.2 incompatible with Java 21 on all platforms -->
+                                <exclude>**/UnixDomainSocketITCase.*</exclude>
                             </excludes>
                             <reuseForks>false</reuseForks>
                         </configuration>
