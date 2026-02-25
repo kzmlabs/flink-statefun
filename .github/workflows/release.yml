@@ -78,9 +78,9 @@ jobs:
       - name: Deploy to Maven Central
         if: steps.release_type.outputs.type == 'full'
         run: |
-          # Exclude e2e tests and non-Java SDKs from deployment
+          # Exclude e2e tests from deployment
           mvn deploy -Prelease -DskipTests -B \
-            -pl '!:statefun-flink-runner,!:statefun-e2e-tests,!:statefun-e2e-tests-common,!:statefun-smoke-e2e-common,!:statefun-smoke-e2e-driver,!:statefun-smoke-e2e-embedded,!:statefun-smoke-e2e-multilang-base,!:statefun-smoke-e2e-multilang-harness,!:statefun-smoke-e2e-java,!:statefun-smoke-e2e-golang,!:statefun-smoke-e2e-js,!:statefun-k8s-native-e2e,!:statefun-sdk-python,!:statefun-sdk-go,!:statefun-sdk-js'
+            -pl '!:statefun-flink-runner,!:statefun-e2e-tests,!:statefun-e2e-tests-common,!:statefun-smoke-e2e-common,!:statefun-smoke-e2e-driver,!:statefun-smoke-e2e-embedded,!:statefun-smoke-e2e-multilang-base,!:statefun-smoke-e2e-multilang-harness,!:statefun-smoke-e2e-java,!:statefun-smoke-e2e-golang,!:statefun-smoke-e2e-js,!:statefun-k8s-native-e2e'
         env:
           CENTRAL_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           CENTRAL_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}

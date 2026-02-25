@@ -67,9 +67,8 @@ under the License.
         <module>statefun-sdk-embedded</module>
         <module>statefun-sdk-protos</module>
         <module>statefun-sdk-java</module>
-        <module>statefun-sdk-python</module>
-        <module>statefun-sdk-go</module>
-        <module>statefun-sdk-js</module>
+        <!-- Non-Java SDKs removed from reactor (empty pass-through modules) -->
+        <!-- Directories kept for reference: statefun-sdk-python, statefun-sdk-go, statefun-sdk-js -->
         <module>statefun-kafka-io</module>
         <module>statefun-kinesis-io</module>
         <module>statefun-flink</module>
