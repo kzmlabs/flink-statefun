@@ -2,6 +2,39 @@
 
 All notable changes to the Kzmlabs StateFun fork are documented in this file.
 
+## [3.4.0-KZM-2.0-RC6] - 2025-02-25
+
+### Dependencies
+- Upgrade JUnit 4.12 → 4.13.2
+- Upgrade Hamcrest 1.3 → 2.2 (artifact rename: hamcrest-all → hamcrest)
+- Upgrade Auto-Service 1.0-rc6 → 1.1.1
+- Upgrade OkHttp 3.14.6 → 4.12.0
+- Upgrade Kafka clients 2.4.1 → 3.9.1 (aligned with Flink connector)
+- Upgrade Testcontainers 1.15.2 → 1.20.4
+- Upgrade JMH 1.21 → 1.37
+- Upgrade JimFS 1.1 → 1.3.0
+- Fix SLF4J version inconsistency (1.7.7 → 1.7.36 via parent property)
+
+### Maven Plugins
+- Unify maven-shade-plugin to 3.6.0 across all modules
+- Upgrade maven-surefire/failsafe 2.22.x → 3.5.2
+- Upgrade maven-enforcer-plugin 3.0.0-M2 → 3.5.0
+- Upgrade exec-maven-plugin 1.6.0 → 3.5.0
+- Fix protoc-jar-maven-plugin version inconsistency (3.11.1 → 3.11.4)
+
+### CI/CD
+- Upgrade actions/checkout v2 → v4 in doc-check workflow
+- Add 20-minute timeout to CI build
+- Add concurrency limits to all workflows
+
+### Cleanup
+- Remove unused Helm chart (tools/k8s/)
+- Remove stale Flink 1.12 TODO in InputStreamUtils
+- Remove misleading TODO in StatefulFunctionsUniverseValidator
+- Update docs/config.toml for Kzmlabs fork
+- Add CODEOWNERS file
+- Update copyright year to 2025
+
 ## [3.4.0-KZM-2.0-RC5] - 2025-02-25
 
 - Add CHANGELOG.md with release history
