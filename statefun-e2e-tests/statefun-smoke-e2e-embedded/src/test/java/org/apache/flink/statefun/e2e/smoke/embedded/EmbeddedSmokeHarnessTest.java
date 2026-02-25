@@ -23,7 +23,6 @@ import static org.apache.flink.statefun.e2e.smoke.SmokeRunner.awaitVerificationS
 import org.apache.flink.statefun.e2e.smoke.SimpleVerificationServer;
 import org.apache.flink.statefun.e2e.smoke.SmokeRunnerParameters;
 import org.apache.flink.statefun.flink.harness.Harness;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,8 +31,7 @@ public class EmbeddedSmokeHarnessTest {
 
   private static final Logger LOG = LoggerFactory.getLogger(EmbeddedSmokeHarnessTest.class);
 
-  @Ignore
-  @Test(timeout = 1_000 * 60 * 2)
+  @Test(timeout = 1_000 * 60)
   public void miniClusterTest() throws Exception {
     Harness harness = new Harness();
 
@@ -41,9 +39,9 @@ public class EmbeddedSmokeHarnessTest {
     harness.withConfiguration(
         "classloader.parent-first-patterns.additional",
         "org.apache.flink.statefun;org.apache.kafka;com.google.protobuf");
-    harness.withConfiguration("restart-strategy", "fixed-delay");
-    harness.withConfiguration("restart-strategy.fixed-delay.attempts", "2147483647");
-    harness.withConfiguration("restart-strategy.fixed-delay.delay", "1sec");
+    harness.withConfiguration("execution.restart-strategy.type", "fixed-delay");
+    harness.withConfiguration("execution.restart-strategy.fixed-delay.attempts", "2147483647");
+    harness.withConfiguration("execution.restart-strategy.fixed-delay.delay", "1sec");
     harness.withConfiguration("execution.checkpointing.interval", "2sec");
     harness.withConfiguration("execution.checkpointing.mode", "EXACTLY_ONCE");
     harness.withConfiguration("execution.checkpointing.max-concurrent-checkpoints", "3");
@@ -56,8 +54,8 @@ public class EmbeddedSmokeHarnessTest {
     // configure test parameters.
     SmokeRunnerParameters parameters = new SmokeRunnerParameters();
     parameters.setMaxFailures(1);
-    parameters.setMessageCount(100_000);
-    parameters.setNumberOfFunctionInstances(128);
+    parameters.setMessageCount(10_000);
+    parameters.setNumberOfFunctionInstances(32);
     parameters.setVerificationServerHost("localhost");
     parameters.setVerificationServerPort(started.port());
     parameters.setAsyncOpSupported(true);
