@@ -89,7 +89,7 @@ under the License.
         <!-- Central publishing skip flag - modules can override to true -->
         <central.skip>false</central.skip>
         <spotless-maven-plugin.version>1.20.0</spotless-maven-plugin.version>
-        <auto-service.version>1.0-rc6</auto-service.version>
+        <auto-service.version>1.1.1</auto-service.version>
         <protobuf.version>3.25.5</protobuf.version>
         <unixsocket.version>2.3.2</unixsocket.version>
         <protoc-jar-maven-plugin.version>3.11.4</protoc-jar-maven-plugin.version>
