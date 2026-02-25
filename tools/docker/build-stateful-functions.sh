@@ -17,10 +17,6 @@
 
 set -e
 
-#
-# Do not change the name of this variable;
-# it is referenced in the tools/releasing/update_branch_version.sh script
-#
 VERSION_TAG=${1:-3.4.0-KZM-2.0-RC3}
 
 #
