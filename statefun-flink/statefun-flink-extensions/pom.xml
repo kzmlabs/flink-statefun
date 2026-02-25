@@ -23,7 +23,7 @@ under the License.
     <parent>
         <groupId>io.github.kzmlabs.flinkstatefun</groupId>
         <artifactId>statefun-flink</artifactId>
-        <version>3.4.0-KZM-2.0-RC3</version>
+        <version>3.4.0-KZM-2.0-RC4</version>
         <relativePath>..</relativePath>
     </parent>
 
