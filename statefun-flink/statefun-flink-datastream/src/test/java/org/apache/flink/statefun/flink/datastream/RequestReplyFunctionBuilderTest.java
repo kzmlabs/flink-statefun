@@ -20,7 +20,7 @@ package org.apache.flink.statefun.flink.datastream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -31,7 +31,7 @@ import org.apache.flink.statefun.flink.core.httpfn.DefaultHttpRequestReplyClient
 import org.apache.flink.statefun.flink.core.httpfn.HttpFunctionEndpointSpec;
 import org.apache.flink.statefun.flink.core.httpfn.TransportClientConstants;
 import org.apache.flink.statefun.sdk.FunctionType;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class RequestReplyFunctionBuilderTest {
 

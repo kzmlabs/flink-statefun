@@ -26,7 +26,7 @@ import org.apache.flink.api.common.typeutils.TypeSerializer;
 import org.apache.flink.core.memory.DataOutputSerializer;
 import org.apache.flink.statefun.flink.core.TestUtils;
 import org.apache.flink.testutils.DeeplyEqualsChecker;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 
 public class MessageTypeSerializerTest extends SerializerTestBase<Message> {
 
@@ -81,7 +81,7 @@ public class MessageTypeSerializerTest extends SerializerTestBase<Message> {
         .toArray(Message[]::new);
   }
 
-  @Ignore
+  @Disabled
   @Override
   public void testInstantiate() {}
 }

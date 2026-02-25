@@ -75,6 +75,17 @@ under the License.
             <version>${protobuf.version}</version>
         </dependency>
 
+        <!-- Test -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <!-- streaming runtime -->
         <dependency>
             <groupId>org.apache.flink</groupId>

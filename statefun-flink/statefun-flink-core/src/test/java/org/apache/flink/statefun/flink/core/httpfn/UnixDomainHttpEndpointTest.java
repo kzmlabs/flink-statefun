@@ -17,12 +17,13 @@
  */
 package org.apache.flink.statefun.flink.core.httpfn;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.File;
 import java.net.URI;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class UnixDomainHttpEndpointTest {
 
@@ -46,9 +47,11 @@ public class UnixDomainHttpEndpointTest {
     assertEquals("/hello", out.pathSegment);
   }
 
-  @Test(expected = IllegalStateException.class)
+  @Test
   public void missingSockFile() {
-    UnixDomainHttpEndpoint.parseFrom(URI.create("http+unix:///some/path/hello"));
+    assertThrows(
+        IllegalStateException.class,
+        () -> UnixDomainHttpEndpoint.parseFrom(URI.create("http+unix:///some/path/hello")));
   }
 
   @Test
@@ -56,8 +59,10 @@ public class UnixDomainHttpEndpointTest {
     assertFalse(UnixDomainHttpEndpoint.validate(URI.create("http:///bar.foo.com/some/path")));
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void parseNonUdsEndpoint() {
-    UnixDomainHttpEndpoint.parseFrom(URI.create("http:///bar.foo.com/some/path"));
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> UnixDomainHttpEndpoint.parseFrom(URI.create("http:///bar.foo.com/some/path")));
   }
 }

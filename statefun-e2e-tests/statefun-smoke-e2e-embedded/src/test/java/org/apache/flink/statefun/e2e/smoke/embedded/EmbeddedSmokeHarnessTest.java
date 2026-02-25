@@ -20,10 +20,12 @@ package org.apache.flink.statefun.e2e.smoke.embedded;
 
 import static org.apache.flink.statefun.e2e.smoke.SmokeRunner.awaitVerificationSuccess;
 
+import java.util.concurrent.TimeUnit;
 import org.apache.flink.statefun.e2e.smoke.SimpleVerificationServer;
 import org.apache.flink.statefun.e2e.smoke.SmokeRunnerParameters;
 import org.apache.flink.statefun.flink.harness.Harness;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +33,8 @@ public class EmbeddedSmokeHarnessTest {
 
   private static final Logger LOG = LoggerFactory.getLogger(EmbeddedSmokeHarnessTest.class);
 
-  @Test(timeout = 1_000 * 60)
+  @Test
+  @Timeout(value = 1_000 * 60, unit = TimeUnit.MILLISECONDS)
   public void miniClusterTest() throws Exception {
     Harness harness = new Harness();
 

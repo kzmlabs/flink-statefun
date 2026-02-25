@@ -20,16 +20,15 @@ package org.apache.flink.statefun.flink.core.message;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.stream.Stream;
 import org.apache.flink.core.memory.DataInputView;
 import org.apache.flink.core.memory.DataInputViewStreamWrapper;
 import org.apache.flink.core.memory.DataOutputView;
 import org.apache.flink.core.memory.DataOutputViewStreamWrapper;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
 public class MessageTypeSerializerSnapshotTest {
 
   private static final String serializerClassName = "com.domain.Serializer";
@@ -39,21 +38,11 @@ public class MessageTypeSerializerSnapshotTest {
     public byte[] bytes;
   }
 
-  private static interface SnapshotDataProvider {
+  private interface SnapshotDataProvider {
     SnapshotData provide(MessageFactoryKey messageFactoryKey) throws IOException;
   }
 
-  private final MessageFactoryKey messageFactoryKey;
-  private final SnapshotDataProvider snapshotDataProvider;
-
-  public MessageTypeSerializerSnapshotTest(
-      MessageFactoryKey messageFactoryKey, SnapshotDataProvider snapshotDataProvider) {
-    this.messageFactoryKey = messageFactoryKey;
-    this.snapshotDataProvider = snapshotDataProvider;
-  }
-
-  @Parameterized.Parameters(name = "{0}")
-  public static Iterable<? extends Object[]> data() throws IOException {
+  static Stream<Arguments> data() {
 
     MessageFactoryKey kryoFactoryKey =
         MessageFactoryKey.forType(MessageFactoryType.WITH_KRYO_PAYLOADS, null);
@@ -92,18 +81,19 @@ public class MessageTypeSerializerSnapshotTest {
           }
         };
 
-    return Arrays.asList(
-        new Object[] {kryoFactoryKey, snapshotDataProviderV1},
-        new Object[] {kryoFactoryKey, snapshotDataProviderV2},
-        new Object[] {customFactoryKey, snapshotDataProviderV2});
+    return Stream.of(
+        Arguments.of(kryoFactoryKey, snapshotDataProviderV1),
+        Arguments.of(kryoFactoryKey, snapshotDataProviderV2),
+        Arguments.of(customFactoryKey, snapshotDataProviderV2));
   }
 
-  @Test
-  public void roundTrip() throws IOException {
+  @ParameterizedTest
+  @MethodSource("data")
+  void roundTrip(MessageFactoryKey messageFactoryKey, SnapshotDataProvider snapshotDataProvider)
+      throws IOException {
 
-    SnapshotData snapshotData = this.snapshotDataProvider.provide(this.messageFactoryKey);
-    MessageTypeSerializer.Snapshot snapshot =
-        new MessageTypeSerializer.Snapshot(this.messageFactoryKey);
+    SnapshotData snapshotData = snapshotDataProvider.provide(messageFactoryKey);
+    MessageTypeSerializer.Snapshot snapshot = new MessageTypeSerializer.Snapshot(messageFactoryKey);
     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
     try (ByteArrayInputStream bis = new ByteArrayInputStream(snapshotData.bytes)) {
@@ -112,6 +102,6 @@ public class MessageTypeSerializerSnapshotTest {
     }
 
     // make sure the deserialized state matches what was used to serialize
-    assert (snapshot.getMessageFactoryKey().equals(this.messageFactoryKey));
+    assert (snapshot.getMessageFactoryKey().equals(messageFactoryKey));
   }
 }

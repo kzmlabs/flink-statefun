@@ -22,14 +22,14 @@ import static org.apache.flink.statefun.sdk.kafka.testutils.Matchers.isMapOfSize
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
-import static org.junit.Assert.assertThat;
 
 import java.util.Properties;
 import org.apache.flink.statefun.sdk.io.IngressIdentifier;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class KafkaIngressBuilderTest {
 

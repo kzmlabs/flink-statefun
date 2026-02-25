@@ -20,8 +20,8 @@ package org.apache.flink.statefun.flink.common.protobuf;
 import org.apache.flink.api.common.typeutils.SerializerTestBase;
 import org.apache.flink.api.common.typeutils.TypeSerializer;
 import org.apache.flink.statefun.flink.common.protobuf.generated.TestProtos;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 public class ProtobufTypeSerializerTest extends SerializerTestBase<TestProtos.SimpleMessage> {
 
@@ -30,7 +30,7 @@ public class ProtobufTypeSerializerTest extends SerializerTestBase<TestProtos.Si
     return new ProtobufTypeSerializer<>(TestProtos.SimpleMessage.class);
   }
 
-  @Ignore
+  @Disabled
   @Test()
   @Override
   public void testInstantiate() {

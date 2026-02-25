@@ -20,13 +20,15 @@ package org.apache.flink.statefun.e2e.smoke.multilang.harness;
 
 import static org.apache.flink.statefun.e2e.smoke.SmokeRunner.awaitVerificationSuccess;
 
+import java.util.concurrent.TimeUnit;
 import org.apache.flink.statefun.e2e.smoke.SimpleVerificationServer;
 import org.apache.flink.statefun.e2e.smoke.SmokeRunnerParameters;
 import org.apache.flink.statefun.e2e.smoke.driver.DriverModule;
 import org.apache.flink.statefun.flink.harness.Harness;
 import org.apache.flink.statefun.sdk.spi.StatefulFunctionModule;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,7 +53,7 @@ import org.slf4j.LoggerFactory;
  * <ul>
  *   <li>1. Start the remote function process locally in the IDE. It should be reachable at {@code
  *       http://localhost:8000}.
- *   <li>2. Remove the {@code @Ignore} annotation from the test.
+ *   <li>2. Remove the {@code @Disabled} annotation from the test.
  *   <li>3. Run the {@code miniClusterTest()} JUnit test method.
  * </ul>
  */
@@ -59,8 +61,9 @@ public final class MultiLangSmokeHarnessTest {
 
   private static final Logger LOG = LoggerFactory.getLogger(MultiLangSmokeHarnessTest.class);
 
-  @Ignore
-  @Test(timeout = 1_000 * 60 * 2)
+  @Disabled
+  @Test
+  @Timeout(value = 1_000 * 60 * 2, unit = TimeUnit.MILLISECONDS)
   public void miniClusterTest() throws Exception {
     Harness harness = new Harness();
 

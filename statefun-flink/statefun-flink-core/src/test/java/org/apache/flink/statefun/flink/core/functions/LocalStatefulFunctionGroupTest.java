@@ -19,7 +19,7 @@ package org.apache.flink.statefun.flink.core.functions;
 
 import static org.apache.flink.statefun.flink.core.TestUtils.ENVELOPE_FACTORY;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -33,7 +33,7 @@ import org.apache.flink.statefun.sdk.Context;
 import org.apache.flink.statefun.sdk.FunctionType;
 import org.apache.flink.statefun.sdk.io.EgressIdentifier;
 import org.apache.flink.statefun.sdk.metrics.Metrics;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class LocalStatefulFunctionGroupTest {
   // test constants

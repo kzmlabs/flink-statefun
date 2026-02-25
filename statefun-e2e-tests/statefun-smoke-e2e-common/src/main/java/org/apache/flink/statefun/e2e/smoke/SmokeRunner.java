@@ -24,8 +24,6 @@ import java.util.function.Supplier;
 import org.apache.flink.statefun.e2e.common.StatefulFunctionsAppContainers;
 import org.apache.flink.statefun.e2e.smoke.generated.VerificationResult;
 import org.apache.flink.util.function.ThrowingRunnable;
-import org.junit.runner.Description;
-import org.junit.runners.model.Statement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.Testcontainers;
@@ -57,17 +55,12 @@ public final class SmokeRunner {
 
   private static void run(StatefulFunctionsAppContainers app, ThrowingRunnable<Throwable> r)
       throws Throwable {
-    Statement statement =
-        app.apply(
-            new Statement() {
-              @Override
-              public void evaluate() throws Throwable {
-                r.run();
-              }
-            },
-            Description.EMPTY);
-
-    statement.evaluate();
+    try {
+      app.beforeAll(null);
+      r.run();
+    } finally {
+      app.afterAll(null);
+    }
   }
 
   public static void awaitVerificationSuccess(

@@ -20,15 +20,14 @@ package org.apache.flink.statefun.flink.core.logger;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import java.util.stream.Stream;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
 public final class InputStreamUtilsTest {
 
   private enum InputStreamType {
@@ -36,23 +35,17 @@ public final class InputStreamUtilsTest {
     ONE_BYTE_PER_READ
   }
 
-  private final InputStreamType testInputStreamType;
-
-  public InputStreamUtilsTest(InputStreamType testInputStreamType) {
-    this.testInputStreamType = testInputStreamType;
+  static Stream<InputStreamType> testInputStreamTypes() {
+    return Stream.of(InputStreamType.RANDOM_LENGTH_PER_READ, InputStreamType.ONE_BYTE_PER_READ);
   }
 
-  @Parameterized.Parameters(name = "{0}")
-  public static Iterable<InputStreamType> testInputStreamTypes() throws IOException {
-    return Arrays.asList(InputStreamType.RANDOM_LENGTH_PER_READ, InputStreamType.ONE_BYTE_PER_READ);
-  }
-
-  @Test
-  public void tryReadFullyExampleUsage() throws Exception {
+  @ParameterizedTest
+  @MethodSource("testInputStreamTypes")
+  void tryReadFullyExampleUsage(InputStreamType testInputStreamType) throws Exception {
     final byte[] testBytes = "test-data".getBytes();
     final byte[] readBuffer = new byte[testBytes.length];
 
-    try (InputStream in = testInputStream(testBytes)) {
+    try (InputStream in = testInputStream(testInputStreamType, testBytes)) {
       final int numReadBytes = InputStreamUtils.tryReadFully(in, readBuffer);
 
       assertThat(numReadBytes, is(testBytes.length));
@@ -61,12 +54,13 @@ public final class InputStreamUtilsTest {
     }
   }
 
-  @Test
-  public void tryReadFullyEmptyInputStream() throws Exception {
+  @ParameterizedTest
+  @MethodSource("testInputStreamTypes")
+  void tryReadFullyEmptyInputStream(InputStreamType testInputStreamType) throws Exception {
     final byte[] testBytes = new byte[0];
     final byte[] readBuffer = new byte[10];
 
-    try (InputStream in = testInputStream(testBytes)) {
+    try (InputStream in = testInputStream(testInputStreamType, testBytes)) {
       final int numReadBytes = InputStreamUtils.tryReadFully(in, readBuffer);
 
       assertThat(numReadBytes, is(0));
@@ -75,13 +69,15 @@ public final class InputStreamUtilsTest {
     }
   }
 
-  @Test
-  public void tryReadFullyReadBufferSizeLargerThanInputStream() throws Exception {
+  @ParameterizedTest
+  @MethodSource("testInputStreamTypes")
+  void tryReadFullyReadBufferSizeLargerThanInputStream(InputStreamType testInputStreamType)
+      throws Exception {
     final byte[] testBytes = new byte[] {-91, 11, 8};
     // read buffer has larger size than the test data
     final byte[] readBuffer = new byte[testBytes.length + 20];
 
-    try (InputStream in = testInputStream(testBytes)) {
+    try (InputStream in = testInputStream(testInputStreamType, testBytes)) {
       final int numReadBytes = InputStreamUtils.tryReadFully(in, readBuffer);
 
       assertThat(numReadBytes, is(testBytes.length));
@@ -90,13 +86,15 @@ public final class InputStreamUtilsTest {
     }
   }
 
-  @Test
-  public void tryReadFullyReadBufferSizeSmallerThanInputStream() throws Exception {
+  @ParameterizedTest
+  @MethodSource("testInputStreamTypes")
+  void tryReadFullyReadBufferSizeSmallerThanInputStream(InputStreamType testInputStreamType)
+      throws Exception {
     final byte[] testBytes = new byte[] {-91, 11, 8, 53, 100, 5, -100, 102, 56, 95};
     // read buffer has smaller size than the test data
     final byte[] readBuffer = new byte[testBytes.length - 2];
 
-    try (InputStream in = testInputStream(testBytes)) {
+    try (InputStream in = testInputStream(testInputStreamType, testBytes)) {
       final int numReadBytes = InputStreamUtils.tryReadFully(in, readBuffer);
 
       assertThat(numReadBytes, is(readBuffer.length));
@@ -109,12 +107,18 @@ public final class InputStreamUtilsTest {
     }
   }
 
-  @Test(expected = IllegalStateException.class)
-  public void tryReadFullyEmptyReadBuffer() throws Exception {
-    InputStreamUtils.tryReadFully(testInputStream("test-data".getBytes()), new byte[0]);
+  @ParameterizedTest
+  @MethodSource("testInputStreamTypes")
+  void tryReadFullyEmptyReadBuffer(InputStreamType testInputStreamType) {
+    assertThrows(
+        IllegalStateException.class,
+        () ->
+            InputStreamUtils.tryReadFully(
+                testInputStream(testInputStreamType, "test-data".getBytes()), new byte[0]));
   }
 
-  private InputStream testInputStream(byte[] streamBytes) {
+  private static InputStream testInputStream(
+      InputStreamType testInputStreamType, byte[] streamBytes) {
     switch (testInputStreamType) {
       case ONE_BYTE_PER_READ:
         return new OneBytePerReadByteArrayInputStream(

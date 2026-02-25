@@ -45,7 +45,7 @@ import org.apache.flink.statefun.sdk.io.EgressSpec;
 import org.apache.flink.statefun.sdk.io.IngressIdentifier;
 import org.apache.flink.statefun.sdk.io.IngressSpec;
 import org.apache.flink.statefun.sdk.spi.StatefulFunctionModule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public final class RemoteModuleTest {
 

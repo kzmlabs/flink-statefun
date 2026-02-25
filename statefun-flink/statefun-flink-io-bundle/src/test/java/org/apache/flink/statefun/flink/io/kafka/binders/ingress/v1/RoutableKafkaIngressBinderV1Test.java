@@ -18,9 +18,9 @@
 
 package org.apache.flink.statefun.flink.io.kafka.binders.ingress.v1;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.Assert.assertThat;
 
 import com.google.protobuf.Message;
 import java.net.URL;
@@ -32,7 +32,7 @@ import org.apache.flink.statefun.flink.io.common.AutoRoutableProtobufRouter;
 import org.apache.flink.statefun.flink.io.testutils.TestModuleBinder;
 import org.apache.flink.statefun.sdk.io.IngressIdentifier;
 import org.apache.flink.statefun.sdk.kafka.KafkaIngressSpec;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class RoutableKafkaIngressBinderV1Test {
 

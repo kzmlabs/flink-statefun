@@ -20,10 +20,12 @@ package org.apache.flink.statefun.e2e.smoke.golang;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.TimeUnit;
 import org.apache.flink.statefun.e2e.common.StatefulFunctionsAppContainers;
 import org.apache.flink.statefun.e2e.smoke.SmokeRunner;
 import org.apache.flink.statefun.e2e.smoke.SmokeRunnerParameters;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
@@ -35,7 +37,8 @@ public class SmokeVerificationGolangE2E {
   private static final Logger LOG = LoggerFactory.getLogger(SmokeVerificationGolangE2E.class);
   private static final int NUM_WORKERS = 2;
 
-  @Test(timeout = 1_000 * 60 * 10)
+  @Test
+  @Timeout(value = 1_000 * 60 * 10, unit = TimeUnit.MILLISECONDS)
   public void runWith() throws Throwable {
     SmokeRunnerParameters parameters = new SmokeRunnerParameters();
     parameters.setNumberOfFunctionInstances(128);

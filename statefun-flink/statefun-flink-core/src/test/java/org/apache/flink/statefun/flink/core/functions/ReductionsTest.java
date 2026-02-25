@@ -18,7 +18,7 @@
 package org.apache.flink.statefun.flink.core.functions;
 
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.Serializable;
 import java.util.*;
@@ -59,7 +59,7 @@ import org.apache.flink.streaming.runtime.streamrecord.StreamRecord;
 import org.apache.flink.streaming.runtime.watermarkstatus.WatermarkStatus;
 import org.apache.flink.util.OutputTag;
 import org.apache.flink.util.function.BiConsumerWithException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class ReductionsTest {
 

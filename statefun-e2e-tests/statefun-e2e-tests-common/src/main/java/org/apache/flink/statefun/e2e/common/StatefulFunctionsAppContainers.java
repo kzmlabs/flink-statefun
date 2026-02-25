@@ -35,7 +35,9 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.GlobalConfiguration;
 import org.apache.flink.statefun.flink.core.StatefulFunctionsConfig;
 import org.apache.flink.util.FileUtils;
-import org.junit.rules.ExternalResource;
+import org.junit.jupiter.api.extension.AfterAllCallback;
+import org.junit.jupiter.api.extension.BeforeAllCallback;
+import org.junit.jupiter.api.extension.ExtensionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.BindMode;
@@ -45,19 +47,18 @@ import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 
 /**
- * A JUnit {@link org.junit.rules.TestRule} that setups a containerized Stateful Functions
- * application using <a href="https://www.testcontainers.org/">Testcontainers</a>. This allows
- * composing end-to-end tests for Stateful Functions applications easier, by managing the
- * containerized application as an external test resource whose lifecycle is integrated with the
- * JUnit test framework.
+ * A JUnit 5 extension that sets up a containerized Stateful Functions application using <a
+ * href="https://www.testcontainers.org/">Testcontainers</a>. This allows composing end-to-end tests
+ * for Stateful Functions applications easier, by managing the containerized application as an
+ * external test resource whose lifecycle is integrated with the JUnit test framework.
  *
  * <h2>Example usage</h2>
  *
  * <pre>{@code
  * public class MyE2E {
  *
- *     {@code @Rule}
- *     public StatefulFunctionsAppContainers myApp =
+ *     {@code @RegisterExtension}
+ *     static StatefulFunctionsAppContainers myApp =
  *         StatefulFunctionsAppContainers.builder("app-name", 3).build();
  *
  *     {@code @Test}
@@ -75,11 +76,8 @@ import org.testcontainers.images.builder.ImageFromDockerfile;
  * <pre>{@code
  * public class MyKafkaE2E {
  *
- *     {@code @Rule}
- *     public KafkaContainer kafka = new KafkaContainer();
- *
- *     {@code @Rule}
- *     public StatefulFunctionsAppContainers myApp =
+ *     {@code @RegisterExtension}
+ *     static StatefulFunctionsAppContainers myApp =
  *         StatefulFunctionsAppContainers.builder("app-name", 3)
  *             .dependsOn(kafka)
  *             .build();
@@ -95,8 +93,8 @@ import org.testcontainers.images.builder.ImageFromDockerfile;
  *
  * <h2>Prerequisites</h2>
  *
- * <p>Since Testcontainers uses Docker, it is required that you have Docker installed for this test
- * rule to work.
+ * <p>Since Testcontainers uses Docker, it is required that you have Docker installed for this
+ * extension to work.
  *
  * <p>When building the Docker image for the Stateful Functions application under test, the
  * following files are added to the build context:
@@ -114,7 +112,7 @@ import org.testcontainers.images.builder.ImageFromDockerfile;
  *       Docker image build context.
  * </uL>
  */
-public final class StatefulFunctionsAppContainers extends ExternalResource {
+public final class StatefulFunctionsAppContainers implements BeforeAllCallback, AfterAllCallback {
 
   private static final Logger LOG = LoggerFactory.getLogger(StatefulFunctionsAppContainers.class);
 
@@ -141,7 +139,7 @@ public final class StatefulFunctionsAppContainers extends ExternalResource {
   }
 
   @Override
-  protected void before() throws Throwable {
+  public void beforeAll(ExtensionContext context) throws Exception {
     checkpointDir = temporaryCheckpointDir();
 
     master.withFileSystemBind(
@@ -156,7 +154,7 @@ public final class StatefulFunctionsAppContainers extends ExternalResource {
   }
 
   @Override
-  protected void after() {
+  public void afterAll(ExtensionContext context) {
     master.stop();
     workers.forEach(GenericContainer::stop);
 

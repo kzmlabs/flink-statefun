@@ -17,8 +17,8 @@
  */
 package org.apache.flink.statefun.flink.common;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.jimfs.Configuration;
 import com.google.common.jimfs.Jimfs;
@@ -32,29 +32,23 @@ import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.Collection;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import java.util.stream.Stream;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
 public class ResourceLocatorTest {
 
-  @Parameterized.Parameters
-  public static Collection<Configuration> filesystemTypes() {
-    return Arrays.asList(Configuration.unix(), Configuration.osX(), Configuration.windows());
+  static Stream<Configuration> filesystemTypes() {
+    return Stream.of(Configuration.unix(), Configuration.osX(), Configuration.windows());
   }
 
-  private final FileSystem fileSystem;
-
-  public ResourceLocatorTest(Configuration filesystemConfiguration) {
-    this.fileSystem = Jimfs.newFileSystem(filesystemConfiguration);
-  }
-
-  @Test
-  public void classPathExample() throws IOException {
-    final Path firstModuleDir = createDirectoryWithAFile("first", "module.yaml");
-    final Path secondModuleDir = createDirectoryWithAFile("second", "module.yaml");
+  @ParameterizedTest
+  @MethodSource("filesystemTypes")
+  void classPathExample(Configuration filesystemConfiguration) throws IOException {
+    FileSystem fileSystem = Jimfs.newFileSystem(filesystemConfiguration);
+    final Path firstModuleDir = createDirectoryWithAFile(fileSystem, "first", "module.yaml");
+    final Path secondModuleDir = createDirectoryWithAFile(fileSystem, "second", "module.yaml");
 
     ClassLoader urlClassLoader = urlClassLoader(firstModuleDir, secondModuleDir);
 
@@ -71,15 +65,18 @@ public class ResourceLocatorTest {
   }
 
   @Test
-  public void classPathSingleResourceExample() {
+  void classPathSingleResourceExample() {
     URL url = ResourceLocator.findNamedResource("classpath:dummy-file.txt");
 
     assertThat(url, notNullValue());
   }
 
-  @Test
-  public void absolutePathExample() throws IOException {
-    Path modulePath = createDirectoryWithAFile("some-module", "module.yaml").resolve("module.yaml");
+  @ParameterizedTest
+  @MethodSource("filesystemTypes")
+  void absolutePathExample(Configuration filesystemConfiguration) throws IOException {
+    FileSystem fileSystem = Jimfs.newFileSystem(filesystemConfiguration);
+    Path modulePath =
+        createDirectoryWithAFile(fileSystem, "some-module", "module.yaml").resolve("module.yaml");
 
     URL url = ResourceLocator.findNamedResource(modulePath.toUri().toString());
 
@@ -87,7 +84,7 @@ public class ResourceLocatorTest {
   }
 
   @Test
-  public void nonAbosultePath() throws MalformedURLException {
+  void nonAbosultePath() throws MalformedURLException {
     URL url = ResourceLocator.findNamedResource("/tmp/a.txt");
 
     assertThat(url, is(url("file:/tmp/a.txt")));
@@ -97,8 +94,11 @@ public class ResourceLocatorTest {
     return URI.create(url).toURL();
   }
 
-  private Path createDirectoryWithAFile(
-      String basedir, @SuppressWarnings("SameParameterValue") String filename) throws IOException {
+  private static Path createDirectoryWithAFile(
+      FileSystem fileSystem,
+      String basedir,
+      @SuppressWarnings("SameParameterValue") String filename)
+      throws IOException {
     final Path dir = fileSystem.getPath(basedir);
     Files.createDirectories(dir);
 

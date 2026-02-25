@@ -17,10 +17,10 @@
  */
 package org.apache.flink.statefun.sdk.java.slice;
 
-import static org.junit.Assert.assertSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 import org.apache.flink.statefun.sdk.shaded.com.google.protobuf.ByteString;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class SliceProtobufUtilTest {
 
@@ -31,6 +31,6 @@ public class SliceProtobufUtilTest {
     Slice slice = SliceProtobufUtil.asSlice(expected);
     ByteString got = SliceProtobufUtil.asByteString(slice);
 
-    assertSame("Expecting the same reference.", expected, got);
+    assertSame(expected, got, "Expecting the same reference.");
   }
 }

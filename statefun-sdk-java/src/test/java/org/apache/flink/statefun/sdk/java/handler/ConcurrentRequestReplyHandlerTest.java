@@ -20,9 +20,9 @@ package org.apache.flink.statefun.sdk.java.handler;
 import static java.util.Collections.singletonMap;
 import static org.apache.flink.statefun.sdk.java.handler.TestUtils.modifiedValue;
 import static org.apache.flink.statefun.sdk.java.handler.TestUtils.protoFromValueSpec;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
 
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
@@ -36,7 +36,7 @@ import org.apache.flink.statefun.sdk.java.message.Message;
 import org.apache.flink.statefun.sdk.java.types.Types;
 import org.apache.flink.statefun.sdk.reqreply.generated.FromFunction;
 import org.apache.flink.statefun.sdk.reqreply.generated.ToFunction;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class ConcurrentRequestReplyHandlerTest {
 

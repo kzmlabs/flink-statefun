@@ -16,12 +16,13 @@
  * limitations under the License.
  */
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.apache.flink.statefun.sdk.java.ValueSpec;
 import org.apache.flink.statefun.sdk.java.types.Types;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class ValueSpecTest {
 
@@ -33,18 +34,21 @@ public class ValueSpecTest {
     assertThat(spec.type(), is(Types.integerType()));
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void stateNameWithSpaces() {
-    ValueSpec.named("bad state name").withIntType();
+    assertThrows(
+        IllegalArgumentException.class, () -> ValueSpec.named("bad state name").withIntType());
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void stateNameWithInvalidStartChar() {
-    ValueSpec.named("123bad_state_name").withIntType();
+    assertThrows(
+        IllegalArgumentException.class, () -> ValueSpec.named("123bad_state_name").withIntType());
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void stateNameWithInvalidPartChar() {
-    ValueSpec.named("bad!_state_name").withIntType();
+    assertThrows(
+        IllegalArgumentException.class, () -> ValueSpec.named("bad!_state_name").withIntType());
   }
 }

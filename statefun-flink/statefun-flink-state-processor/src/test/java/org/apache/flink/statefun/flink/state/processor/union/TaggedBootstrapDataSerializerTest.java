@@ -29,7 +29,7 @@ import org.apache.flink.api.common.typeutils.base.IntSerializer;
 import org.apache.flink.statefun.sdk.Address;
 import org.apache.flink.statefun.sdk.FunctionType;
 import org.apache.flink.testutils.DeeplyEqualsChecker;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 
 public class TaggedBootstrapDataSerializerTest extends SerializerTestBase<TaggedBootstrapData> {
 
@@ -104,14 +104,14 @@ public class TaggedBootstrapDataSerializerTest extends SerializerTestBase<Tagged
   // -----------------------------------------------------------------------------
 
   @Override
-  @Ignore
+  @Disabled
   public void testConfigSnapshotInstantiation() {
     // test ignored; this is a test that is only relevant for serializers that are used for
     // persistent data
   }
 
   @Override
-  @Ignore
+  @Disabled
   public void testSnapshotConfigurationAndReconfigure() {
     // test ignored; this is a test that is only relevant for serializers that are used for
     // persistent data

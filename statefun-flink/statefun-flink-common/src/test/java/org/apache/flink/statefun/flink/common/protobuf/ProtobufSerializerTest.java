@@ -27,7 +27,7 @@ import org.apache.flink.core.memory.DataInputDeserializer;
 import org.apache.flink.core.memory.DataOutputSerializer;
 import org.apache.flink.statefun.flink.common.generated.ProtobufSerializerSnapshot;
 import org.apache.flink.statefun.flink.common.protobuf.generated.TestProtos.SimpleMessage;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class ProtobufSerializerTest {
 

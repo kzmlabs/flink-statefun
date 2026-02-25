@@ -17,14 +17,15 @@
  */
 package org.apache.flink.statefun.sdk.java;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.concurrent.CompletableFuture;
 import org.apache.flink.statefun.sdk.java.message.Message;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class StatefulFunctionSpecTest {
 
@@ -45,11 +46,15 @@ public class StatefulFunctionSpecTest {
     assertThat(spec.knownValues(), hasKey("state_b"));
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void duplicateRegistration() {
-    StatefulFunctionSpec.builder(TypeName.typeNameOf("test.namespace", "test.name"))
-        .withValueSpecs(
-            ValueSpec.named("foobar").withIntType(), ValueSpec.named("foobar").withBooleanType());
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            StatefulFunctionSpec.builder(TypeName.typeNameOf("test.namespace", "test.name"))
+                .withValueSpecs(
+                    ValueSpec.named("foobar").withIntType(),
+                    ValueSpec.named("foobar").withBooleanType()));
   }
 
   private static class TestFunction implements StatefulFunction {

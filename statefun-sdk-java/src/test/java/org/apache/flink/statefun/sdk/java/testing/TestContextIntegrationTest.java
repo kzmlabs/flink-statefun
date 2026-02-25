@@ -36,7 +36,7 @@ import org.apache.flink.statefun.sdk.java.message.EgressMessage;
 import org.apache.flink.statefun.sdk.java.message.EgressMessageBuilder;
 import org.apache.flink.statefun.sdk.java.message.Message;
 import org.apache.flink.statefun.sdk.java.message.MessageBuilder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class TestContextIntegrationTest {
 

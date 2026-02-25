@@ -18,14 +18,14 @@
 
 package org.apache.flink.statefun.sdk.java.types;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.nio.charset.StandardCharsets;
 import org.apache.flink.statefun.sdk.java.TypeName;
 import org.apache.flink.statefun.sdk.java.slice.Slice;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class SimpleTypeTest {
 

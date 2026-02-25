@@ -18,8 +18,8 @@
 
 package org.apache.flink.statefun.flink.core.httpfn.binders.v1;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasKey;
-import static org.junit.Assert.assertThat;
 
 import java.net.URL;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,7 +31,7 @@ import org.apache.flink.statefun.flink.core.httpfn.DefaultHttpRequestReplyClient
 import org.apache.flink.statefun.flink.core.httpfn.TransportClientConstants;
 import org.apache.flink.statefun.flink.core.message.MessageFactoryKey;
 import org.apache.flink.statefun.flink.core.message.MessageFactoryType;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public final class HttpEndpointBinderV1Test {
   private static final ObjectMapper OBJ_MAPPER = new ObjectMapper(new YAMLFactory());

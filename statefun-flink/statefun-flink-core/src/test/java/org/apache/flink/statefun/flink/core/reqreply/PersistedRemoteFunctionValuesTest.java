@@ -22,6 +22,7 @@ import static org.apache.flink.statefun.flink.core.reqreply.PersistedRemoteFunct
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.protobuf.ByteString;
 import java.util.Arrays;
@@ -32,7 +33,7 @@ import org.apache.flink.statefun.sdk.reqreply.generated.FromFunction.PersistedVa
 import org.apache.flink.statefun.sdk.reqreply.generated.ToFunction.InvocationBatchRequest;
 import org.apache.flink.statefun.sdk.reqreply.generated.ToFunction.PersistedValue;
 import org.apache.flink.statefun.sdk.reqreply.generated.TypedValue;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class PersistedRemoteFunctionValuesTest {
 
@@ -82,15 +83,19 @@ public class PersistedRemoteFunctionValuesTest {
     assertThat(builder.getStateList().size(), is(0));
   }
 
-  @Test(expected = IllegalStateException.class)
+  @Test
   public void updatingNonRegisteredStateShouldThrow() {
-    final PersistedRemoteFunctionValues values = new PersistedRemoteFunctionValues();
+    assertThrows(
+        IllegalStateException.class,
+        () -> {
+          final PersistedRemoteFunctionValues values = new PersistedRemoteFunctionValues();
 
-    values.updateStateValues(
-        Collections.singletonList(
-            protocolPersistedValueModifyMutation(
-                "non-registered-state",
-                protocolTypedValue(TEST_STATE_TYPE, ByteString.copyFromUtf8("data")))));
+          values.updateStateValues(
+              Collections.singletonList(
+                  protocolPersistedValueModifyMutation(
+                      "non-registered-state",
+                      protocolTypedValue(TEST_STATE_TYPE, ByteString.copyFromUtf8("data")))));
+        });
   }
 
   @Test
@@ -155,31 +160,40 @@ public class PersistedRemoteFunctionValuesTest {
                 "state", protocolTypedValue(TEST_STATE_TYPE, ByteString.copyFromUtf8("data")))));
   }
 
-  @Test(expected = RemoteFunctionStateException.class)
+  @Test
   public void mismatchingStateTypeAcrossRegistrations() {
-    final PersistedRemoteFunctionValues values = new PersistedRemoteFunctionValues();
+    assertThrows(
+        RemoteFunctionStateException.class,
+        () -> {
+          final PersistedRemoteFunctionValues values = new PersistedRemoteFunctionValues();
 
-    values.registerStates(
-        Collections.singletonList(
-            protocolPersistedValueSpec("state", TypeName.parseFrom("com.foo.bar/type-1"))));
-    values.registerStates(
-        Collections.singletonList(
-            protocolPersistedValueSpec("state", TypeName.parseFrom("com.foo.bar/type-2"))));
+          values.registerStates(
+              Collections.singletonList(
+                  protocolPersistedValueSpec("state", TypeName.parseFrom("com.foo.bar/type-1"))));
+          values.registerStates(
+              Collections.singletonList(
+                  protocolPersistedValueSpec("state", TypeName.parseFrom("com.foo.bar/type-2"))));
+        });
   }
 
-  @Test(expected = RemoteFunctionStateException.class)
+  @Test
   public void mutatingStateValueWithMismatchingType() {
-    final PersistedRemoteFunctionValues values = new PersistedRemoteFunctionValues();
+    assertThrows(
+        RemoteFunctionStateException.class,
+        () -> {
+          final PersistedRemoteFunctionValues values = new PersistedRemoteFunctionValues();
 
-    values.registerStates(
-        Collections.singletonList(
-            protocolPersistedValueSpec("state", TypeName.parseFrom("com.foo.bar/type-1"))));
-    values.updateStateValues(
-        Collections.singletonList(
-            protocolPersistedValueModifyMutation(
-                "state",
-                protocolTypedValue(
-                    TypeName.parseFrom("com.foo.bar/type-2"), ByteString.copyFromUtf8("data")))));
+          values.registerStates(
+              Collections.singletonList(
+                  protocolPersistedValueSpec("state", TypeName.parseFrom("com.foo.bar/type-1"))));
+          values.updateStateValues(
+              Collections.singletonList(
+                  protocolPersistedValueModifyMutation(
+                      "state",
+                      protocolTypedValue(
+                          TypeName.parseFrom("com.foo.bar/type-2"),
+                          ByteString.copyFromUtf8("data")))));
+        });
   }
 
   private static TypedValue protocolTypedValue(TypeName typename, ByteString value) {

@@ -1,6 +1,6 @@
 package org.apache.flink.statefun.flink.core.httpfn;
 
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.time.Duration;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.JsonProcessingException;
@@ -9,7 +9,7 @@ import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.node.Obje
 import org.apache.flink.statefun.flink.common.json.StateFunObjectMapper;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class DefaultHttpRequestReplyClientSpecTest {
 
