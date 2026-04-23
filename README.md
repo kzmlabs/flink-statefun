@@ -4,19 +4,22 @@
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.kzmlabs.flinkstatefun/statefun-sdk-java.svg)](https://search.maven.org/search?q=g:io.github.kzmlabs.flinkstatefun)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
-An actively maintained continuation of Stateful Functions updated for **Flink 2.2.0** and **Java 21**, published to Maven Central under the `io.github.kzmlabs.flinkstatefun` group ID.
+A continuation of **Stateful Functions** — a framework for building **distributed stateful applications** and **event-driven microservices** on Apache Flink — updated for **Flink 2.2.0** and **Java 21**, published to Maven Central under the `io.github.kzmlabs.flinkstatefun` group ID.
 
-> Originally based on [Apache Flink Stateful Functions](https://github.com/apache/flink-statefun), which has been archived upstream. This project is now independently maintained by Kzmlabs.
+> Based on [Apache Flink Stateful Functions](https://github.com/apache/flink-statefun), whose upstream development has slowed significantly. Kzmlabs StateFun is an independent continuation with active releases, Flink 2.x compatibility, and a Kubernetes-native release gate.
+
+**Use cases:** event-driven microservices, real-time fraud detection, IoT digital twins, payment orchestration, actor-style stateful compute, serverless stream processing.
 
 ## Why This Project?
 
-The upstream Apache Flink StateFun project has been archived and is no longer actively maintained. Kzmlabs Flink StateFun picks up where it left off:
+Kzmlabs Flink StateFun advances the original StateFun codebase with:
 
-- **Updates to Flink 2.2.0** — The latest stable Flink release
-- **Requires Java 21** — Modern Java runtime with improved performance
-- **Published to Maven Central** — Easy dependency management via `io.github.kzmlabs.flinkstatefun` coordinates
-- **Maintains compatibility** — Same API as Apache StateFun 3.3.x
-- **Kubernetes-native** — Release-gated K8s E2E test suite running on the Flink Kubernetes Operator
+- **Flink 2.2.0** — Built and tested against the current Flink major release
+- **Java 21** — Modern LTS runtime with improved performance and virtual threads
+- **Maven Central** — Drop-in dependency via `io.github.kzmlabs.flinkstatefun` coordinates; BOM available (`statefun-bom`)
+- **API compatible** — Same SDK surface as Apache StateFun 3.3.x — minimal migration cost
+- **Kubernetes-native** — Release-gated K8s E2E test suite exercising the Flink Kubernetes Operator, Kafka ingress/egress, and RocksDB checkpoints on S3-compatible storage
+- **Active releases** — Versioned tags, SemVer-aligned, published to Maven Central and GHCR
 
 ## Quick Start
 
@@ -222,6 +225,8 @@ docker logs statefun-remote-function
 | `statefun-kafka-io` | Kafka ingress/egress connectors |
 | `statefun-flink-harness` | Local testing harness |
 | `statefun-flink-runner` | Uber JAR for K8s deployment via Flink Operator |
+| `statefun-kinesis-io` | AWS Kinesis ingress/egress connectors |
+| `statefun-bom` | Bill of Materials for dependency version alignment |
 | `statefun-k8s-native-e2e` | Kubernetes end-to-end tests |
 
 ## Differences from Apache StateFun
@@ -231,8 +236,9 @@ docker logs statefun-remote-function
 | Flink Version | 1.16.x | 2.2.0 |
 | Java Version | 8/11 | 21 |
 | Maven Group ID | `org.apache.flink` | `io.github.kzmlabs.flinkstatefun` |
-| Kinesis Connector | Included | Removed (separate repo in Flink 2.x) |
-| Status | Archived | Actively maintained |
+| Test framework | JUnit 4 | JUnit Jupiter 5.11 |
+| K8s E2E gate | None | Release-blocking (kind + Flink Operator) |
+| Release cadence | Dormant | Active (Maven Central + GHCR) |
 
 ### Configuration Changes for Flink 2.x
 
@@ -271,6 +277,16 @@ This project is licensed under the [Apache License 2.0](LICENSE).
 
 ---
 
-**Upstream (archived):** [Apache Flink Stateful Functions](https://github.com/apache/flink-statefun)
+## Links
+
+- **Maven Central:** [io.github.kzmlabs.flinkstatefun](https://central.sonatype.com/namespace/io.github.kzmlabs.flinkstatefun)
+- **Container images:** [ghcr.io/kzmlabs/flink-statefun](https://github.com/kzmlabs/flink-statefun/pkgs/container/flink-statefun)
+- **Upstream project:** [Apache Flink Stateful Functions](https://github.com/apache/flink-statefun)
+- **Apache Flink:** [flink.apache.org](https://flink.apache.org/)
+- **StateFun Playground examples:** [flink-statefun-playground](https://github.com/apache/flink-statefun-playground)
+
+## Keywords
+
+Apache Flink, Stateful Functions, StateFun, stream processing, event-driven architecture, event-driven microservices, distributed systems, actor model, stateful serverless, Kubernetes, Flink Kubernetes Operator, Kafka, RocksDB, Java 21, JVM stream processing, real-time analytics.
 
 **Maintained by:** [Kzmlabs](https://github.com/kzmlabs)
