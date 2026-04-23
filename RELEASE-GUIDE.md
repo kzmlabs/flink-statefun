@@ -4,10 +4,10 @@
 
 This guide documents the release process for publishing to Maven Central and GitHub Container Registry (GHCR).
 
-## Current Release: 3.4.0-KZM-1.0-RC20
+## Current Release: 3.4.0-KZM-2.0-RC7
 
 - **Maven Central**: Published
-- **Docker Image**: `ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-1.0-RC20`
+- **Docker Image**: `ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-2.0-RC7`
 - **GitHub Release**: https://github.com/kzmlabs/flink-statefun/releases
 
 ---
@@ -20,14 +20,14 @@ Triggered automatically when pushing a tag starting with `v`:
 
 ```bash
 # Update version
-mvn versions:set -DnewVersion=3.4.0-KZM-1.0-RC21 -DgenerateBackupPoms=false
+mvn versions:set -DnewVersion=3.4.0-KZM-2.0-RC8 -DgenerateBackupPoms=false
 
 # Commit and tag
 git add -A
-git commit -m "Release 3.4.0-KZM-1.0-RC21"
+git commit -m "Release 3.4.0-KZM-2.0-RC8"
 git push origin release
-git tag v3.4.0-KZM-1.0-RC21
-git push origin v3.4.0-KZM-1.0-RC21
+git tag v3.4.0-KZM-2.0-RC8
+git push origin v3.4.0-KZM-2.0-RC8
 ```
 
 This runs `.github/workflows/release.yml` which:
@@ -196,5 +196,5 @@ mvn clean install -Prelease -DskipTests -Dgpg.skip=true
 gh run list --repo kzmlabs/flink-statefun
 
 # Pull Docker image
-docker pull ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-1.0-RC20
+docker pull ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-2.0-RC7
 ```

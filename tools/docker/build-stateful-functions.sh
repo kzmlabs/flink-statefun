@@ -17,7 +17,7 @@
 
 set -e
 
-VERSION_TAG=${1:-3.4.0-KZM-2.0-RC5}
+VERSION_TAG=${1:-3.4.0-KZM-2.0-RC7}
 
 #
 # setup the environment

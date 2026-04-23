@@ -101,6 +101,8 @@ All notable changes to the Kzmlabs StateFun fork are documented in this file.
 - Add Docker image publishing to GitHub Container Registry
 - Add release setup guide and release script
 
+[3.4.0-KZM-2.0-RC7]: https://github.com/kzmlabs/flink-statefun/releases/tag/v3.4.0-KZM-2.0-RC7
+[3.4.0-KZM-2.0-RC6]: https://github.com/kzmlabs/flink-statefun/releases/tag/v3.4.0-KZM-2.0-RC6
 [3.4.0-KZM-2.0-RC5]: https://github.com/kzmlabs/flink-statefun/releases/tag/v3.4.0-KZM-2.0-RC5
 [3.4.0-KZM-2.0-RC4]: https://github.com/kzmlabs/flink-statefun/releases/tag/v3.4.0-KZM-2.0-RC4
 [3.4.0-KZM-2.0-RC3]: https://github.com/kzmlabs/flink-statefun/releases/tag/v3.4.0-KZM-2.0-RC3

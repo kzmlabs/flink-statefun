@@ -23,7 +23,7 @@ The upstream Apache Flink StateFun project has been archived and is no longer ac
 <dependency>
     <groupId>io.github.kzmlabs.flinkstatefun</groupId>
     <artifactId>statefun-sdk-java</artifactId>
-    <version>3.4.0-KZM-2.0</version>
+    <version>3.4.0-KZM-2.0-RC7</version>
 </dependency>
 ```
 
@@ -87,7 +87,7 @@ A _module_ is the entry point for adding primitives (ingresses, egresses, router
 <dependency>
     <groupId>io.github.kzmlabs.flinkstatefun</groupId>
     <artifactId>statefun-sdk-java</artifactId>
-    <version>3.4.0-KZM-2.0</version>
+    <version>3.4.0-KZM-2.0-RC7</version>
 </dependency>
 ```
 
@@ -145,7 +145,7 @@ mvn install -DskipTests -B
 ./tools/docker/build-stateful-functions.sh
 ```
 
-For local development, the image will be tagged as `flink-statefun:3.4.0-KZM-2.0`.
+For local development, the image will be tagged as `flink-statefun:3.4.0-KZM-2.0-RC7`.
 
 Official releases are published to GitHub Container Registry: `ghcr.io/kzmlabs/flink-statefun:<version>`
 
