@@ -25,10 +25,15 @@ under the License.
     <name>Kzmlabs StateFun Parent</name>
     <version>3.4.0-KZM-2.0</version>
     <packaging>pom</packaging>
-    <description>Kzmlabs fork of Apache Flink Stateful Functions</description>
+    <description>Kzmlabs Flink StateFun — actively maintained continuation of the Stateful Functions framework for building distributed stateful applications and event-driven microservices on Apache Flink 2.2.0 with Java 21. Provides a function-as-actor programming model with durable state, exactly-once messaging, Kafka and Kinesis ingress/egress, and Kubernetes-native deployment via the Flink Kubernetes Operator.</description>
 
     <url>https://github.com/kzmlabs/flink-statefun</url>
     <inceptionYear>2024</inceptionYear>
+
+    <organization>
+        <name>Kzmlabs</name>
+        <url>https://github.com/kzmlabs</url>
+    </organization>
 
     <licenses>
         <license>
@@ -40,9 +45,14 @@ under the License.
 
     <developers>
         <developer>
+            <id>kzmlabs</id>
             <name>Kzmlabs Team</name>
             <organization>Kzmlabs</organization>
             <organizationUrl>https://github.com/kzmlabs</organizationUrl>
+            <url>https://github.com/kzmlabs</url>
+            <roles>
+                <role>maintainer</role>
+            </roles>
         </developer>
     </developers>
 
@@ -50,7 +60,18 @@ under the License.
         <url>https://github.com/kzmlabs/flink-statefun</url>
         <connection>scm:git:git://github.com/kzmlabs/flink-statefun.git</connection>
         <developerConnection>scm:git:git@github.com:kzmlabs/flink-statefun.git</developerConnection>
+        <tag>HEAD</tag>
     </scm>
+
+    <issueManagement>
+        <system>GitHub Issues</system>
+        <url>https://github.com/kzmlabs/flink-statefun/issues</url>
+    </issueManagement>
+
+    <ciManagement>
+        <system>GitHub Actions</system>
+        <url>https://github.com/kzmlabs/flink-statefun/actions</url>
+    </ciManagement>
 
     <distributionManagement>
         <snapshotRepository>

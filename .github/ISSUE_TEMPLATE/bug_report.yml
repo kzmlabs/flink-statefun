@@ -1,0 +1,59 @@
+name: Bug Report
+description: Report a problem with Kzmlabs Flink StateFun
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug report. Please fill out as much of the form as you can.
+  - type: input
+    id: version
+    attributes:
+      label: StateFun version
+      description: Which version of `io.github.kzmlabs.flinkstatefun` are you using?
+      placeholder: "3.4.0-KZM-2.0"
+    validations:
+      required: true
+  - type: input
+    id: flink
+    attributes:
+      label: Flink version
+      placeholder: "2.2.0"
+    validations:
+      required: true
+  - type: input
+    id: java
+    attributes:
+      label: Java version
+      placeholder: "21"
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: OS / architecture
+      placeholder: "Linux x86_64, Kubernetes 1.29"
+    validations:
+      required: false
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Describe the actual behavior and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: reproducer
+    attributes:
+      label: Minimal reproducer
+      description: Code, configuration, or steps needed to reproduce.
+      render: text
+    validations:
+      required: false
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / stack trace
+      render: shell
+    validations:
+      required: false
