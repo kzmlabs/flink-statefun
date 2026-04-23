@@ -388,6 +388,7 @@ under the License.
                         <exclude>**/CHANGELOG.md</exclude>
                         <exclude>**/RELEASE-GUIDE.md</exclude>
                         <exclude>**/CLAUDE.md</exclude>
+                        <exclude>docs/kinesis-io.md</exclude>
                         <exclude>.github/**</exclude>
                         <exclude>.claude/**</exclude>
                         <!-- Dev docs -->
