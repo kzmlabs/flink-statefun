@@ -68,3 +68,6 @@ statefun-sdk-js/dist/*
 .vscode/settings.json
 dev/
 .cache/
+
+# maven dependency:sources unpacks into ./org/
+/org/
