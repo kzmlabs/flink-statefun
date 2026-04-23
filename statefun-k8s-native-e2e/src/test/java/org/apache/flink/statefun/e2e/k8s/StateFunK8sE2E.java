@@ -21,15 +21,13 @@ package org.apache.flink.statefun.e2e.k8s;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
-import io.minio.ListObjectsArgs;
-import io.minio.MinioClient;
-import io.minio.Result;
-import io.minio.messages.Item;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import org.apache.flink.statefun.e2e.k8s.generated.E2EProtos.CounterCommand;
@@ -55,14 +53,17 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
 
 /**
- * K8s E2E for the Kafka ingress/egress path. Expects the cluster and all infrastructure to be
- * already deployed by {@code scripts/setup-cluster.sh}. Uses {@link KubectlPortForward} for Kafka
- * and MinIO access.
+ * K8s E2E exercising Kafka ingress/egress + S3 checkpoint persistence. Expects the cluster to be
+ * already provisioned by {@code scripts/setup-cluster.sh}.
  *
- * <p>Kafka is forwarded on fixed port 9094 to match the broker's EXTERNAL advertised listener.
- * MinIO uses an ephemeral local port to avoid conflicts across repeated test runs.
+ * <p>Kafka is forwarded on fixed port 9094 (EXTERNAL advertised listener). LocalStack (S3) uses an
+ * ephemeral port.
  */
 @Tag("kafka")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -70,33 +71,53 @@ import org.slf4j.LoggerFactory;
 class StateFunK8sE2E {
 
   private static final Logger LOG = LoggerFactory.getLogger(StateFunK8sE2E.class);
+
   private static final String NAMESPACE = "statefun-e2e";
   private static final int KAFKA_LOCAL_PORT = 9094;
+
+  private static final String COUNTER_COMMANDS_TOPIC = "counter.commands";
+  private static final String COUNTER_RESULTS_TOPIC = "counter.results";
+  private static final String GREETER_COMMANDS_TOPIC = "greeter.commands";
+  private static final String GREETER_RESULTS_TOPIC = "greeter.results";
+  private static final String CHECKPOINTS_BUCKET = "statefun.checkpoints";
+
   private static final Duration POLL_TIMEOUT = Duration.ofMinutes(3);
   private static final Duration POLL_INTERVAL = Duration.ofSeconds(2);
 
   private KubectlPortForward kafkaForward;
-  private KubectlPortForward minioForward;
+  private KubectlPortForward localStackForward;
   private KafkaProducer<String, byte[]> producer;
-  private KafkaConsumer<String, byte[]> protoConsumer;
-  private KafkaConsumer<String, byte[]> jsonConsumer;
+  private KafkaConsumer<String, byte[]> counterResultsConsumer;
+  private KafkaConsumer<String, byte[]> greeterResultsConsumer;
+  private S3Client s3;
 
   @BeforeAll
   void setup() throws Exception {
     kafkaForward =
         KubectlPortForward.fixed(NAMESPACE, "svc/kafka", KAFKA_LOCAL_PORT, KAFKA_LOCAL_PORT);
-    minioForward = KubectlPortForward.ephemeral(NAMESPACE, "svc/minio", 9000);
+    localStackForward = KubectlPortForward.ephemeral(NAMESPACE, "svc/localstack", 4566);
     LOG.info(
-        "Kafka @127.0.0.1:{}, MinIO @127.0.0.1:{}",
+        "Kafka @127.0.0.1:{}, LocalStack @127.0.0.1:{}",
         kafkaForward.localPort(),
-        minioForward.localPort());
+        localStackForward.localPort());
 
     String bootstrap = "127.0.0.1:" + kafkaForward.localPort();
     producer = createProducer(bootstrap);
 
     String runId = UUID.randomUUID().toString().substring(0, 8);
-    protoConsumer = createConsumer(bootstrap, "e2e-proto-" + runId, "results-proto");
-    jsonConsumer = createConsumer(bootstrap, "e2e-json-" + runId, "results-json");
+    counterResultsConsumer =
+        createConsumer(bootstrap, "e2e-counter-" + runId, COUNTER_RESULTS_TOPIC);
+    greeterResultsConsumer =
+        createConsumer(bootstrap, "e2e-greeter-" + runId, GREETER_RESULTS_TOPIC);
+
+    s3 =
+        S3Client.builder()
+            .endpointOverride(URI.create("http://127.0.0.1:" + localStackForward.localPort()))
+            .region(Region.US_EAST_1)
+            .credentialsProvider(
+                StaticCredentialsProvider.create(AwsBasicCredentials.create("test", "test")))
+            .forcePathStyle(true)
+            .build();
   }
 
   @Test
@@ -108,8 +129,8 @@ class StateFunK8sE2E {
     for (int i = 0; i < messages; i++) {
       CounterCommand cmd = CounterCommand.newBuilder().setId(counterId).setDelta(1).build();
       producer
-          .send(new ProducerRecord<>("commands-proto", counterId, cmd.toByteArray()))
-          .get(10, java.util.concurrent.TimeUnit.SECONDS);
+          .send(new ProducerRecord<>(COUNTER_COMMANDS_TOPIC, counterId, cmd.toByteArray()))
+          .get(10, TimeUnit.SECONDS);
     }
     producer.flush();
     LOG.info("Sent {} CounterCommand(s) for id={}", messages, counterId);
@@ -121,7 +142,7 @@ class StateFunK8sE2E {
             () -> {
               List<CounterResult> results =
                   StreamSupport.stream(
-                          protoConsumer.poll(Duration.ofSeconds(1)).spliterator(), false)
+                          counterResultsConsumer.poll(Duration.ofSeconds(1)).spliterator(), false)
                       .map(ConsumerRecord::value)
                       .map(StateFunK8sE2E::parseCounterResult)
                       .filter(r -> counterId.equals(r.getId()))
@@ -138,8 +159,10 @@ class StateFunK8sE2E {
     String input = "{\"name\":\"Alice\"}";
 
     producer
-        .send(new ProducerRecord<>("commands-json", key, input.getBytes(StandardCharsets.UTF_8)))
-        .get(10, java.util.concurrent.TimeUnit.SECONDS);
+        .send(
+            new ProducerRecord<>(
+                GREETER_COMMANDS_TOPIC, key, input.getBytes(StandardCharsets.UTF_8)))
+        .get(10, TimeUnit.SECONDS);
     producer.flush();
     LOG.info("Sent greeter command for Alice with key={}", key);
 
@@ -150,7 +173,7 @@ class StateFunK8sE2E {
             () -> {
               List<String> greetings =
                   StreamSupport.stream(
-                          jsonConsumer.poll(Duration.ofSeconds(1)).spliterator(), false)
+                          greeterResultsConsumer.poll(Duration.ofSeconds(1)).spliterator(), false)
                       .map(r -> new String(r.value(), StandardCharsets.UTF_8))
                       .collect(Collectors.toList());
               assertThat(greetings).anyMatch(g -> g.contains("Hello, Alice!"));
@@ -159,57 +182,35 @@ class StateFunK8sE2E {
 
   @Test
   @Order(3)
-  void checkpointsWrittenToMinIO() {
-    MinioClient minio =
-        MinioClient.builder()
-            .endpoint("http://127.0.0.1:" + minioForward.localPort())
-            .credentials("minioadmin", "minioadmin")
-            .build();
-
+  void checkpointsWrittenToS3() {
     await()
         .atMost(POLL_TIMEOUT)
         .pollInterval(Duration.ofSeconds(10))
         .untilAsserted(
             () -> {
-              Iterable<Result<Item>> objects =
-                  minio.listObjects(
-                      ListObjectsArgs.builder()
-                          .bucket("statefun-e2e")
-                          .prefix("checkpoints/")
-                          .recursive(true)
-                          .build());
               long count =
-                  StreamSupport.stream(objects.spliterator(), false)
-                      .peek(r -> logIfError(r))
-                      .count();
-              assertThat(count).as("MinIO should contain checkpoint objects").isPositive();
+                  s3.listObjectsV2(r -> r.bucket(CHECKPOINTS_BUCKET).prefix("checkpoints/"))
+                      .contents()
+                      .size();
+              assertThat(count).as("S3 bucket should contain checkpoint objects").isPositive();
             });
   }
 
   @AfterAll
   void teardown() {
     if (producer != null) producer.close(Duration.ofSeconds(5));
-    if (protoConsumer != null) protoConsumer.close(Duration.ofSeconds(5));
-    if (jsonConsumer != null) jsonConsumer.close(Duration.ofSeconds(5));
+    if (counterResultsConsumer != null) counterResultsConsumer.close(Duration.ofSeconds(5));
+    if (greeterResultsConsumer != null) greeterResultsConsumer.close(Duration.ofSeconds(5));
+    if (s3 != null) s3.close();
     if (kafkaForward != null) kafkaForward.close();
-    if (minioForward != null) minioForward.close();
+    if (localStackForward != null) localStackForward.close();
   }
-
-  // --- helpers ---
 
   private static CounterResult parseCounterResult(byte[] bytes) {
     try {
       return CounterResult.parseFrom(bytes);
     } catch (Exception e) {
       throw new RuntimeException("Failed to parse CounterResult", e);
-    }
-  }
-
-  private static void logIfError(Result<Item> result) {
-    try {
-      result.get();
-    } catch (Exception e) {
-      LOG.warn("MinIO list entry error: {}", e.getMessage());
     }
   }
 

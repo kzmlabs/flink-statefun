@@ -47,19 +47,20 @@ import software.amazon.awssdk.services.kinesis.model.Record;
 import software.amazon.awssdk.services.kinesis.model.ShardIteratorType;
 
 /**
- * K8s E2E for the Kinesis ingress/egress path. Drives LocalStack (deployed in-cluster by {@code
- * scripts/setup-cluster.sh}) via AWS SDK v2, produces {@link CounterCommand} records to the {@code
- * counter-commands} stream, and asserts {@link CounterResult} records appear on {@code
- * counter-results}.
+ * K8s E2E exercising the Kinesis ingress/egress path end-to-end against a LocalStack-backed kind
+ * cluster. Produces {@link CounterCommand} records to {@code counter.commands}, polls {@code
+ * counter.results} via shard iterator, and asserts the counter function accumulates correctly.
  */
 @Tag("kinesis")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class StateFunKinesisE2E {
 
   private static final Logger LOG = LoggerFactory.getLogger(StateFunKinesisE2E.class);
+
   private static final String NAMESPACE = "statefun-e2e";
-  private static final String COMMANDS_STREAM = "counter-commands";
-  private static final String RESULTS_STREAM = "counter-results";
+  private static final String COMMANDS_STREAM = "counter.commands";
+  private static final String RESULTS_STREAM = "counter.results";
+
   private static final Duration POLL_TIMEOUT = Duration.ofMinutes(3);
   private static final Duration POLL_INTERVAL = Duration.ofSeconds(2);
 
@@ -115,8 +116,6 @@ class StateFunKinesisE2E {
     if (localStackForward != null) localStackForward.close();
   }
 
-  // --- helpers ---
-
   private String shardIteratorFromTrimHorizon(String streamName) {
     String shardId = kinesis.listShards(r -> r.streamName(streamName)).shards().get(0).shardId();
     return kinesis
@@ -128,7 +127,6 @@ class StateFunKinesisE2E {
         .shardIterator();
   }
 
-  /** Consumes the current batch, updates the iterator in-place, filters by counter id. */
   private List<CounterResult> pollResults(AtomicReference<String> iterator, String counterId) {
     GetRecordsResponse response =
         kinesis.getRecords(r -> r.shardIterator(iterator.get()).limit(100));

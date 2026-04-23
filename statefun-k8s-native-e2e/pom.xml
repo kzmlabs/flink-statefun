@@ -36,7 +36,6 @@ under the License.
         <awaitility.version>4.2.2</awaitility.version>
         <assertj.version>3.27.3</assertj.version>
         
-        <minio.version>8.5.14</minio.version>
         <slf4j.version>2.0.9</slf4j.version>
         <!-- CI can set this true to keep the cluster alive for log collection -->
         <skip.teardown>false</skip.teardown>
@@ -59,10 +58,16 @@ under the License.
             <scope>test</scope>
         </dependency>
 
-        <!-- AWS SDK v2 Kinesis client (drives Kinesis E2E against LocalStack) -->
+        <!-- AWS SDK v2 clients (drive Kinesis streams + S3 checkpoint bucket via LocalStack) -->
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>kinesis</artifactId>
+            <version>${awssdk.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
             <version>${awssdk.version}</version>
             <scope>test</scope>
         </dependency>
@@ -88,14 +93,6 @@ under the License.
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
             
-            <scope>test</scope>
-        </dependency>
-
-        <!-- MinIO client for S3 checkpoint verification -->
-        <dependency>
-            <groupId>io.minio</groupId>
-            <artifactId>minio</artifactId>
-            <version>${minio.version}</version>
             <scope>test</scope>
         </dependency>
 

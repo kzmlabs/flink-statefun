@@ -30,12 +30,12 @@ import org.apache.flink.statefun.sdk.java.message.Message;
 import org.apache.flink.statefun.sdk.java.types.SimpleType;
 import org.apache.flink.statefun.sdk.java.types.Type;
 
-/** Counter function that consumes CounterCommand from Kafka and emits CounterResult to Kafka. */
+/** Counter function: consumes CounterCommand from Kafka, emits CounterResult to Kafka. */
 public final class KafkaCounterFn implements StatefulFunction {
 
-  static final TypeName FN_TYPE = TypeName.typeNameOf("e2e.k8s", "kafka-counter");
-  static final TypeName EGRESS_ID = TypeName.typeNameOf("e2e", "kafka-results");
-  static final String RESULTS_TOPIC = "results-proto";
+  static final TypeName FN_TYPE = TypeName.typeNameOf("counter.kafka", "fn");
+  static final TypeName EGRESS_ID = TypeName.typeNameOf("counter", "kafka-results");
+  static final String RESULTS_TOPIC = "counter.results";
 
   static final ValueSpec<Long> TOTAL = ValueSpec.named("total").withLongType();
 

@@ -15,86 +15,63 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# -----------------------------------------------------------------------------
+# Provisions a kind cluster with the full StateFun E2E stack:
+#   - cert-manager + Flink Kubernetes Operator
+#   - Kafka (single broker, dual listener)
+#   - LocalStack (Kinesis + S3)
+#   - Remote function HTTP server
+#   - FlinkDeployment CR (RocksDB + S3 checkpoints)
+#
+# Idempotent: deletes any existing cluster with the same name first.
+# -----------------------------------------------------------------------------
+
 set -euo pipefail
 
 CLUSTER_NAME=${1:-statefun-e2e}
 NAMESPACE=statefun-e2e
 FLINK_OPERATOR_VERSION=1.11.0
+KAFKA_TOPICS=(counter.commands counter.results greeter.commands greeter.results)
+KINESIS_STREAMS=(counter.commands counter.results)
+S3_BUCKET=statefun.checkpoints
 
 BASEDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
-PROJECT_ROOT="${BASEDIR}/.."
-K8S_MANIFESTS="${PROJECT_ROOT}/src/test/resources/k8s"
+K8S_MANIFESTS="${BASEDIR}/../src/test/resources/k8s"
 
-# --- Platform detection ---
+# --- Platform-aware tool installation ---------------------------------------
 
-detect_platform() {
-  local uname_s
-  uname_s=$(uname -s)
-  case "${uname_s}" in
-    Linux*)   echo "linux" ;;
-    Darwin*)  echo "darwin" ;;
-    MINGW*|MSYS*|CYGWIN*) echo "windows" ;;
-    *)        echo "linux" ;;
+platform() {
+  case "$(uname -s)" in
+    Linux*)  echo linux ;;
+    Darwin*) echo darwin ;;
+    MINGW*|MSYS*|CYGWIN*) echo windows ;;
+    *)       echo linux ;;
   esac
 }
 
-PLATFORM=$(detect_platform)
-
-# --- Auto-install missing tools ---
-
-install_with_scoop() {
-  local tool=$1
-  if command -v scoop >/dev/null 2>&1; then
-    echo "Installing ${tool} via scoop..."
+ensure_tool() {
+  local tool=$1 linux_url=$2
+  command -v "${tool}" >/dev/null 2>&1 && return
+  echo "=== Installing ${tool} ==="
+  if [[ "$(platform)" == windows ]]; then
+    command -v scoop >/dev/null 2>&1 || { echo "ERROR: install ${tool} manually (no scoop available)"; exit 1; }
     scoop install "${tool}"
   else
-    echo "ERROR: ${tool} is not installed and scoop is not available."
-    echo "Please install ${tool} manually."
-    exit 1
+    curl -fsSL "${linux_url}" -o "/usr/local/bin/${tool}"
+    chmod +x "/usr/local/bin/${tool}"
   fi
 }
 
-install_linux_tool() {
-  local tool=$1 url=$2
-  echo "Installing ${tool}..."
-  curl -fsSL "${url}" -o "/usr/local/bin/${tool}"
-  chmod +x "/usr/local/bin/${tool}"
-}
+ensure_tool kubectl "https://dl.k8s.io/release/v1.32.3/bin/$(platform)/amd64/kubectl"
+ensure_tool kind    "https://kind.sigs.k8s.io/dl/v0.27.0/kind-$(platform)-amd64"
+command -v helm >/dev/null 2>&1 || curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
-ensure_kubectl() {
-  if command -v kubectl >/dev/null 2>&1; then return; fi
-  echo "=== Installing kubectl ==="
-  if [[ "${PLATFORM}" == "windows" ]]; then install_with_scoop kubectl
-  else install_linux_tool kubectl "https://dl.k8s.io/release/v1.32.3/bin/${PLATFORM}/amd64/kubectl"; fi
-}
-
-ensure_kind() {
-  if command -v kind >/dev/null 2>&1; then return; fi
-  echo "=== Installing kind ==="
-  if [[ "${PLATFORM}" == "windows" ]]; then install_with_scoop kind
-  else install_linux_tool kind "https://kind.sigs.k8s.io/dl/v0.27.0/kind-${PLATFORM}-amd64"; fi
-}
-
-ensure_helm() {
-  if command -v helm >/dev/null 2>&1; then return; fi
-  echo "=== Installing helm ==="
-  if [[ "${PLATFORM}" == "windows" ]]; then install_with_scoop helm
-  else curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash; fi
-}
-
-ensure_kubectl
-ensure_kind
-ensure_helm
-
-# --- Verify Docker is running ---
+# --- Docker sanity ----------------------------------------------------------
 
 echo "=== Verifying Docker daemon ==="
-if ! docker info >/dev/null 2>&1; then
-  echo "ERROR: Docker daemon is not running. Please start Docker Desktop and try again."
-  exit 1
-fi
+docker info >/dev/null 2>&1 || { echo "ERROR: Docker daemon is not running"; exit 1; }
 
-# --- Create kind cluster (delete stale cluster first) ---
+# --- kind cluster -----------------------------------------------------------
 
 if kind get clusters 2>/dev/null | grep -q "^${CLUSTER_NAME}$"; then
   echo "=== Deleting stale kind cluster: ${CLUSTER_NAME} ==="
@@ -104,152 +81,95 @@ fi
 echo "=== Creating kind cluster: ${CLUSTER_NAME} ==="
 kind create cluster --name "${CLUSTER_NAME}" --wait 5m
 
-# --- Load Docker images into kind ---
-
 echo "=== Loading Docker images into kind ==="
-kind load docker-image flink-statefun:e2e --name "${CLUSTER_NAME}"
-kind load docker-image statefun-remote-function:e2e --name "${CLUSTER_NAME}"
+kind load docker-image flink-statefun:e2e            --name "${CLUSTER_NAME}"
+kind load docker-image statefun-remote-function:e2e  --name "${CLUSTER_NAME}"
 
-# --- Verify API server connectivity ---
-
-echo "=== Waiting for API server to be reachable ==="
-for i in $(seq 1 12); do
-  if kubectl cluster-info --context "kind-${CLUSTER_NAME}" >/dev/null 2>&1; then
-    echo "API server is reachable."
-    break
-  fi
-  if [[ $i -eq 12 ]]; then
-    echo "ERROR: API server not reachable after 60s."
-    exit 1
-  fi
-  echo "  [${i}/12] Waiting for API server..."
-  sleep 5
-done
-
-# --- Install cert-manager ---
+# --- cert-manager + Flink Operator ------------------------------------------
 
 echo "=== Installing cert-manager ==="
 kubectl apply -f https://github.com/cert-manager/cert-manager/releases/latest/download/cert-manager.yaml
-echo "Waiting for cert-manager to be ready..."
-kubectl wait --for=condition=Available deployment/cert-manager -n cert-manager --timeout=120s
-kubectl wait --for=condition=Available deployment/cert-manager-webhook -n cert-manager --timeout=120s
-kubectl wait --for=condition=Available deployment/cert-manager-cainjector -n cert-manager --timeout=120s
-
-# --- Install Flink Kubernetes Operator 1.11 ---
+for dep in cert-manager cert-manager-webhook cert-manager-cainjector; do
+  kubectl wait --for=condition=Available "deployment/${dep}" -n cert-manager --timeout=120s
+done
 
 echo "=== Installing Flink Kubernetes Operator ${FLINK_OPERATOR_VERSION} ==="
 helm repo add flink-operator-repo \
   "https://archive.apache.org/dist/flink/flink-kubernetes-operator-${FLINK_OPERATOR_VERSION}/" || true
 helm repo update
 helm install flink-kubernetes-operator flink-operator-repo/flink-kubernetes-operator \
-  --namespace flink-operator \
-  --create-namespace \
-  --wait \
-  --timeout 5m
+  --namespace flink-operator --create-namespace --wait --timeout 5m
 
-# --- Deploy E2E infrastructure ---
+# --- In-namespace infra -----------------------------------------------------
 
-echo "=== Creating namespace ${NAMESPACE} ==="
+echo "=== Deploying namespace, RBAC, Kafka, LocalStack, remote function, module ==="
 kubectl apply -f "${K8S_MANIFESTS}/namespace.yaml"
-
-echo "=== Deploying RBAC ==="
 kubectl apply -f "${K8S_MANIFESTS}/flink-rbac.yaml"
-
-echo "=== Deploying MinIO ==="
-kubectl apply -f "${K8S_MANIFESTS}/minio.yaml"
-
-echo "=== Deploying Kafka ==="
 kubectl apply -f "${K8S_MANIFESTS}/kafka.yaml"
-
-echo "=== Deploying LocalStack (Kinesis mock) ==="
 kubectl apply -f "${K8S_MANIFESTS}/localstack.yaml"
-
-echo "=== Deploying remote function ==="
 kubectl apply -f "${K8S_MANIFESTS}/remote-function.yaml"
-
-echo "=== Deploying module ConfigMap ==="
 kubectl apply -f "${K8S_MANIFESTS}/module-configmap.yaml"
 
-# --- Wait for infra pods ---
+for app in kafka localstack remote-function; do
+  echo "=== Waiting for ${app} to be ready ==="
+  kubectl wait --for=condition=Ready pod -l "app=${app}" -n "${NAMESPACE}" --timeout=180s
+done
 
-echo "=== Waiting for MinIO to be ready ==="
-kubectl wait --for=condition=Ready pod -l app=minio -n "${NAMESPACE}" --timeout=180s
-
-echo "=== Waiting for Kafka to be ready ==="
-kubectl wait --for=condition=Ready pod -l app=kafka -n "${NAMESPACE}" --timeout=180s
-
-echo "=== Waiting for LocalStack to be ready ==="
-kubectl wait --for=condition=Ready pod -l app=localstack -n "${NAMESPACE}" --timeout=180s
-
-echo "=== Waiting for remote function to be ready ==="
-kubectl wait --for=condition=Ready pod -l app=remote-function -n "${NAMESPACE}" --timeout=180s
-
-# --- Pre-create Kafka topics ---
+# --- Kafka topics -----------------------------------------------------------
 
 echo "=== Creating Kafka topics ==="
 KAFKA_POD=$(kubectl get pod -n "${NAMESPACE}" -l app=kafka -o jsonpath='{.items[0].metadata.name}')
-for TOPIC in commands-proto commands-json results-proto results-json; do
-  # MSYS_NO_PATHCONV prevents MINGW from mangling Linux paths
+for topic in "${KAFKA_TOPICS[@]}"; do
   MSYS_NO_PATHCONV=1 kubectl exec -n "${NAMESPACE}" "${KAFKA_POD}" -- \
     /opt/kafka/bin/kafka-topics.sh --create --if-not-exists \
     --bootstrap-server localhost:9092 \
-    --topic "${TOPIC}" --partitions 1 --replication-factor 1
+    --topic "${topic}" --partitions 1 --replication-factor 1
 done
-echo "Kafka topics created"
 
-# --- Pre-create Kinesis streams via awslocal (bundled in LocalStack image) ---
+# --- Kinesis streams + S3 bucket on LocalStack ------------------------------
+
+LOCALSTACK_POD=$(kubectl get pod -n "${NAMESPACE}" -l app=localstack -o jsonpath='{.items[0].metadata.name}')
 
 echo "=== Creating Kinesis streams ==="
-LOCALSTACK_POD=$(kubectl get pod -n "${NAMESPACE}" -l app=localstack -o jsonpath='{.items[0].metadata.name}')
-for STREAM in counter-commands counter-results; do
+for stream in "${KINESIS_STREAMS[@]}"; do
   MSYS_NO_PATHCONV=1 kubectl exec -n "${NAMESPACE}" "${LOCALSTACK_POD}" -- \
-    awslocal kinesis create-stream --stream-name "${STREAM}" --shard-count 1
+    awslocal kinesis create-stream --stream-name "${stream}" --shard-count 1
 done
-
-echo "=== Waiting for Kinesis streams to become ACTIVE ==="
-for STREAM in counter-commands counter-results; do
+for stream in "${KINESIS_STREAMS[@]}"; do
   for i in $(seq 1 30); do
-    STATUS=$(MSYS_NO_PATHCONV=1 kubectl exec -n "${NAMESPACE}" "${LOCALSTACK_POD}" -- \
-      awslocal kinesis describe-stream-summary --stream-name "${STREAM}" \
-      --query 'StreamDescriptionSummary.StreamStatus' --output text 2>/dev/null || echo "PENDING")
-    if [[ "${STATUS}" == "ACTIVE" ]]; then
-      echo "  stream ${STREAM}: ACTIVE"
-      break
-    fi
-    if [[ $i -eq 30 ]]; then
-      echo "ERROR: stream ${STREAM} did not become ACTIVE within 60s"
-      exit 1
-    fi
+    status=$(MSYS_NO_PATHCONV=1 kubectl exec -n "${NAMESPACE}" "${LOCALSTACK_POD}" -- \
+      awslocal kinesis describe-stream-summary --stream-name "${stream}" \
+      --query 'StreamDescriptionSummary.StreamStatus' --output text 2>/dev/null || echo PENDING)
+    [[ "${status}" == ACTIVE ]] && { echo "  ${stream}: ACTIVE"; break; }
+    [[ $i -eq 30 ]] && { echo "ERROR: stream ${stream} not ACTIVE within 60s"; exit 1; }
     sleep 2
   done
 done
-echo "Kinesis streams created"
 
-# --- Deploy FlinkDeployment ---
+echo "=== Creating S3 bucket ${S3_BUCKET} ==="
+MSYS_NO_PATHCONV=1 kubectl exec -n "${NAMESPACE}" "${LOCALSTACK_POD}" -- \
+  awslocal s3 mb "s3://${S3_BUCKET}"
+
+# --- FlinkDeployment --------------------------------------------------------
 
 echo "=== Deploying FlinkDeployment ==="
 kubectl apply -f "${K8S_MANIFESTS}/flink-deployment.yaml"
 
-echo "=== Waiting for FlinkDeployment to be RUNNING ==="
+echo "=== Waiting for FlinkDeployment to be READY ==="
 for i in $(seq 1 60); do
-  STATUS=$(kubectl get flinkdeployment statefun-jobmanager -n "${NAMESPACE}" \
-    -o jsonpath='{.status.jobManagerDeploymentStatus}' 2>/dev/null || echo "UNKNOWN")
-  echo "  [${i}/60] FlinkDeployment status: ${STATUS}"
-  if [[ "${STATUS}" == "READY" ]]; then
-    echo "FlinkDeployment is READY!"
-    break
-  fi
+  status=$(kubectl get flinkdeployment statefun-jobmanager -n "${NAMESPACE}" \
+    -o jsonpath='{.status.jobManagerDeploymentStatus}' 2>/dev/null || echo UNKNOWN)
+  echo "  [${i}/60] FlinkDeployment: ${status}"
+  [[ "${status}" == READY ]] && { echo "FlinkDeployment is READY!"; break; }
   if [[ $i -eq 60 ]]; then
-    echo "ERROR: FlinkDeployment did not reach READY state within 5 minutes"
-    echo "=== FlinkDeployment describe ==="
+    echo "ERROR: FlinkDeployment did not reach READY within 5 minutes"
     kubectl describe flinkdeployment statefun-jobmanager -n "${NAMESPACE}" || true
-    echo "=== JobManager logs ==="
     kubectl logs -n "${NAMESPACE}" -l component=jobmanager --tail=50 || true
     exit 1
   fi
   sleep 5
 done
 
-echo ""
+echo
 echo "=== Cluster ${CLUSTER_NAME} is ready ==="
 kubectl get pods -n "${NAMESPACE}"

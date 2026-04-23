@@ -28,12 +28,12 @@ import org.apache.flink.statefun.sdk.java.ValueSpec;
 import org.apache.flink.statefun.sdk.java.io.KinesisEgressMessage;
 import org.apache.flink.statefun.sdk.java.message.Message;
 
-/** Counter function that consumes CounterCommand from Kinesis and emits CounterResult to Kinesis. */
+/** Counter function: consumes CounterCommand from Kinesis, emits CounterResult to Kinesis. */
 public final class KinesisCounterFn implements StatefulFunction {
 
-  static final TypeName FN_TYPE = TypeName.typeNameOf("e2e.k8s", "kinesis-counter");
-  static final TypeName EGRESS_ID = TypeName.typeNameOf("e2e", "kinesis-results");
-  static final String RESULTS_STREAM = "counter-results";
+  static final TypeName FN_TYPE = TypeName.typeNameOf("counter.kinesis", "fn");
+  static final TypeName EGRESS_ID = TypeName.typeNameOf("counter", "kinesis-results");
+  static final String RESULTS_STREAM = "counter.results";
 
   static final ValueSpec<Long> TOTAL = ValueSpec.named("total").withLongType();
 
