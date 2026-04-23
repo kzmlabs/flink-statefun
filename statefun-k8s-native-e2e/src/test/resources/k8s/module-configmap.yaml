@@ -63,3 +63,34 @@ data:
       address: kafka.statefun-e2e:9092
       deliverySemantic:
         type: at-least-once
+    ---
+    kind: io.statefun.kinesis.v1/ingress
+    spec:
+      id: e2e/kinesis-commands
+      streamArn: arn:aws:kinesis:us-east-1:000000000000:stream/counter-commands
+      awsRegion:
+        type: custom-endpoint
+        endpoint: http://localstack.statefun-e2e:4566
+        id: us-east-1
+      awsCredentials:
+        type: basic
+        accessKeyId: test
+        secretAccessKey: test
+      startupPosition:
+        type: earliest
+      targets:
+        - e2e.k8s/kinesis-counter
+      valueType: io.github.kzmlabs.statefun.e2e/CounterCommand
+    ---
+    kind: io.statefun.kinesis.v1/egress
+    spec:
+      id: e2e/kinesis-results
+      streamName: counter-results
+      awsRegion:
+        type: custom-endpoint
+        endpoint: http://localstack.statefun-e2e:4566
+        id: us-east-1
+      awsCredentials:
+        type: basic
+        accessKeyId: test
+        secretAccessKey: test

@@ -41,11 +41,18 @@ public class RemoteFunctionServer {
             .withSupplier(KafkaCounterFn::new)
             .build();
 
+    StatefulFunctionSpec kinesisCounterSpec =
+        StatefulFunctionSpec.builder(KinesisCounterFn.FN_TYPE)
+            .withValueSpec(KinesisCounterFn.TOTAL)
+            .withSupplier(KinesisCounterFn::new)
+            .build();
+
     StatefulFunctionSpec greeterSpec =
         StatefulFunctionSpec.builder(GreeterFn.FN_TYPE).withSupplier(GreeterFn::new).build();
 
     StatefulFunctions functions = new StatefulFunctions();
     functions.withStatefulFunction(kafkaCounterSpec);
+    functions.withStatefulFunction(kinesisCounterSpec);
     functions.withStatefulFunction(greeterSpec);
 
     RequestReplyHandler handler = functions.requestReplyHandler();
