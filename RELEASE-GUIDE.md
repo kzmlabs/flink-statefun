@@ -20,14 +20,14 @@ Triggered automatically when pushing a tag starting with `v`:
 
 ```bash
 # Update version
-mvn versions:set -DnewVersion=3.4.0-KZM-3.0-RC1-RC8 -DgenerateBackupPoms=false
+mvn versions:set -DnewVersion=3.4.0-KZM-3.0-RC2 -DgenerateBackupPoms=false
 
 # Commit and tag
 git add -A
-git commit -m "Release 3.4.0-KZM-3.0-RC1-RC8"
+git commit -m "Release 3.4.0-KZM-3.0-RC2"
 git push origin release
-git tag v3.4.0-KZM-3.0-RC1-RC8
-git push origin v3.4.0-KZM-3.0-RC1-RC8
+git tag v3.4.0-KZM-3.0-RC2
+git push origin v3.4.0-KZM-3.0-RC2
 ```
 
 This runs `.github/workflows/release.yml` which:
