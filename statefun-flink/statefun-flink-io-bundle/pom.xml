@@ -66,6 +66,15 @@ under the License.
             <artifactId>statefun-kafka-io</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
+            <artifactId>statefun-kinesis-io</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-connector-aws-kinesis-streams</artifactId>
+        </dependency>
         <!-- flink  -->
         <dependency>
             <groupId>org.apache.flink</groupId>

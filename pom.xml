@@ -116,6 +116,7 @@ under the License.
         <protoc-jar-maven-plugin.version>3.11.4</protoc-jar-maven-plugin.version>
         <flink.version>2.2.0</flink.version>
         <flink-kafka.version>4.0.1-2.0</flink-kafka.version>
+        <flink.connector.aws.version>6.0.0-2.0</flink.connector.aws.version>
         <scala.binary.version>2.12</scala.binary.version>
         <scala.version>2.12.7</scala.version>
         <lz4-java.version>1.8.1</lz4-java.version>
