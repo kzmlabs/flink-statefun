@@ -32,6 +32,7 @@ under the License.
         <central.skip>true</central.skip>
         <skipTests>false</skipTests>
         <kafka-clients.version>3.9.0</kafka-clients.version>
+        <awssdk.version>2.29.29</awssdk.version>
         <awaitility.version>4.2.2</awaitility.version>
         <assertj.version>3.27.3</assertj.version>
         
@@ -48,11 +49,19 @@ under the License.
             <version>${protobuf.version}</version>
         </dependency>
 
-        <!-- Kafka client -->
+        <!-- Kafka client (drives Kafka E2E) -->
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka-clients</artifactId>
             <version>${kafka-clients.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- AWS SDK v2 Kinesis client (drives Kinesis E2E against LocalStack) -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>kinesis</artifactId>
+            <version>${awssdk.version}</version>
             <scope>test</scope>
         </dependency>
 

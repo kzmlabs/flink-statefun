@@ -161,6 +161,9 @@ kubectl apply -f "${K8S_MANIFESTS}/minio.yaml"
 echo "=== Deploying Kafka ==="
 kubectl apply -f "${K8S_MANIFESTS}/kafka.yaml"
 
+echo "=== Deploying LocalStack (Kinesis mock) ==="
+kubectl apply -f "${K8S_MANIFESTS}/localstack.yaml"
+
 echo "=== Deploying remote function ==="
 kubectl apply -f "${K8S_MANIFESTS}/remote-function.yaml"
 
@@ -174,6 +177,9 @@ kubectl wait --for=condition=Ready pod -l app=minio -n "${NAMESPACE}" --timeout=
 
 echo "=== Waiting for Kafka to be ready ==="
 kubectl wait --for=condition=Ready pod -l app=kafka -n "${NAMESPACE}" --timeout=180s
+
+echo "=== Waiting for LocalStack to be ready ==="
+kubectl wait --for=condition=Ready pod -l app=localstack -n "${NAMESPACE}" --timeout=180s
 
 echo "=== Waiting for remote function to be ready ==="
 kubectl wait --for=condition=Ready pod -l app=remote-function -n "${NAMESPACE}" --timeout=180s
@@ -190,6 +196,34 @@ for TOPIC in commands-proto commands-json results-proto results-json; do
     --topic "${TOPIC}" --partitions 1 --replication-factor 1
 done
 echo "Kafka topics created"
+
+# --- Pre-create Kinesis streams via awslocal (bundled in LocalStack image) ---
+
+echo "=== Creating Kinesis streams ==="
+LOCALSTACK_POD=$(kubectl get pod -n "${NAMESPACE}" -l app=localstack -o jsonpath='{.items[0].metadata.name}')
+for STREAM in counter-commands counter-results; do
+  MSYS_NO_PATHCONV=1 kubectl exec -n "${NAMESPACE}" "${LOCALSTACK_POD}" -- \
+    awslocal kinesis create-stream --stream-name "${STREAM}" --shard-count 1
+done
+
+echo "=== Waiting for Kinesis streams to become ACTIVE ==="
+for STREAM in counter-commands counter-results; do
+  for i in $(seq 1 30); do
+    STATUS=$(MSYS_NO_PATHCONV=1 kubectl exec -n "${NAMESPACE}" "${LOCALSTACK_POD}" -- \
+      awslocal kinesis describe-stream-summary --stream-name "${STREAM}" \
+      --query 'StreamDescriptionSummary.StreamStatus' --output text 2>/dev/null || echo "PENDING")
+    if [[ "${STATUS}" == "ACTIVE" ]]; then
+      echo "  stream ${STREAM}: ACTIVE"
+      break
+    fi
+    if [[ $i -eq 30 ]]; then
+      echo "ERROR: stream ${STREAM} did not become ACTIVE within 60s"
+      exit 1
+    fi
+    sleep 2
+  done
+done
+echo "Kinesis streams created"
 
 # --- Deploy FlinkDeployment ---
 
