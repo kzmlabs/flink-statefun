@@ -74,6 +74,7 @@ public class KinesisSourceProvider implements SourceProvider {
 
   private static String resolveStreamArn(KinesisIngressSpec<?> spec) {
     if (spec.streamArn() != null) {
+      // ARN syntax validation is delegated to KinesisStreamsSource; we only validate presence here.
       return spec.streamArn();
     }
     if (spec.streams().size() == 1) {

@@ -170,7 +170,8 @@ class KinesisSourceProviderTest {
 
     assertThat(cfg.get(KinesisSourceConfigOptions.STREAM_INITIAL_POSITION))
         .isEqualTo(KinesisSourceConfigOptions.InitialPosition.AT_TIMESTAMP);
-    assertThat(cfg.get(KinesisSourceConfigOptions.STREAM_INITIAL_TIMESTAMP)).isNotBlank();
+    assertThat(cfg.get(KinesisSourceConfigOptions.STREAM_INITIAL_TIMESTAMP))
+        .isEqualTo("2024-06-15T12:30:45.000Z");
   }
 
   // ---------------------------------------------------------------------------
