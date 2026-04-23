@@ -114,11 +114,12 @@ public abstract class AwsRegion {
 
       final URI uri = URI.create(serviceEndpoint);
       final String scheme = uri.getScheme();
-      if (!scheme.equalsIgnoreCase("https") && !scheme.equalsIgnoreCase("http")) {
+      if (scheme == null
+          || (!scheme.equalsIgnoreCase("https") && !scheme.equalsIgnoreCase("http"))) {
         throw new IllegalArgumentException(
             "Invalid service endpoint url: "
                 + serviceEndpoint
-                + "; Only http:// and https:// schemes are supported for custom endpoints");
+                + "; Only custom service endpoints using HTTP or HTTPS are supported");
       }
 
       return serviceEndpoint;

@@ -20,6 +20,7 @@ package org.apache.flink.statefun.sdk.kinesis.ingress;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
+import javax.annotation.Nullable;
 import org.apache.flink.statefun.sdk.IngressType;
 import org.apache.flink.statefun.sdk.core.OptionalProperty;
 import org.apache.flink.statefun.sdk.io.IngressIdentifier;
@@ -36,7 +37,7 @@ public final class KinesisIngressSpec<T> implements IngressSpec<T> {
    * ARN of the single Kinesis stream to consume from (Flink 2.x KinesisStreamsSource API). May be
    * {@code null} when the legacy {@code streams} list is used instead.
    */
-  private final String streamArn;
+  @Nullable private final String streamArn;
 
   private final KinesisIngressDeserializer<T> deserializer;
   private final KinesisIngressStartupPosition startupPosition;
@@ -62,10 +63,8 @@ public final class KinesisIngressSpec<T> implements IngressSpec<T> {
     this.streamArn = streamArn;
 
     this.streams = Objects.requireNonNull(streams, "AWS Kinesis stream names");
-    if (streams.isEmpty() && streamArn == null) {
-      throw new IllegalArgumentException(
-          "Must have at least one stream to consume from specified.");
-    }
+    // Invariant enforced by KinesisIngressBuilder.build()
+    assert !streams.isEmpty() || streamArn != null;
   }
 
   @Override
@@ -86,6 +85,7 @@ public final class KinesisIngressSpec<T> implements IngressSpec<T> {
    * Returns the ARN of the Kinesis stream to consume from, or {@code null} if the legacy stream
    * name list was used instead.
    */
+  @Nullable
   public String streamArn() {
     return streamArn;
   }

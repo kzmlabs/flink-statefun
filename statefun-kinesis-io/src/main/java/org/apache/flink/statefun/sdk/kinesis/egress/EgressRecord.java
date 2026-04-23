@@ -46,7 +46,12 @@ public final class EgressRecord {
     return data;
   }
 
-  /** @return target AWS Kinesis stream to write to. */
+  /**
+   * @return target AWS Kinesis stream to write to.
+   * @apiNote When used with the Flink 2.x runtime, this value is ignored; the sink is pre-bound to
+   *     the stream specified via {@link
+   *     org.apache.flink.statefun.sdk.kinesis.egress.KinesisEgressBuilder#withStreamName(String)}.
+   */
   public String getStream() {
     return stream;
   }

@@ -17,6 +17,7 @@
  */
 package org.apache.flink.statefun.sdk.kinesis.auth;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -48,5 +49,11 @@ public class AwsRegionTest {
     assertThrows(
         IllegalArgumentException.class,
         () -> AwsRegion.ofCustomEndpoint("ftp://some-bucket.example.com", "us-east-1"));
+  }
+
+  @Test
+  void ofCustomEndpoint_schemelessHost_throws() {
+    assertThatThrownBy(() -> AwsRegion.ofCustomEndpoint("localhost:4566", "us-east-1"))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 }
