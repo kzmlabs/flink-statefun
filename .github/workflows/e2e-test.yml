@@ -29,8 +29,11 @@ jobs:
       - name: Build all modules (skip tests)
         run: mvn install -DskipTests -B
 
-      - name: Run K8s E2E (build images, setup cluster, test, teardown)
-        run: mvn verify -pl statefun-k8s-native-e2e -B
+      - name: Run K8s E2E (build images, setup cluster, test)
+        # Skip mvn's post-integration-test teardown so the explicit Teardown
+        # step below is the only one that runs — otherwise the cluster is
+        # gone before 'Collect logs on failure' can reach it.
+        run: mvn verify -pl statefun-k8s-native-e2e -B -Dskip.teardown=true
 
       - name: Collect logs on failure
         if: failure()
