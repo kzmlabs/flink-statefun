@@ -42,7 +42,7 @@ data:
         - topic: commands-proto
           valueType: io.github.kzmlabs.statefun.e2e/CounterCommand
           targets:
-            - e2e.k8s/counter
+            - e2e.k8s/kafka-counter
     ---
     kind: io.statefun.kafka.v1/ingress
     spec:
@@ -59,7 +59,7 @@ data:
     ---
     kind: io.statefun.kafka.v1/egress
     spec:
-      id: e2e/results
+      id: e2e/kafka-results
       address: kafka.statefun-e2e:9092
       deliverySemantic:
         type: at-least-once
