@@ -23,7 +23,7 @@ under the License.
     <groupId>io.github.kzmlabs.flinkstatefun</groupId>
     <artifactId>statefun-parent</artifactId>
     <name>Kzmlabs StateFun Parent</name>
-    <version>3.4.0-KZM-2.0</version>
+    <version>3.4.0-KZM-3.0-RC1</version>
     <packaging>pom</packaging>
     <description>Kzmlabs Flink StateFun — actively maintained continuation of the Stateful Functions framework for building distributed stateful applications and event-driven microservices on Apache Flink 2.2.0 with Java 21. Provides a function-as-actor programming model with durable state, exactly-once messaging, Kafka and Kinesis ingress/egress, and Kubernetes-native deployment via the Flink Kubernetes Operator.</description>
 
