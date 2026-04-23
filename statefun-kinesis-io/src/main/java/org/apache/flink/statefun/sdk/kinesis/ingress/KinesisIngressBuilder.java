@@ -40,6 +40,7 @@ public final class KinesisIngressBuilder<T> {
   private final IngressIdentifier<T> id;
 
   private final List<String> streams = new ArrayList<>();
+  private String streamArn;
   private KinesisIngressDeserializer<T> deserializer;
   private KinesisIngressStartupPosition startupPosition =
       KinesisIngressStartupPosition.fromLatest();
@@ -76,6 +77,19 @@ public final class KinesisIngressBuilder<T> {
   /** @param streams A list of streams that should be consumed. */
   public KinesisIngressBuilder<T> withStreams(List<String> streams) {
     this.streams.addAll(streams);
+    return this;
+  }
+
+  /**
+   * Sets the ARN of the single Kinesis stream to consume from. This is required when using the
+   * Flink 2.x {@code KinesisStreamsSource} API. Mutually exclusive with {@link #withStream(String)}
+   * / {@link #withStreams(java.util.List)}.
+   *
+   * @param arn The full ARN of the Kinesis stream (e.g. {@code
+   *     arn:aws:kinesis:us-east-1:000000000000:stream/events}).
+   */
+  public KinesisIngressBuilder<T> withStreamArn(String arn) {
+    this.streamArn = Objects.requireNonNull(arn, "stream ARN");
     return this;
   }
 
@@ -183,8 +197,26 @@ public final class KinesisIngressBuilder<T> {
 
   /** @return A new {@link KinesisIngressSpec}. */
   public KinesisIngressSpec<T> build() {
+    boolean hasStreams = !streams.isEmpty();
+    boolean hasArn = streamArn != null;
+    if (hasStreams && hasArn) {
+      throw new IllegalStateException(
+          "Cannot set both stream names (withStream/withStreams) and a stream ARN"
+              + " (withStreamArn) on the same ingress; use one or the other.");
+    }
+    if (!hasStreams && !hasArn) {
+      throw new IllegalStateException(
+          "A stream source must be specified: call withStream()/withStreams() or withStreamArn().");
+    }
     return new KinesisIngressSpec<>(
-        id, streams, deserializer, startupPosition, awsRegion, awsCredentials, properties);
+        id,
+        streams,
+        streamArn,
+        deserializer,
+        startupPosition,
+        awsRegion,
+        awsCredentials,
+        properties);
   }
 
   // ========================================================================================

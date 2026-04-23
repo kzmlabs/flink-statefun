@@ -38,6 +38,7 @@ public final class KinesisEgressBuilder<T> {
   private AwsRegion awsRegion = AwsRegion.fromDefaultProviderChain();
   private AwsCredentials awsCredentials = AwsCredentials.fromDefaultProviderChain();
   private final Properties properties = new Properties();
+  private String streamName;
 
   private KinesisEgressBuilder(EgressIdentifier<T> id) {
     this.id = Objects.requireNonNull(id);
@@ -150,9 +151,33 @@ public final class KinesisEgressBuilder<T> {
     return this;
   }
 
+  /**
+   * Sets the name of the Kinesis stream that records will be written to. Required when using the
+   * Flink 2.x {@code KinesisStreamsSink} API, which is pre-bound to a single stream.
+   *
+   * <p>Note: when this is set, the stream name carried by individual {@link
+   * org.apache.flink.statefun.sdk.kinesis.egress.EgressRecord#getStream()} values is ignored by the
+   * runtime.
+   *
+   * @param name The name of the Kinesis stream.
+   */
+  public KinesisEgressBuilder<T> withStreamName(String name) {
+    this.streamName = Objects.requireNonNull(name, "stream name");
+    return this;
+  }
+
   /** @return A new {@link KinesisEgressSpec}. */
   public KinesisEgressSpec<T> build() {
+    if (streamName == null) {
+      throw new IllegalStateException("stream name must be set via withStreamName()");
+    }
     return new KinesisEgressSpec<>(
-        id, serializerClass, maxOutstandingRecords, awsRegion, awsCredentials, properties);
+        id,
+        serializerClass,
+        maxOutstandingRecords,
+        awsRegion,
+        awsCredentials,
+        properties,
+        streamName);
   }
 }

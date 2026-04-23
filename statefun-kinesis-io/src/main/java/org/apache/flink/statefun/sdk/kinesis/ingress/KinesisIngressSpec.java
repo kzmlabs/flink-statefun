@@ -31,6 +31,13 @@ import org.apache.flink.statefun.sdk.kinesis.auth.AwsRegion;
 public final class KinesisIngressSpec<T> implements IngressSpec<T> {
   private final IngressIdentifier<T> ingressIdentifier;
   private final List<String> streams;
+
+  /**
+   * ARN of the single Kinesis stream to consume from (Flink 2.x KinesisStreamsSource API). May be
+   * {@code null} when the legacy {@code streams} list is used instead.
+   */
+  private final String streamArn;
+
   private final KinesisIngressDeserializer<T> deserializer;
   private final KinesisIngressStartupPosition startupPosition;
   private final OptionalProperty<AwsRegion> awsRegion;
@@ -40,6 +47,7 @@ public final class KinesisIngressSpec<T> implements IngressSpec<T> {
   KinesisIngressSpec(
       IngressIdentifier<T> ingressIdentifier,
       List<String> streams,
+      String streamArn,
       KinesisIngressDeserializer<T> deserializer,
       KinesisIngressStartupPosition startupPosition,
       OptionalProperty<AwsRegion> awsRegion,
@@ -51,9 +59,10 @@ public final class KinesisIngressSpec<T> implements IngressSpec<T> {
     this.awsRegion = Objects.requireNonNull(awsRegion, "AWS region configuration");
     this.awsCredentials = Objects.requireNonNull(awsCredentials, "AWS credentials configuration");
     this.properties = Objects.requireNonNull(properties);
+    this.streamArn = streamArn;
 
     this.streams = Objects.requireNonNull(streams, "AWS Kinesis stream names");
-    if (streams.isEmpty()) {
+    if (streams.isEmpty() && streamArn == null) {
       throw new IllegalArgumentException(
           "Must have at least one stream to consume from specified.");
     }
@@ -71,6 +80,14 @@ public final class KinesisIngressSpec<T> implements IngressSpec<T> {
 
   public List<String> streams() {
     return streams;
+  }
+
+  /**
+   * Returns the ARN of the Kinesis stream to consume from, or {@code null} if the legacy stream
+   * name list was used instead.
+   */
+  public String streamArn() {
+    return streamArn;
   }
 
   public KinesisIngressDeserializer<T> deserializer() {
