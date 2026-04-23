@@ -29,34 +29,10 @@ import org.apache.flink.statefun.sdk.egress.generated.KinesisEgressRecord;
 import org.apache.flink.statefun.sdk.spi.StatefulFunctionModule;
 
 /**
- * Version 1 {@link ComponentBinder} for binding a Kinesis egress which expects {@link
- * KinesisEgressRecord} as input, and writes the wrapped value bytes to Kinesis. Corresponding
- * {@link TypeName} is {@code io.statefun.kinesis.v1/egress}.
+ * Version 1 {@link ComponentBinder} for {@code io.statefun.kinesis.v1/egress}. Accepts {@link
+ * KinesisEgressRecord} and writes the wrapped value bytes to Kinesis.
  *
- * <p>Below is an example YAML document of the {@link ComponentJsonObject} recognized by this
- * binder, with the expected types of each field:
- *
- * <pre>
- * kind: io.statefun.kinesis.v1/egress                                (typename)
- * spec:                                                              (object)
- *   id: com.foo.bar/my-egress                                        (typename)
- *   streamName: my-stream                                            (string, required)
- *   awsRegion:                                                       (object, optional)
- *     type: specific                                                 (string)
- *     id: us-west-2                                                  (string)
- *   awsCredentials:                                                  (object, optional)
- *     type: basic                                                    (string)
- *     accessKeyId: my_access_key_id                                  (string)
- *     secretAccessKey: my_secret_access_key                          (string)
- *   maxOutstandingRecords: 9999                                      (int, optional)
- *   clientConfigProperties:                                          (array, optional)
- *     - SocketTimeout: 9999                                          (string)
- *     - MaxConnections: 15                                           (string)
- *     - ...
- * </pre>
- *
- * <p>The {@code awsRegion} and {@code awsCredentials} options all have multiple options to choose
- * from. Please see {@link GenericKinesisEgressSpec} for further details.
+ * <p>YAML schema reference: see {@code docs/kinesis-io.md}.
  */
 final class GenericKinesisEgressBinderV1 implements ComponentBinder {
 

@@ -29,45 +29,10 @@ import org.apache.flink.statefun.sdk.TypeName;
 import org.apache.flink.statefun.sdk.spi.StatefulFunctionModule;
 
 /**
- * Version 1 {@link ComponentBinder} for binding a Kinesis ingress which automatically routes
- * records to target functions using the record key as the function id. Corresponding {@link
- * TypeName} is {@code io.statefun.kinesis.v1/ingress}.
+ * Version 1 {@link ComponentBinder} for {@code io.statefun.kinesis.v1/ingress}. Records are
+ * auto-routed to target functions by record key.
  *
- * <p>Below is an example YAML document of the {@link ComponentJsonObject} recognized by this
- * binder, with the expected types of each field:
- *
- * <pre>
- * kind: io.statefun.kinesis.v1/ingress                               (typename)
- * spec:                                                              (object)
- *   id: com.foo.bar/my-ingress                                       (typename)
- *   awsRegion:                                                       (object, optional)
- *     type: specific                                                 (string)
- *     id: us-west-2                                                  (string)
- *   awsCredentials:                                                  (object, optional)
- *     type: basic                                                    (string)
- *     accessKeyId: my_access_key_id                                  (string)
- *     secretAccessKey: my_secret_access_key                          (string)
- *   startupPosition:                                                 (object, optional)
- *     type: earliest                                                 (string)
- *   streamArn: arn:aws:kinesis:us-east-1:000000000000:stream/events  (string, mutually exclusive
- *     with streams)
- *   streams:                                                         (array, mutually exclusive
- *     with streamArn)
- *     - stream: stream-1                                             (string)
- *       valueType: com.foo.bar/my-type-1                             (typename)
- *       targets:                                                     (array)
- *         - com.mycomp.foo/function-1                                (typename)
- *         - ...
- *     - ...
- *   clientConfigProperties:                                          (array, optional)
- *     - SocketTimeout: 9999                                          (string)
- *     - MaxConnections: 15                                           (string)
- *     - ...
- * </pre>
- *
- * <p>The {@code awsRegion}, {@code awsCredentials}, {@code startupPosition} options all have
- * multiple options to choose from. Please see {@link RoutableKinesisIngressSpec} for further
- * details.
+ * <p>YAML schema reference: see {@code docs/kinesis-io.md}.
  */
 final class RoutableKinesisIngressBinderV1 implements ComponentBinder {
 
