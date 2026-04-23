@@ -4,10 +4,10 @@
 
 This guide documents the release process for publishing to Maven Central and GitHub Container Registry (GHCR).
 
-## Current Release: 3.4.0-KZM-2.0-RC7
+## Current Release: 3.4.0-KZM-2.0
 
 - **Maven Central**: Published
-- **Docker Image**: `ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-2.0-RC7`
+- **Docker Image**: `ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-2.0`
 - **GitHub Release**: https://github.com/kzmlabs/flink-statefun/releases
 
 ---
@@ -196,5 +196,5 @@ mvn clean install -Prelease -DskipTests -Dgpg.skip=true
 gh run list --repo kzmlabs/flink-statefun
 
 # Pull Docker image
-docker pull ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-2.0-RC7
+docker pull ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-2.0
 ```

@@ -4,16 +4,19 @@
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.kzmlabs.flinkstatefun/statefun-sdk-java.svg)](https://search.maven.org/search?q=g:io.github.kzmlabs.flinkstatefun)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
-A fork of [Apache Flink Stateful Functions](https://github.com/apache/flink-statefun) updated for **Flink 2.2.0** and **Java 21**, published to Maven Central under the `io.github.kzmlabs.flinkstatefun` group ID.
+An actively maintained continuation of Stateful Functions updated for **Flink 2.2.0** and **Java 21**, published to Maven Central under the `io.github.kzmlabs.flinkstatefun` group ID.
 
-## Why This Fork?
+> Originally based on [Apache Flink Stateful Functions](https://github.com/apache/flink-statefun), which has been archived upstream. This project is now independently maintained by Kzmlabs.
 
-The upstream Apache Flink StateFun project has been archived and is no longer actively maintained. This fork:
+## Why This Project?
 
-- **Updates to Flink 2.2.0** - The latest stable Flink release
-- **Requires Java 21** - Modern Java runtime with improved performance
-- **Published to Maven Central** - Easy dependency management via `io.github.kzmlabs.flinkstatefun` coordinates
-- **Maintains compatibility** - Same API as Apache StateFun 3.3.x
+The upstream Apache Flink StateFun project has been archived and is no longer actively maintained. Kzmlabs Flink StateFun picks up where it left off:
+
+- **Updates to Flink 2.2.0** — The latest stable Flink release
+- **Requires Java 21** — Modern Java runtime with improved performance
+- **Published to Maven Central** — Easy dependency management via `io.github.kzmlabs.flinkstatefun` coordinates
+- **Maintains compatibility** — Same API as Apache StateFun 3.3.x
+- **Kubernetes-native** — Release-gated K8s E2E test suite running on the Flink Kubernetes Operator
 
 ## Quick Start
 
@@ -23,7 +26,7 @@ The upstream Apache Flink StateFun project has been archived and is no longer ac
 <dependency>
     <groupId>io.github.kzmlabs.flinkstatefun</groupId>
     <artifactId>statefun-sdk-java</artifactId>
-    <version>3.4.0-KZM-2.0-RC7</version>
+    <version>3.4.0-KZM-2.0</version>
 </dependency>
 ```
 
@@ -47,7 +50,7 @@ Stateful Functions is an API that simplifies building **distributed stateful app
 - [Getting Started](#getting-started)
 - [Building from Source](#building-from-source)
 - [Module Structure](#module-structure)
-- [Differences from Upstream](#differences-from-upstream)
+- [Differences from Apache StateFun](#differences-from-apache-statefun)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -87,7 +90,7 @@ A _module_ is the entry point for adding primitives (ingresses, egresses, router
 <dependency>
     <groupId>io.github.kzmlabs.flinkstatefun</groupId>
     <artifactId>statefun-sdk-java</artifactId>
-    <version>3.4.0-KZM-2.0-RC7</version>
+    <version>3.4.0-KZM-2.0</version>
 </dependency>
 ```
 
@@ -145,7 +148,7 @@ mvn install -DskipTests -B
 ./tools/docker/build-stateful-functions.sh
 ```
 
-For local development, the image will be tagged as `flink-statefun:3.4.0-KZM-2.0-RC7`.
+For local development, the image will be tagged as `flink-statefun:3.4.0-KZM-2.0`.
 
 Official releases are published to GitHub Container Registry: `ghcr.io/kzmlabs/flink-statefun:<version>`
 
@@ -221,10 +224,10 @@ docker logs statefun-remote-function
 | `statefun-flink-runner` | Uber JAR for K8s deployment via Flink Operator |
 | `statefun-k8s-native-e2e` | Kubernetes end-to-end tests |
 
-## Differences from Upstream
+## Differences from Apache StateFun
 
-| Feature | Apache StateFun | Kzmlabs Fork |
-|---------|-----------------|--------------|
+| Feature | Apache StateFun | Kzmlabs StateFun |
+|---------|-----------------|------------------|
 | Flink Version | 1.16.x | 2.2.0 |
 | Java Version | 8/11 | 21 |
 | Maven Group ID | `org.apache.flink` | `io.github.kzmlabs.flinkstatefun` |
@@ -251,8 +254,8 @@ classloader:
 
 ## Branch Strategy
 
-- **`master`** - Synced with upstream Apache (read-only)
-- **`release`** - Main development branch for this fork
+- **`master`** — Historical snapshot of the original Apache Flink StateFun source (read-only)
+- **`release`** — Main development branch
 
 ## Contributing
 
@@ -268,6 +271,6 @@ This project is licensed under the [Apache License 2.0](LICENSE).
 
 ---
 
-**Original Project:** [Apache Flink Stateful Functions](https://github.com/apache/flink-statefun)
+**Upstream (archived):** [Apache Flink Stateful Functions](https://github.com/apache/flink-statefun)
 
 **Maintained by:** [Kzmlabs](https://github.com/kzmlabs)
