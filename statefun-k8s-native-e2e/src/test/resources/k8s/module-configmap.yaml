@@ -78,9 +78,11 @@ data:
         secretAccessKey: test
       startupPosition:
         type: earliest
-      targets:
-        - e2e.k8s/kinesis-counter
-      valueType: io.github.kzmlabs.statefun.e2e/CounterCommand
+      streams:
+        - stream: counter-commands
+          valueType: io.github.kzmlabs.statefun.e2e/CounterCommand
+          targets:
+            - e2e.k8s/kinesis-counter
     ---
     kind: io.statefun.kinesis.v1/egress
     spec:
