@@ -56,7 +56,8 @@ final class AwsConfigAppender {
                       p));
       return;
     }
-    throw new IllegalArgumentException("Unrecognized AwsCredentials variant: " + credentials);
+    throw new IllegalStateException(
+        "Safe guard; unreachable AwsCredentials variant: " + credentials);
   }
 
   static void appendRegion(Properties props, AwsRegion region) {
@@ -73,6 +74,6 @@ final class AwsConfigAppender {
       props.setProperty(AWSConfigConstants.AWS_ENDPOINT, r.serviceEndpoint());
       return;
     }
-    throw new IllegalArgumentException("Unrecognized AwsRegion variant: " + region);
+    throw new IllegalStateException("Safe guard; unreachable AwsRegion variant: " + region);
   }
 }

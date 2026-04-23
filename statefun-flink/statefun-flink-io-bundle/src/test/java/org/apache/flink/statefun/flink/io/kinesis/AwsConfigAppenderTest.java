@@ -70,6 +70,7 @@ class AwsConfigAppenderTest {
     Properties props = new Properties();
     AwsConfigAppender.appendCredentials(
         props, AwsCredentials.profile("myprofile", "/path/to/profile"));
+    assertThat(props).containsEntry(AWSConfigConstants.AWS_CREDENTIALS_PROVIDER, "PROFILE");
     assertThat(props)
         .containsEntry(
             AWSConfigConstants.profileName(AWSConfigConstants.AWS_CREDENTIALS_PROVIDER),
@@ -84,8 +85,7 @@ class AwsConfigAppenderTest {
   void appendsDefaultRegion() {
     Properties props = new Properties();
     AwsConfigAppender.appendRegion(props, AwsRegion.fromDefaultProviderChain());
-    assertThat(props).doesNotContainKey(AWSConfigConstants.AWS_REGION);
-    assertThat(props).doesNotContainKey(AWSConfigConstants.AWS_ENDPOINT);
+    assertThat(props).isEmpty();
   }
 
   @Test
