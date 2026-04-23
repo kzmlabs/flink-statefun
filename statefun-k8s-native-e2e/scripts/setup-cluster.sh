@@ -33,7 +33,7 @@ NAMESPACE=statefun-e2e
 FLINK_OPERATOR_VERSION=1.11.0
 KAFKA_TOPICS=(counter.commands counter.results greeter.commands greeter.results)
 KINESIS_STREAMS=(counter.commands counter.results)
-S3_BUCKET=statefun.checkpoints
+S3_BUCKET=statefun-checkpoints
 
 BASEDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
 K8S_MANIFESTS="${BASEDIR}/../src/test/resources/k8s"

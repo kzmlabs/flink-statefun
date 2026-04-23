@@ -43,11 +43,11 @@ spec:
     state.backend.async: "true"
     state.backend.incremental: "true"
     state.checkpoints.num-retained: "10"
-    state.checkpoints.dir: s3://statefun.checkpoints/checkpoints
-    state.savepoints.dir: s3://statefun.checkpoints/savepoints
+    state.checkpoints.dir: s3://statefun-checkpoints/checkpoints
+    state.savepoints.dir: s3://statefun-checkpoints/savepoints
     state.backend.changelog.enabled: "true"
     state.backend.changelog.storage: filesystem
-    dstl.dfs.base-path: s3://statefun.checkpoints/dfs
+    dstl.dfs.base-path: s3://statefun-checkpoints/dfs
     # --- S3 via LocalStack ---
     s3.endpoint: http://localstack.statefun-e2e:4566
     s3.path-style-access: "true"
@@ -55,7 +55,7 @@ spec:
     s3.secret-key: test
     # --- High Availability ---
     high-availability.type: org.apache.flink.kubernetes.highavailability.KubernetesHaServicesFactory
-    high-availability.storageDir: s3://statefun.checkpoints/ha
+    high-availability.storageDir: s3://statefun-checkpoints/ha
     high-availability.kubernetes.leader-election.lease-duration: "15s"
     high-availability.kubernetes.leader-election.renew-deadline: "10s"
     high-availability.kubernetes.leader-election.retry-period: "2s"

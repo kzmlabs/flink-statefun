@@ -23,7 +23,17 @@ data:
     ---
     kind: io.statefun.endpoints.v2/http
     spec:
-      functions: counter.*/*
+      functions: counter.kafka/*
+      urlPathTemplate: http://remote-function.statefun-e2e:8080/statefun
+      transport:
+        type: io.statefun.transports.v1/async
+        timeouts:
+          call: 30sec
+          connect: 10sec
+    ---
+    kind: io.statefun.endpoints.v2/http
+    spec:
+      functions: counter.kinesis/*
       urlPathTemplate: http://remote-function.statefun-e2e:8080/statefun
       transport:
         type: io.statefun.transports.v1/async

@@ -79,7 +79,7 @@ class StateFunK8sE2E {
   private static final String COUNTER_RESULTS_TOPIC = "counter.results";
   private static final String GREETER_COMMANDS_TOPIC = "greeter.commands";
   private static final String GREETER_RESULTS_TOPIC = "greeter.results";
-  private static final String CHECKPOINTS_BUCKET = "statefun.checkpoints";
+  private static final String CHECKPOINTS_BUCKET = "statefun-checkpoints";
 
   private static final Duration POLL_TIMEOUT = Duration.ofMinutes(3);
   private static final Duration POLL_INTERVAL = Duration.ofSeconds(2);

@@ -120,16 +120,13 @@ under the License.
                         <artifactId>jackson-datatype-jdk8</artifactId>
                     </exclusion>
                     <!--
-                    Also exclude from the transitive chain through kinesis-streams:
                     httpclient 4.5.13 pulls commons-codec:1.11; Flink 2.2 supplies 1.19.0.
+                    We keep httpcore in — KinesisStreamsSource.createKinesisStreamProxy
+                    needs org.apache.http.config.Lookup at runtime.
                     -->
                     <exclusion>
                         <groupId>commons-codec</groupId>
                         <artifactId>commons-codec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.httpcomponents</groupId>
-                        <artifactId>httpcore</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -138,18 +135,17 @@ under the License.
                 <artifactId>flink-connector-aws-base</artifactId>
                 <version>${flink.connector.aws.version}</version>
                 <exclusions>
-                    <!--
-                    httpclient 4.5.13 pulls commons-codec:1.11; Flink 2.2 supplies 1.19.0.
-                    -->
                     <exclusion>
                         <groupId>commons-codec</groupId>
                         <artifactId>commons-codec</artifactId>
                     </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.httpcomponents</groupId>
-                        <artifactId>httpcore</artifactId>
-                    </exclusion>
                 </exclusions>
+            </dependency>
+            <!-- Pin httpcore — connector's transitive chain brings 4.4.13 and 4.4.16 -->
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpcore</artifactId>
+                <version>4.4.16</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.flink</groupId>

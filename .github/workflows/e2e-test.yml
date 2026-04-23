@@ -57,7 +57,7 @@ jobs:
           if [ -n "$LOCALSTACK_POD" ]; then
             kubectl exec -n statefun-e2e "$LOCALSTACK_POD" -- awslocal kinesis list-streams || true
             kubectl exec -n statefun-e2e "$LOCALSTACK_POD" -- awslocal s3 ls || true
-            kubectl exec -n statefun-e2e "$LOCALSTACK_POD" -- awslocal s3 ls s3://statefun.checkpoints/ --recursive || true
+            kubectl exec -n statefun-e2e "$LOCALSTACK_POD" -- awslocal s3 ls s3://statefun-checkpoints/ --recursive || true
           fi
           echo "=== All pods ==="
           kubectl get pods -A || true
