@@ -25,26 +25,18 @@ import io.minio.ListObjectsArgs;
 import io.minio.MinioClient;
 import io.minio.Result;
 import io.minio.messages.Item;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.InputStreamReader;
-import java.net.InetAddress;
-import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import org.apache.flink.statefun.e2e.k8s.generated.E2EProtos.CounterCommand;
 import org.apache.flink.statefun.e2e.k8s.generated.E2EProtos.CounterResult;
+import org.apache.flink.statefun.e2e.k8s.util.KubectlPortForward;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -57,6 +49,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestMethodOrder;
@@ -64,13 +57,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * K8s E2E test for StateFun. Expects the cluster and all infrastructure to be already deployed by
- * {@code scripts/setup-cluster.sh}. This test uses kubectl port-forward (via ProcessBuilder) for
- * Kafka and MinIO connectivity, then produces/consumes Kafka messages and asserts results.
+ * K8s E2E for the Kafka ingress/egress path. Expects the cluster and all infrastructure to be
+ * already deployed by {@code scripts/setup-cluster.sh}. Uses {@link KubectlPortForward} for Kafka
+ * and MinIO access.
  *
- * <p>Kafka must use fixed port 9094 to match the broker's EXTERNAL advertised listener. MinIO uses
- * an ephemeral port to avoid conflicts across repeated test runs.
+ * <p>Kafka is forwarded on fixed port 9094 to match the broker's EXTERNAL advertised listener.
+ * MinIO uses an ephemeral local port to avoid conflicts across repeated test runs.
  */
+@Tag("kafka")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class StateFunK8sE2E {
@@ -78,257 +72,165 @@ class StateFunK8sE2E {
   private static final Logger LOG = LoggerFactory.getLogger(StateFunK8sE2E.class);
   private static final String NAMESPACE = "statefun-e2e";
   private static final int KAFKA_LOCAL_PORT = 9094;
-  private static final Pattern PORT_PATTERN =
-      Pattern.compile("Forwarding from 127\\.0\\.0\\.1:(\\d+)");
+  private static final Duration POLL_TIMEOUT = Duration.ofMinutes(3);
+  private static final Duration POLL_INTERVAL = Duration.ofSeconds(2);
 
-  private final List<Process> portForwardProcesses = new ArrayList<>();
-  private int minioLocalPort;
+  private KubectlPortForward kafkaForward;
+  private KubectlPortForward minioForward;
   private KafkaProducer<String, byte[]> producer;
   private KafkaConsumer<String, byte[]> protoConsumer;
   private KafkaConsumer<String, byte[]> jsonConsumer;
 
   @BeforeAll
-  void setupKafkaClients() throws Exception {
-    // Kafka needs fixed port 9094 (matching EXTERNAL advertised listener)
-    startFixedPortForward("svc/kafka", KAFKA_LOCAL_PORT, KAFKA_LOCAL_PORT);
-    waitForPort(KAFKA_LOCAL_PORT, 30);
-    LOG.info("Kafka port-forwarded to 127.0.0.1:{}", KAFKA_LOCAL_PORT);
+  void setup() throws Exception {
+    kafkaForward =
+        KubectlPortForward.fixed(NAMESPACE, "svc/kafka", KAFKA_LOCAL_PORT, KAFKA_LOCAL_PORT);
+    minioForward = KubectlPortForward.ephemeral(NAMESPACE, "svc/minio", 9000);
+    LOG.info(
+        "Kafka @127.0.0.1:{}, MinIO @127.0.0.1:{}",
+        kafkaForward.localPort(),
+        minioForward.localPort());
 
-    // MinIO uses ephemeral port to avoid conflicts
-    minioLocalPort = startEphemeralPortForward("svc/minio", 9000);
-    LOG.info("MinIO port-forwarded to 127.0.0.1:{}", minioLocalPort);
+    String bootstrap = "127.0.0.1:" + kafkaForward.localPort();
+    producer = createProducer(bootstrap);
 
-    String bootstrapServers = "127.0.0.1:" + KAFKA_LOCAL_PORT;
-
-    // Create producer
-    Properties producerProps = new Properties();
-    producerProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-    producerProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
-    producerProps.put(
-        ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class.getName());
-    producer = new KafkaProducer<>(producerProps);
-
-    // Create consumers with unique group IDs per run to avoid stale offsets
     String runId = UUID.randomUUID().toString().substring(0, 8);
-    protoConsumer = createConsumer(bootstrapServers, "e2e-proto-" + runId, "results-proto");
-    jsonConsumer = createConsumer(bootstrapServers, "e2e-json-" + runId, "results-json");
+    protoConsumer = createConsumer(bootstrap, "e2e-proto-" + runId, "results-proto");
+    jsonConsumer = createConsumer(bootstrap, "e2e-json-" + runId, "results-json");
   }
 
   @Test
   @Order(1)
-  void protobufCounterFunction_sumsDeltasCorrectly() throws Exception {
-    String counterId = "test-counter-" + UUID.randomUUID();
-    int messageCount = 10;
+  void protobufCounterFunctionSumsDeltas() throws Exception {
+    String counterId = "counter-" + UUID.randomUUID();
+    int messages = 10;
 
-    for (int i = 0; i < messageCount; i++) {
+    for (int i = 0; i < messages; i++) {
       CounterCommand cmd = CounterCommand.newBuilder().setId(counterId).setDelta(1).build();
       producer
           .send(new ProducerRecord<>("commands-proto", counterId, cmd.toByteArray()))
-          .get(10, TimeUnit.SECONDS);
+          .get(10, java.util.concurrent.TimeUnit.SECONDS);
     }
     producer.flush();
-    LOG.info("Sent {} CounterCommand messages for id={}", messageCount, counterId);
+    LOG.info("Sent {} CounterCommand(s) for id={}", messages, counterId);
 
-    List<CounterResult> results = new ArrayList<>();
     await()
-        .atMost(Duration.ofMinutes(3))
-        .pollInterval(Duration.ofSeconds(2))
+        .atMost(POLL_TIMEOUT)
+        .pollInterval(POLL_INTERVAL)
         .untilAsserted(
             () -> {
-              ConsumerRecords<String, byte[]> records = protoConsumer.poll(Duration.ofSeconds(1));
-              for (ConsumerRecord<String, byte[]> record : records) {
-                CounterResult result = CounterResult.parseFrom(record.value());
-                if (counterId.equals(result.getId())) {
-                  results.add(result);
-                }
-              }
-              assertThat(results).as("Should receive counter results").isNotEmpty();
-              long maxTotal = results.stream().mapToLong(CounterResult::getTotal).max().orElse(0);
-              assertThat(maxTotal)
-                  .as("Counter should sum to %d", messageCount)
-                  .isEqualTo(messageCount);
+              List<CounterResult> results =
+                  StreamSupport.stream(
+                          protoConsumer.poll(Duration.ofSeconds(1)).spliterator(), false)
+                      .map(ConsumerRecord::value)
+                      .map(StateFunK8sE2E::parseCounterResult)
+                      .filter(r -> counterId.equals(r.getId()))
+                      .collect(Collectors.toList());
+              long max = results.stream().mapToLong(CounterResult::getTotal).max().orElse(0);
+              assertThat(max).as("counter should sum to %d", messages).isEqualTo(messages);
             });
-
-    LOG.info(
-        "Received {} CounterResults, max total = {}",
-        results.size(),
-        results.stream().mapToLong(CounterResult::getTotal).max().orElse(0));
   }
 
   @Test
   @Order(2)
-  void jsonGreeterFunction_returnsGreeting() throws Exception {
+  void jsonGreeterFunctionReturnsGreeting() throws Exception {
     String key = "alice-" + UUID.randomUUID().toString().substring(0, 8);
     String input = "{\"name\":\"Alice\"}";
 
     producer
         .send(new ProducerRecord<>("commands-json", key, input.getBytes(StandardCharsets.UTF_8)))
-        .get(10, TimeUnit.SECONDS);
+        .get(10, java.util.concurrent.TimeUnit.SECONDS);
     producer.flush();
     LOG.info("Sent greeter command for Alice with key={}", key);
 
-    List<String> greetings = new ArrayList<>();
     await()
-        .atMost(Duration.ofMinutes(3))
-        .pollInterval(Duration.ofSeconds(2))
+        .atMost(POLL_TIMEOUT)
+        .pollInterval(POLL_INTERVAL)
         .untilAsserted(
             () -> {
-              ConsumerRecords<String, byte[]> records = jsonConsumer.poll(Duration.ofSeconds(1));
-              for (ConsumerRecord<String, byte[]> record : records) {
-                greetings.add(new String(record.value(), StandardCharsets.UTF_8));
-              }
-              assertThat(greetings).as("Should receive at least one greeting").isNotEmpty();
+              List<String> greetings =
+                  StreamSupport.stream(
+                          jsonConsumer.poll(Duration.ofSeconds(1)).spliterator(), false)
+                      .map(r -> new String(r.value(), StandardCharsets.UTF_8))
+                      .collect(Collectors.toList());
               assertThat(greetings).anyMatch(g -> g.contains("Hello, Alice!"));
             });
-
-    LOG.info("Received greeting: {}", greetings.get(greetings.size() - 1));
   }
 
   @Test
   @Order(3)
-  void checkpointsWrittenToMinIO() throws Exception {
-    MinioClient minioClient =
+  void checkpointsWrittenToMinIO() {
+    MinioClient minio =
         MinioClient.builder()
-            .endpoint("http://127.0.0.1:" + minioLocalPort)
+            .endpoint("http://127.0.0.1:" + minioForward.localPort())
             .credentials("minioadmin", "minioadmin")
             .build();
 
     await()
-        .atMost(Duration.ofMinutes(3))
+        .atMost(POLL_TIMEOUT)
         .pollInterval(Duration.ofSeconds(10))
         .untilAsserted(
             () -> {
-              List<String> checkpointKeys = new ArrayList<>();
               Iterable<Result<Item>> objects =
-                  minioClient.listObjects(
+                  minio.listObjects(
                       ListObjectsArgs.builder()
                           .bucket("statefun-e2e")
                           .prefix("checkpoints/")
                           .recursive(true)
                           .build());
-              for (Result<Item> obj : objects) {
-                checkpointKeys.add(obj.get().objectName());
-              }
-              LOG.info("Found {} checkpoint objects in MinIO", checkpointKeys.size());
-              assertThat(checkpointKeys).as("MinIO should contain checkpoint files").isNotEmpty();
+              long count =
+                  StreamSupport.stream(objects.spliterator(), false)
+                      .peek(r -> logIfError(r))
+                      .count();
+              assertThat(count).as("MinIO should contain checkpoint objects").isPositive();
             });
   }
 
   @AfterAll
-  void cleanup() {
-    LOG.info("Cleaning up Kafka clients and port-forwards...");
-
-    if (producer != null) {
-      producer.close(Duration.ofSeconds(5));
-    }
-    if (protoConsumer != null) {
-      protoConsumer.close(Duration.ofSeconds(5));
-    }
-    if (jsonConsumer != null) {
-      jsonConsumer.close(Duration.ofSeconds(5));
-    }
-    for (Process p : portForwardProcesses) {
-      p.destroyForcibly();
-      try {
-        p.waitFor(5, TimeUnit.SECONDS);
-      } catch (InterruptedException ignored) {
-        Thread.currentThread().interrupt();
-      }
-    }
+  void teardown() {
+    if (producer != null) producer.close(Duration.ofSeconds(5));
+    if (protoConsumer != null) protoConsumer.close(Duration.ofSeconds(5));
+    if (jsonConsumer != null) jsonConsumer.close(Duration.ofSeconds(5));
+    if (kafkaForward != null) kafkaForward.close();
+    if (minioForward != null) minioForward.close();
   }
 
-  /** Starts a port-forward with a fixed local port. Logs output to a file. */
-  private void startFixedPortForward(String resource, int localPort, int remotePort)
-      throws Exception {
-    ProcessBuilder pb =
-        new ProcessBuilder(
-            "kubectl",
-            "port-forward",
-            "-n",
-            NAMESPACE,
-            "--address",
-            "127.0.0.1",
-            resource,
-            localPort + ":" + remotePort);
-    pb.redirectErrorStream(true);
-    pb.redirectOutput(new File("target/port-forward-" + localPort + ".log"));
-    Process process = pb.start();
-    portForwardProcesses.add(process);
-  }
+  // --- helpers ---
 
-  /** Starts a port-forward with an ephemeral local port and returns the assigned port. */
-  private int startEphemeralPortForward(String resource, int remotePort) throws Exception {
-    ProcessBuilder pb =
-        new ProcessBuilder(
-            "kubectl",
-            "port-forward",
-            "-n",
-            NAMESPACE,
-            "--address",
-            "127.0.0.1",
-            resource,
-            "0:" + remotePort);
-    pb.redirectErrorStream(true);
-    Process process = pb.start();
-    portForwardProcesses.add(process);
-
-    // Read stdout to parse the assigned port
-    BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-    long deadline = System.currentTimeMillis() + 30_000;
-    while (System.currentTimeMillis() < deadline) {
-      if (reader.ready()) {
-        String line = reader.readLine();
-        if (line != null) {
-          Matcher m = PORT_PATTERN.matcher(line);
-          if (m.find()) {
-            int port = Integer.parseInt(m.group(1));
-            // Drain remaining output in a daemon thread so process doesn't block
-            Thread drainer = new Thread(() -> drainStream(reader), "pf-drain-" + port);
-            drainer.setDaemon(true);
-            drainer.start();
-            waitForPort(port, 30);
-            return port;
-          }
-        }
-      }
-      Thread.sleep(100);
-    }
-    throw new RuntimeException("Failed to parse port-forward output for " + resource);
-  }
-
-  private static void drainStream(BufferedReader reader) {
+  private static CounterResult parseCounterResult(byte[] bytes) {
     try {
-      while (reader.readLine() != null) {
-        // discard
-      }
-    } catch (Exception ignored) {
-      // stream closed
+      return CounterResult.parseFrom(bytes);
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to parse CounterResult", e);
     }
   }
 
-  private static void waitForPort(int port, int timeoutSeconds) throws Exception {
-    long deadline = System.currentTimeMillis() + timeoutSeconds * 1000L;
-    while (System.currentTimeMillis() < deadline) {
-      try (Socket s = new Socket(InetAddress.getByName("127.0.0.1"), port)) {
-        return;
-      } catch (Exception ignored) {
-        Thread.sleep(500);
-      }
+  private static void logIfError(Result<Item> result) {
+    try {
+      result.get();
+    } catch (Exception e) {
+      LOG.warn("MinIO list entry error: {}", e.getMessage());
     }
-    throw new RuntimeException("Port " + port + " not available after " + timeoutSeconds + "s");
+  }
+
+  private static KafkaProducer<String, byte[]> createProducer(String bootstrapServers) {
+    Properties p = new Properties();
+    p.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+    p.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+    p.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class.getName());
+    return new KafkaProducer<>(p);
   }
 
   private static KafkaConsumer<String, byte[]> createConsumer(
       String bootstrapServers, String groupId, String topic) {
-    Properties props = new Properties();
-    props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-    props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
-    props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-    props.put(
-        ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class.getName());
-    props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-    KafkaConsumer<String, byte[]> consumer = new KafkaConsumer<>(props);
-    consumer.subscribe(Collections.singletonList(topic));
+    Properties p = new Properties();
+    p.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+    p.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
+    p.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+    p.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class.getName());
+    p.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+    KafkaConsumer<String, byte[]> consumer = new KafkaConsumer<>(p);
+    consumer.subscribe(List.of(topic));
     return consumer;
   }
 }
