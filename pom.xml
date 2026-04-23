@@ -374,6 +374,9 @@ under the License.
                         <exclude>**/README.md</exclude>
                         <exclude>**/README.zh.md</exclude>
                         <exclude>**/CODE_OF_CONDUCT.md</exclude>
+                        <exclude>**/CONTRIBUTING.md</exclude>
+                        <exclude>**/SECURITY.md</exclude>
+                        <exclude>**/CITATION.cff</exclude>
                         <exclude>**/KZMLABS-GUIDE.md</exclude>
                         <exclude>**/CHANGELOG.md</exclude>
                         <exclude>**/RELEASE-GUIDE.md</exclude>
