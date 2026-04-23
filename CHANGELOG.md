@@ -2,6 +2,22 @@
 
 All notable changes to the Kzmlabs StateFun fork are documented in this file.
 
+## [3.4.0-KZM-2.0] - 2026-04-23
+
+First stable release of the KZM-2.0 line, promoting RC7 after successful Maven Central and GHCR validation, Kubernetes native E2E testing, and dependency/plugin modernization completed across RC1–RC7.
+
+### Highlights (cumulative since 3.4.0-KZM-1.0)
+
+- **Flink 2.2.0 + Java 21** baseline with `io.github.kzmlabs.flinkstatefun` groupId
+- **Kubernetes native E2E test suite** with Flink K8s Operator 1.11 (Kafka, MinIO, RocksDB checkpointing) — mandatory release gate
+- **JUnit Jupiter 5.11.4** migration across all modules
+- **Maven Central** publishing with Sonatype central-publishing-maven-plugin 0.10.0
+- **GHCR Docker image** (`ghcr.io/kzmlabs/flink-statefun`) — `latest` tag now published for stable releases
+- **Dependency modernization**: Kafka clients 3.9.1, OkHttp 4.12.0, Testcontainers 2.0.3, Hamcrest 3.0, Protobuf 3.25.5, commons-lang3 3.20.0, commons-compress 1.28.0
+- **Plugin modernization**: maven-compiler 3.13.0, maven-shade 3.6.1, surefire/failsafe 3.5.5, enforcer 3.6.2, rat 0.17, javadoc 3.12.0, gpg 3.2.8
+- **statefun-bom** module for centralized dependency management
+- **statefun-flink-runner** uber-JAR module with K8s-ready Docker image
+
 ## [3.4.0-KZM-2.0-RC7] - 2025-02-25
 
 ### Testing
@@ -101,6 +117,7 @@ All notable changes to the Kzmlabs StateFun fork are documented in this file.
 - Add Docker image publishing to GitHub Container Registry
 - Add release setup guide and release script
 
+[3.4.0-KZM-2.0]: https://github.com/kzmlabs/flink-statefun/releases/tag/v3.4.0-KZM-2.0
 [3.4.0-KZM-2.0-RC7]: https://github.com/kzmlabs/flink-statefun/releases/tag/v3.4.0-KZM-2.0-RC7
 [3.4.0-KZM-2.0-RC6]: https://github.com/kzmlabs/flink-statefun/releases/tag/v3.4.0-KZM-2.0-RC6
 [3.4.0-KZM-2.0-RC5]: https://github.com/kzmlabs/flink-statefun/releases/tag/v3.4.0-KZM-2.0-RC5
