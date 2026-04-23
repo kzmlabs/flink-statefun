@@ -29,7 +29,7 @@ Kzmlabs Flink StateFun advances the original StateFun codebase with:
 <dependency>
     <groupId>io.github.kzmlabs.flinkstatefun</groupId>
     <artifactId>statefun-sdk-java</artifactId>
-    <version>3.4.0-KZM-2.0</version>
+    <version>3.4.0-KZM-3.0-RC1</version>
 </dependency>
 ```
 
@@ -93,7 +93,7 @@ A _module_ is the entry point for adding primitives (ingresses, egresses, router
 <dependency>
     <groupId>io.github.kzmlabs.flinkstatefun</groupId>
     <artifactId>statefun-sdk-java</artifactId>
-    <version>3.4.0-KZM-2.0</version>
+    <version>3.4.0-KZM-3.0-RC1</version>
 </dependency>
 ```
 
@@ -151,7 +151,7 @@ mvn install -DskipTests -B
 ./tools/docker/build-stateful-functions.sh
 ```
 
-For local development, the image will be tagged as `flink-statefun:3.4.0-KZM-2.0`.
+For local development, the image will be tagged as `flink-statefun:3.4.0-KZM-3.0-RC1`.
 
 Official releases are published to GitHub Container Registry: `ghcr.io/kzmlabs/flink-statefun:<version>`
 
@@ -238,6 +238,7 @@ docker logs statefun-remote-function
 | Maven Group ID | `org.apache.flink` | `io.github.kzmlabs.flinkstatefun` |
 | Test framework | JUnit 4 | JUnit Jupiter 5.11 |
 | K8s E2E gate | None | Release-blocking (kind + Flink Operator) |
+| Kinesis I/O runtime | Flink 1.x `FlinkKinesisConsumer` | Flink 2.x `KinesisStreamsSource`/`KinesisStreamsSink` + LocalStack E2E |
 | Release cadence | Dormant | Active (Maven Central + GHCR) |
 
 ### Configuration Changes for Flink 2.x
