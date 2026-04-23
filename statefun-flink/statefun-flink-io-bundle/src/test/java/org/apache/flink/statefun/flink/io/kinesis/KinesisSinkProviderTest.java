@@ -39,10 +39,6 @@ class KinesisSinkProviderTest {
 
   private static final KinesisSinkProvider PROVIDER = new KinesisSinkProvider();
 
-  // ---------------------------------------------------------------------------
-  // Test 1: builds a KinesisStreamsSink from a valid spec
-  // ---------------------------------------------------------------------------
-
   @Test
   void buildsSinkFromValidSpec() {
     var spec =
@@ -57,10 +53,6 @@ class KinesisSinkProviderTest {
 
     assertThat(result).isNotNull().isInstanceOf(KinesisStreamsSink.class);
   }
-
-  // ---------------------------------------------------------------------------
-  // Test 2: wrong spec type throws IllegalArgumentException
-  // ---------------------------------------------------------------------------
 
   @Test
   void wrongSpecTypeThrows() {
@@ -81,18 +73,10 @@ class KinesisSinkProviderTest {
         .isInstanceOf(IllegalArgumentException.class);
   }
 
-  // ---------------------------------------------------------------------------
-  // Test 3: null spec throws NullPointerException
-  // ---------------------------------------------------------------------------
-
   @Test
   void nullSpecThrows() {
     assertThatThrownBy(() -> PROVIDER.forSpec(null)).isInstanceOf(NullPointerException.class);
   }
-
-  // ---------------------------------------------------------------------------
-  // Fixtures
-  // ---------------------------------------------------------------------------
 
   public static class TestEgressSerializer implements KinesisEgressSerializer<byte[]> {
 

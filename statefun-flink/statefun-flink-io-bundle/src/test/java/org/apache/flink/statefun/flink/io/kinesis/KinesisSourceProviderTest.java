@@ -42,10 +42,6 @@ class KinesisSourceProviderTest {
 
   private static final KinesisSourceProvider PROVIDER = new KinesisSourceProvider();
 
-  // ---------------------------------------------------------------------------
-  // Test 1: builds a KinesisStreamsSource from a spec with a stream ARN
-  // ---------------------------------------------------------------------------
-
   @Test
   void buildsSourceFromSpecWithArn() {
     var spec =
@@ -66,10 +62,6 @@ class KinesisSourceProviderTest {
     assertThat(result).isNotNull().isInstanceOf(KinesisStreamsSource.class);
   }
 
-  // ---------------------------------------------------------------------------
-  // Test 2: legacy single-stream name throws a helpful error
-  // ---------------------------------------------------------------------------
-
   @Test
   void legacySingleStreamThrowsHelpfulError() {
     var spec =
@@ -83,10 +75,6 @@ class KinesisSourceProviderTest {
         .hasMessageContaining("withStreamArn");
   }
 
-  // ---------------------------------------------------------------------------
-  // Test 3: multi-stream throws a helpful error
-  // ---------------------------------------------------------------------------
-
   @Test
   void multiStreamThrowsHelpfulError() {
     var spec =
@@ -99,10 +87,6 @@ class KinesisSourceProviderTest {
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("Multi-stream");
   }
-
-  // ---------------------------------------------------------------------------
-  // Test 4: wrong spec type throws IllegalArgumentException
-  // ---------------------------------------------------------------------------
 
   @Test
   void wrongSpecTypeThrows() {
@@ -123,18 +107,10 @@ class KinesisSourceProviderTest {
         .isInstanceOf(IllegalArgumentException.class);
   }
 
-  // ---------------------------------------------------------------------------
-  // Test 5: null spec throws NullPointerException
-  // ---------------------------------------------------------------------------
-
   @Test
   void nullSpecThrows() {
     assertThatThrownBy(() -> PROVIDER.forSpec(null)).isInstanceOf(NullPointerException.class);
   }
-
-  // ---------------------------------------------------------------------------
-  // Test 6: LATEST startup position maps to InitialPosition.LATEST
-  // ---------------------------------------------------------------------------
 
   @Test
   void startupPositionLatestMapsToLatest() {
@@ -145,10 +121,6 @@ class KinesisSourceProviderTest {
         .isEqualTo(KinesisSourceConfigOptions.InitialPosition.LATEST);
   }
 
-  // ---------------------------------------------------------------------------
-  // Test 7: EARLIEST startup position maps to InitialPosition.TRIM_HORIZON
-  // ---------------------------------------------------------------------------
-
   @Test
   void startupPositionEarliestMapsToTrimHorizon() {
     Configuration cfg = new Configuration();
@@ -157,10 +129,6 @@ class KinesisSourceProviderTest {
     assertThat(cfg.get(KinesisSourceConfigOptions.STREAM_INITIAL_POSITION))
         .isEqualTo(KinesisSourceConfigOptions.InitialPosition.TRIM_HORIZON);
   }
-
-  // ---------------------------------------------------------------------------
-  // Test 8: DATE startup position maps to InitialPosition.AT_TIMESTAMP + timestamp string
-  // ---------------------------------------------------------------------------
 
   @Test
   void startupPositionDateMapsToAtTimestamp() {
@@ -173,10 +141,6 @@ class KinesisSourceProviderTest {
     assertThat(cfg.get(KinesisSourceConfigOptions.STREAM_INITIAL_TIMESTAMP))
         .isEqualTo("2024-06-15T12:30:45.000Z");
   }
-
-  // ---------------------------------------------------------------------------
-  // Fixtures
-  // ---------------------------------------------------------------------------
 
   public static final class TestDeserializer implements KinesisIngressDeserializer<byte[]> {
     private static final long serialVersionUID = 1L;
