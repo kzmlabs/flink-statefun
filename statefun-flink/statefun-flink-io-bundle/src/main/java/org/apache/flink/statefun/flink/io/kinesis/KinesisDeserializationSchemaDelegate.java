@@ -60,6 +60,10 @@ final class KinesisDeserializationSchemaDelegate<T> implements KinesisDeserializ
   @Override
   public void deserialize(Record record, String stream, String shardId, Collector<T> collector)
       throws IOException {
+    // The connector passes the source's stream-ARN string as the {@code stream} argument — NOT the
+    // short stream name. RoutableKinesisIngressBinderV1 relies on this: in the ARN path it re-keys
+    // its routing map by ARN so that IngressRecord#getStream() lookups at runtime match. Keep this
+    // assignment as-is — changing it would break RoutableKinesisIngressDeserializer.
     IngressRecord ingressRecord =
         IngressRecord.newBuilder()
             .withData(record.data().asByteArray())

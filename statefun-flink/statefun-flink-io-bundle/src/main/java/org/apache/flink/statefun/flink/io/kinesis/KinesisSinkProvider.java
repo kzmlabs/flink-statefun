@@ -51,11 +51,11 @@ public class KinesisSinkProvider implements SinkProvider {
   }
 
   private static <T> KinesisEgressSpec<T> asSpec(EgressSpec<T> spec) {
-    if (spec instanceof KinesisEgressSpec) {
-      return (KinesisEgressSpec<T>) spec;
-    }
     if (spec == null) {
       throw new NullPointerException("Unable to translate a NULL spec");
+    }
+    if (spec instanceof KinesisEgressSpec) {
+      return (KinesisEgressSpec<T>) spec;
     }
     throw new IllegalArgumentException(String.format("Wrong type %s", spec.type()));
   }

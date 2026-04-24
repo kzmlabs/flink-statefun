@@ -63,11 +63,11 @@ public class KinesisSourceProvider implements SourceProvider {
   }
 
   private static <T> KinesisIngressSpec<T> asKinesisSpec(IngressSpec<T> ingressSpec) {
-    if (ingressSpec instanceof KinesisIngressSpec) {
-      return (KinesisIngressSpec<T>) ingressSpec;
-    }
     if (ingressSpec == null) {
       throw new NullPointerException("Unable to translate a NULL spec");
+    }
+    if (ingressSpec instanceof KinesisIngressSpec) {
+      return (KinesisIngressSpec<T>) ingressSpec;
     }
     throw new IllegalArgumentException(String.format("Wrong type %s", ingressSpec.type()));
   }

@@ -38,18 +38,35 @@ public class RoutableKinesisIngressBinderV1Test {
 
   private static final ObjectMapper OBJ_MAPPER = new ObjectMapper(new YAMLFactory());
 
-  private static final String SPEC_YAML_PATH =
+  private static final String LEGACY_NAMED_STREAMS_YAML =
       "kinesis-io-binders/routable-kinesis-ingress-v1.yaml";
+  private static final String ARN_YAML = "kinesis-io-binders/routable-kinesis-ingress-v1-arn.yaml";
 
   @Test
-  public void exampleUsage() throws Exception {
-    final ComponentJsonObject component = loadComponentJsonObject(SPEC_YAML_PATH);
+  public void legacyNamedStreamsPath() throws Exception {
+    final ComponentJsonObject component = loadComponentJsonObject(LEGACY_NAMED_STREAMS_YAML);
     final TestModuleBinder testModuleBinder = new TestModuleBinder();
 
     RoutableKinesisIngressBinderV1.INSTANCE.bind(component, testModuleBinder);
 
     final IngressIdentifier<Message> expectedIngressId =
         new IngressIdentifier<>(Message.class, "com.foo.bar", "test-ingress");
+    assertThat(
+        testModuleBinder.getIngress(expectedIngressId), instanceOf(KinesisIngressSpec.class));
+    assertThat(
+        testModuleBinder.getRouters(expectedIngressId),
+        hasItem(instanceOf(AutoRoutableProtobufRouter.class)));
+  }
+
+  @Test
+  public void arnPath() throws Exception {
+    final ComponentJsonObject component = loadComponentJsonObject(ARN_YAML);
+    final TestModuleBinder testModuleBinder = new TestModuleBinder();
+
+    RoutableKinesisIngressBinderV1.INSTANCE.bind(component, testModuleBinder);
+
+    final IngressIdentifier<Message> expectedIngressId =
+        new IngressIdentifier<>(Message.class, "com.foo.bar", "arn-ingress");
     assertThat(
         testModuleBinder.getIngress(expectedIngressId), instanceOf(KinesisIngressSpec.class));
     assertThat(
