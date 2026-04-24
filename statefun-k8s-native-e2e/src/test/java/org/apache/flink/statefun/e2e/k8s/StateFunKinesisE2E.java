@@ -21,15 +21,15 @@ package org.apache.flink.statefun.e2e.k8s;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
-import java.net.URI;
-import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import org.apache.flink.statefun.e2e.k8s.generated.E2EProtos.CounterCommand;
 import org.apache.flink.statefun.e2e.k8s.generated.E2EProtos.CounterResult;
+import org.apache.flink.statefun.e2e.k8s.util.E2eContext;
 import org.apache.flink.statefun.e2e.k8s.util.KubectlPortForward;
+import org.apache.flink.statefun.e2e.k8s.util.LocalStackClients;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
@@ -37,10 +37,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.SdkBytes;
-import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.kinesis.KinesisClient;
 import software.amazon.awssdk.services.kinesis.model.GetRecordsResponse;
 import software.amazon.awssdk.services.kinesis.model.Record;
@@ -57,28 +54,17 @@ class StateFunKinesisE2E {
 
   private static final Logger LOG = LoggerFactory.getLogger(StateFunKinesisE2E.class);
 
-  private static final String NAMESPACE = "statefun-e2e";
   private static final String COMMANDS_STREAM = "counter.commands";
   private static final String RESULTS_STREAM = "counter.results";
-
-  private static final Duration POLL_TIMEOUT = Duration.ofMinutes(3);
-  private static final Duration POLL_INTERVAL = Duration.ofSeconds(2);
 
   private KubectlPortForward localStackForward;
   private KinesisClient kinesis;
 
   @BeforeAll
   void setup() throws Exception {
-    localStackForward = KubectlPortForward.ephemeral(NAMESPACE, "svc/localstack", 4566);
+    localStackForward = KubectlPortForward.ephemeral(E2eContext.NAMESPACE, "svc/localstack", 4566);
     LOG.info("LocalStack @127.0.0.1:{}", localStackForward.localPort());
-
-    kinesis =
-        KinesisClient.builder()
-            .endpointOverride(URI.create("http://127.0.0.1:" + localStackForward.localPort()))
-            .region(Region.US_EAST_1)
-            .credentialsProvider(
-                StaticCredentialsProvider.create(AwsBasicCredentials.create("test", "test")))
-            .build();
+    kinesis = LocalStackClients.kinesis(localStackForward.localPort());
   }
 
   @Test
@@ -100,8 +86,8 @@ class StateFunKinesisE2E {
     LOG.info("Sent {} CounterCommand(s) for id={}", messages, counterId);
 
     await()
-        .atMost(POLL_TIMEOUT)
-        .pollInterval(POLL_INTERVAL)
+        .atMost(E2eContext.POLL_TIMEOUT)
+        .pollInterval(E2eContext.POLL_INTERVAL)
         .untilAsserted(
             () -> {
               List<CounterResult> results = pollResults(shardIterator, counterId);

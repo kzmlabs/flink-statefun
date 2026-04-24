@@ -21,7 +21,6 @@ package org.apache.flink.statefun.e2e.k8s;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
@@ -32,7 +31,9 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import org.apache.flink.statefun.e2e.k8s.generated.E2EProtos.CounterCommand;
 import org.apache.flink.statefun.e2e.k8s.generated.E2EProtos.CounterResult;
+import org.apache.flink.statefun.e2e.k8s.util.E2eContext;
 import org.apache.flink.statefun.e2e.k8s.util.KubectlPortForward;
+import org.apache.flink.statefun.e2e.k8s.util.LocalStackClients;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -53,9 +54,6 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 
 /**
@@ -72,7 +70,6 @@ class StateFunK8sE2E {
 
   private static final Logger LOG = LoggerFactory.getLogger(StateFunK8sE2E.class);
 
-  private static final String NAMESPACE = "statefun-e2e";
   private static final int KAFKA_LOCAL_PORT = 9094;
 
   private static final String COUNTER_COMMANDS_TOPIC = "counter.commands";
@@ -80,9 +77,6 @@ class StateFunK8sE2E {
   private static final String GREETER_COMMANDS_TOPIC = "greeter.commands";
   private static final String GREETER_RESULTS_TOPIC = "greeter.results";
   private static final String CHECKPOINTS_BUCKET = "statefun-checkpoints";
-
-  private static final Duration POLL_TIMEOUT = Duration.ofMinutes(3);
-  private static final Duration POLL_INTERVAL = Duration.ofSeconds(2);
 
   private KubectlPortForward kafkaForward;
   private KubectlPortForward localStackForward;
@@ -94,8 +88,9 @@ class StateFunK8sE2E {
   @BeforeAll
   void setup() throws Exception {
     kafkaForward =
-        KubectlPortForward.fixed(NAMESPACE, "svc/kafka", KAFKA_LOCAL_PORT, KAFKA_LOCAL_PORT);
-    localStackForward = KubectlPortForward.ephemeral(NAMESPACE, "svc/localstack", 4566);
+        KubectlPortForward.fixed(
+            E2eContext.NAMESPACE, "svc/kafka", KAFKA_LOCAL_PORT, KAFKA_LOCAL_PORT);
+    localStackForward = KubectlPortForward.ephemeral(E2eContext.NAMESPACE, "svc/localstack", 4566);
     LOG.info(
         "Kafka @127.0.0.1:{}, LocalStack @127.0.0.1:{}",
         kafkaForward.localPort(),
@@ -110,14 +105,7 @@ class StateFunK8sE2E {
     greeterResultsConsumer =
         createConsumer(bootstrap, "e2e-greeter-" + runId, GREETER_RESULTS_TOPIC);
 
-    s3 =
-        S3Client.builder()
-            .endpointOverride(URI.create("http://127.0.0.1:" + localStackForward.localPort()))
-            .region(Region.US_EAST_1)
-            .credentialsProvider(
-                StaticCredentialsProvider.create(AwsBasicCredentials.create("test", "test")))
-            .forcePathStyle(true)
-            .build();
+    s3 = LocalStackClients.s3(localStackForward.localPort());
   }
 
   @Test
@@ -136,8 +124,8 @@ class StateFunK8sE2E {
     LOG.info("Sent {} CounterCommand(s) for id={}", messages, counterId);
 
     await()
-        .atMost(POLL_TIMEOUT)
-        .pollInterval(POLL_INTERVAL)
+        .atMost(E2eContext.POLL_TIMEOUT)
+        .pollInterval(E2eContext.POLL_INTERVAL)
         .untilAsserted(
             () -> {
               List<CounterResult> results =
@@ -167,8 +155,8 @@ class StateFunK8sE2E {
     LOG.info("Sent greeter command for Alice with key={}", key);
 
     await()
-        .atMost(POLL_TIMEOUT)
-        .pollInterval(POLL_INTERVAL)
+        .atMost(E2eContext.POLL_TIMEOUT)
+        .pollInterval(E2eContext.POLL_INTERVAL)
         .untilAsserted(
             () -> {
               List<String> greetings =
@@ -184,7 +172,7 @@ class StateFunK8sE2E {
   @Order(3)
   void checkpointsWrittenToS3() {
     await()
-        .atMost(POLL_TIMEOUT)
+        .atMost(E2eContext.POLL_TIMEOUT)
         .pollInterval(Duration.ofSeconds(10))
         .untilAsserted(
             () -> {
