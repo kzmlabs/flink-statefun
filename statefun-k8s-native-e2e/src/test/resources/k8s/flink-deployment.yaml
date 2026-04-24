@@ -43,24 +43,24 @@ spec:
     state.backend.async: "true"
     state.backend.incremental: "true"
     state.checkpoints.num-retained: "10"
-    state.checkpoints.dir: s3://statefun-e2e/checkpoints
-    state.savepoints.dir: s3://statefun-e2e/savepoints
+    state.checkpoints.dir: s3://statefun-checkpoints/checkpoints
+    state.savepoints.dir: s3://statefun-checkpoints/savepoints
     state.backend.changelog.enabled: "true"
     state.backend.changelog.storage: filesystem
-    dstl.dfs.base-path: s3://statefun-e2e/dfs
-    # --- S3 (MinIO) ---
-    s3.endpoint: http://minio.statefun-e2e:9000
+    dstl.dfs.base-path: s3://statefun-checkpoints/dfs
+    # --- S3 via LocalStack ---
+    s3.endpoint: http://localstack.statefun-e2e:4566
     s3.path-style-access: "true"
-    s3.access-key: minioadmin
-    s3.secret-key: minioadmin
+    s3.access-key: test
+    s3.secret-key: test
     # --- High Availability ---
     high-availability.type: org.apache.flink.kubernetes.highavailability.KubernetesHaServicesFactory
-    high-availability.storageDir: s3://statefun-e2e/ha
+    high-availability.storageDir: s3://statefun-checkpoints/ha
     high-availability.kubernetes.leader-election.lease-duration: "15s"
     high-availability.kubernetes.leader-election.renew-deadline: "10s"
     high-availability.kubernetes.leader-election.retry-period: "2s"
     # --- StateFun ---
-    statefun.flink-job-name: statefun-e2e
+    statefun.flink-job-name: statefun-k8s-e2e
     statefun.remote.module-name: "file:///opt/statefun/module.yaml"
     # --- Restart strategy ---
     execution.restart-strategy.type: fixed-delay

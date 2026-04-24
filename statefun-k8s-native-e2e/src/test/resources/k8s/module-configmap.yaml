@@ -23,7 +23,27 @@ data:
     ---
     kind: io.statefun.endpoints.v2/http
     spec:
-      functions: e2e.k8s/*
+      functions: counter.kafka/*
+      urlPathTemplate: http://remote-function.statefun-e2e:8080/statefun
+      transport:
+        type: io.statefun.transports.v1/async
+        timeouts:
+          call: 30sec
+          connect: 10sec
+    ---
+    kind: io.statefun.endpoints.v2/http
+    spec:
+      functions: counter.kinesis/*
+      urlPathTemplate: http://remote-function.statefun-e2e:8080/statefun
+      transport:
+        type: io.statefun.transports.v1/async
+        timeouts:
+          call: 30sec
+          connect: 10sec
+    ---
+    kind: io.statefun.endpoints.v2/http
+    spec:
+      functions: greeter/*
       urlPathTemplate: http://remote-function.statefun-e2e:8080/statefun
       transport:
         type: io.statefun.transports.v1/async
@@ -33,33 +53,73 @@ data:
     ---
     kind: io.statefun.kafka.v1/ingress
     spec:
-      id: e2e/commands-proto
+      id: counter/kafka-in
       address: kafka.statefun-e2e:9092
-      consumerGroupId: statefun-e2e
+      consumerGroupId: statefun-e2e-counter-kafka
       startupPosition:
         type: earliest
       topics:
-        - topic: commands-proto
+        - topic: counter.commands
           valueType: io.github.kzmlabs.statefun.e2e/CounterCommand
           targets:
-            - e2e.k8s/counter
+            - counter.kafka/fn
     ---
     kind: io.statefun.kafka.v1/ingress
     spec:
-      id: e2e/commands-json
+      id: greeter/kafka-in
       address: kafka.statefun-e2e:9092
-      consumerGroupId: statefun-e2e
+      consumerGroupId: statefun-e2e-greeter-kafka
       startupPosition:
         type: earliest
       topics:
-        - topic: commands-json
-          valueType: e2e.k8s/json-string
+        - topic: greeter.commands
+          valueType: greeter/json-string
           targets:
-            - e2e.k8s/greeter
+            - greeter/fn
     ---
     kind: io.statefun.kafka.v1/egress
     spec:
-      id: e2e/results
+      id: counter/kafka-results
       address: kafka.statefun-e2e:9092
       deliverySemantic:
         type: at-least-once
+    ---
+    kind: io.statefun.kafka.v1/egress
+    spec:
+      id: greeter/results
+      address: kafka.statefun-e2e:9092
+      deliverySemantic:
+        type: at-least-once
+    ---
+    kind: io.statefun.kinesis.v1/ingress
+    spec:
+      id: counter/kinesis-in
+      streamArn: arn:aws:kinesis:us-east-1:000000000000:stream/counter.commands
+      awsRegion:
+        type: custom-endpoint
+        endpoint: http://localstack.statefun-e2e:4566
+        id: us-east-1
+      awsCredentials:
+        type: basic
+        accessKeyId: test
+        secretAccessKey: test
+      startupPosition:
+        type: earliest
+      streams:
+        - stream: counter.commands
+          valueType: io.github.kzmlabs.statefun.e2e/CounterCommand
+          targets:
+            - counter.kinesis/fn
+    ---
+    kind: io.statefun.kinesis.v1/egress
+    spec:
+      id: counter/kinesis-results
+      streamName: counter.results
+      awsRegion:
+        type: custom-endpoint
+        endpoint: http://localstack.statefun-e2e:4566
+        id: us-east-1
+      awsCredentials:
+        type: basic
+        accessKeyId: test
+        secretAccessKey: test

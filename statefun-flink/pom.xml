@@ -22,7 +22,7 @@ under the License.
     <parent>
         <artifactId>statefun-parent</artifactId>
         <groupId>io.github.kzmlabs.flinkstatefun</groupId>
-        <version>3.4.0-KZM-2.0</version>
+        <version>3.4.0-KZM-3.0-RC1</version>
         <relativePath>..</relativePath>
     </parent>
 
@@ -94,6 +94,58 @@ under the License.
                 <groupId>org.apache.flink</groupId>
                 <artifactId>flink-connector-base</artifactId>
                 <version>${flink.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.flink</groupId>
+                <artifactId>flink-connector-aws-kinesis-streams</artifactId>
+                <version>${flink.connector.aws.version}</version>
+                <exclusions>
+                    <!--
+                    flink-connector-aws 6.0.0-2.0 was built against Flink 2.0 and
+                    pulls flink-table-common:2.0.0 which drags in flink-core:2.0.0
+                    and flink-shaded-asm-9:9.6-19.0 — exclude to let Flink 2.2
+                    versions win from the runtime classpath.
+                    -->
+                    <exclusion>
+                        <groupId>org.apache.flink</groupId>
+                        <artifactId>flink-table-common</artifactId>
+                    </exclusion>
+                    <!-- pin jackson to Flink 2.2 aligned versions (see managed entries below) -->
+                    <exclusion>
+                        <groupId>com.fasterxml.jackson.datatype</groupId>
+                        <artifactId>jackson-datatype-jsr310</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.fasterxml.jackson.datatype</groupId>
+                        <artifactId>jackson-datatype-jdk8</artifactId>
+                    </exclusion>
+                    <!--
+                    httpclient 4.5.13 pulls commons-codec:1.11; Flink 2.2 supplies 1.19.0.
+                    We keep httpcore in — KinesisStreamsSource.createKinesisStreamProxy
+                    needs org.apache.http.config.Lookup at runtime.
+                    -->
+                    <exclusion>
+                        <groupId>commons-codec</groupId>
+                        <artifactId>commons-codec</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.flink</groupId>
+                <artifactId>flink-connector-aws-base</artifactId>
+                <version>${flink.connector.aws.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-codec</groupId>
+                        <artifactId>commons-codec</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <!-- Pin httpcore — connector's transitive chain brings 4.4.13 and 4.4.16 -->
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpcore</artifactId>
+                <version>4.4.16</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.flink</groupId>

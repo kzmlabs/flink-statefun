@@ -25,58 +25,37 @@ import org.apache.flink.statefun.sdk.java.Context;
 import org.apache.flink.statefun.sdk.java.StatefulFunction;
 import org.apache.flink.statefun.sdk.java.TypeName;
 import org.apache.flink.statefun.sdk.java.ValueSpec;
-import org.apache.flink.statefun.sdk.java.io.KafkaEgressMessage;
+import org.apache.flink.statefun.sdk.java.io.KinesisEgressMessage;
 import org.apache.flink.statefun.sdk.java.message.Message;
-import org.apache.flink.statefun.sdk.java.types.SimpleType;
-import org.apache.flink.statefun.sdk.java.types.Type;
 
-public class CounterFn implements StatefulFunction {
+/** Counter function: consumes CounterCommand from Kinesis, emits CounterResult to Kinesis. */
+public final class KinesisCounterFn implements StatefulFunction {
 
-  static final TypeName FN_TYPE = TypeName.typeNameOf("e2e.k8s", "counter");
-  static final TypeName EGRESS_ID = TypeName.typeNameOf("e2e", "results");
+  static final TypeName FN_TYPE = TypeName.typeNameOf("counter.kinesis", "fn");
+  static final TypeName EGRESS_ID = TypeName.typeNameOf("counter", "kinesis-results");
+  static final String RESULTS_STREAM = "counter.results";
 
   static final ValueSpec<Long> TOTAL = ValueSpec.named("total").withLongType();
 
-  static final TypeName COUNTER_COMMAND_TYPE_NAME =
-      TypeName.typeNameOf("io.github.kzmlabs.statefun.e2e", "CounterCommand");
-
-  static final Type<CounterCommand> COUNTER_COMMAND_TYPE =
-      SimpleType.simpleTypeFrom(
-          COUNTER_COMMAND_TYPE_NAME,
-          cmd -> cmd.toByteArray(),
-          bytes -> CounterCommand.parseFrom(bytes));
-
   @Override
-  public CompletableFuture<Void> apply(Context context, Message message) throws Throwable {
-    System.out.println(
-        "[CounterFn] Received message for "
-            + context.self().id()
-            + ", type="
-            + message.valueTypeName());
-
-    if (!message.is(COUNTER_COMMAND_TYPE)) {
-      System.out.println(
-          "[CounterFn] Ignoring message with unknown type: " + message.valueTypeName());
+  public CompletableFuture<Void> apply(Context context, Message message) {
+    if (!message.is(KafkaCounterFn.COUNTER_COMMAND_TYPE)) {
       return context.done();
     }
 
-    CounterCommand cmd = message.as(COUNTER_COMMAND_TYPE);
-    long current = context.storage().get(TOTAL).orElse(0L);
-    long newTotal = current + cmd.getDelta();
+    CounterCommand cmd = message.as(KafkaCounterFn.COUNTER_COMMAND_TYPE);
+    long newTotal = context.storage().get(TOTAL).orElse(0L) + cmd.getDelta();
     context.storage().set(TOTAL, newTotal);
-    System.out.println(
-        "[CounterFn] id=" + cmd.getId() + " delta=" + cmd.getDelta() + " total=" + newTotal);
 
     CounterResult result =
         CounterResult.newBuilder().setId(cmd.getId()).setTotal(newTotal).build();
 
     context.send(
-        KafkaEgressMessage.forEgress(EGRESS_ID)
-            .withTopic("results-proto")
-            .withUtf8Key(cmd.getId())
+        KinesisEgressMessage.forEgress(EGRESS_ID)
+            .withStream(RESULTS_STREAM)
+            .withUtf8PartitionKey(cmd.getId())
             .withValue(result.toByteArray())
             .build());
-    System.out.println("[CounterFn] Sent CounterResult to results-proto");
 
     return context.done();
   }

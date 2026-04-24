@@ -23,7 +23,7 @@ under the License.
     <groupId>io.github.kzmlabs.flinkstatefun</groupId>
     <artifactId>statefun-parent</artifactId>
     <name>Kzmlabs StateFun Parent</name>
-    <version>3.4.0-KZM-2.0</version>
+    <version>3.4.0-KZM-3.0-RC1</version>
     <packaging>pom</packaging>
     <description>Kzmlabs Flink StateFun — actively maintained continuation of the Stateful Functions framework for building distributed stateful applications and event-driven microservices on Apache Flink 2.2.0 with Java 21. Provides a function-as-actor programming model with durable state, exactly-once messaging, Kafka and Kinesis ingress/egress, and Kubernetes-native deployment via the Flink Kubernetes Operator.</description>
 
@@ -116,6 +116,7 @@ under the License.
         <protoc-jar-maven-plugin.version>3.11.4</protoc-jar-maven-plugin.version>
         <flink.version>2.2.0</flink.version>
         <flink-kafka.version>4.0.1-2.0</flink-kafka.version>
+        <flink.connector.aws.version>6.0.0-2.0</flink.connector.aws.version>
         <scala.binary.version>2.12</scala.binary.version>
         <scala.version>2.12.7</scala.version>
         <lz4-java.version>1.8.1</lz4-java.version>
@@ -144,6 +145,12 @@ under the License.
                 <groupId>org.hamcrest</groupId>
                 <artifactId>hamcrest</artifactId>
                 <version>3.0</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.assertj</groupId>
+                <artifactId>assertj-core</artifactId>
+                <version>3.27.3</version>
                 <scope>test</scope>
             </dependency>
 
@@ -381,6 +388,7 @@ under the License.
                         <exclude>**/CHANGELOG.md</exclude>
                         <exclude>**/RELEASE-GUIDE.md</exclude>
                         <exclude>**/CLAUDE.md</exclude>
+                        <exclude>docs/kinesis-io.md</exclude>
                         <exclude>.github/**</exclude>
                         <exclude>.claude/**</exclude>
                         <!-- Dev docs -->

@@ -34,19 +34,28 @@ public final class KinesisEgressSpec<T> implements EgressSpec<T> {
   private final AwsCredentials awsCredentials;
   private final Properties clientConfigurationProperties;
 
+  /**
+   * Name of the Kinesis stream that the Flink 2.x {@code KinesisStreamsSink} is pre-bound to. Note:
+   * {@link EgressRecord#getStream()} is ignored by the runtime when this field is set; all records
+   * are written to this single stream.
+   */
+  private final String streamName;
+
   KinesisEgressSpec(
       EgressIdentifier<T> egressIdentifier,
       Class<? extends KinesisEgressSerializer<T>> serializerClass,
       int maxOutstandingRecords,
       AwsRegion awsRegion,
       AwsCredentials awsCredentials,
-      Properties clientConfigurationProperties) {
+      Properties clientConfigurationProperties,
+      String streamName) {
     this.egressIdentifier = Objects.requireNonNull(egressIdentifier);
     this.serializerClass = Objects.requireNonNull(serializerClass);
     this.maxOutstandingRecords = maxOutstandingRecords;
     this.awsRegion = Objects.requireNonNull(awsRegion);
     this.awsCredentials = Objects.requireNonNull(awsCredentials);
     this.clientConfigurationProperties = Objects.requireNonNull(clientConfigurationProperties);
+    this.streamName = Objects.requireNonNull(streamName, "stream name");
   }
 
   @Override
@@ -77,5 +86,13 @@ public final class KinesisEgressSpec<T> implements EgressSpec<T> {
 
   public Properties clientConfigurationProperties() {
     return clientConfigurationProperties;
+  }
+
+  /**
+   * Returns the name of the Kinesis stream that the egress is bound to. This corresponds to the
+   * Flink 2.x {@code KinesisStreamsSink} stream name parameter.
+   */
+  public String streamName() {
+    return streamName;
   }
 }

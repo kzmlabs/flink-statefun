@@ -29,8 +29,11 @@ jobs:
       - name: Build all modules (skip tests)
         run: mvn install -DskipTests -B
 
-      - name: Run K8s E2E (build images, setup cluster, test, teardown)
-        run: mvn verify -pl statefun-k8s-native-e2e -B
+      - name: Run K8s E2E (build images, setup cluster, test)
+        # Skip mvn's post-integration-test teardown so the explicit Teardown
+        # step below is the only one that runs — otherwise the cluster is
+        # gone before 'Collect logs on failure' can reach it.
+        run: mvn verify -pl statefun-k8s-native-e2e -B -Dskip.teardown=true
 
       - name: Collect logs on failure
         if: failure()
@@ -47,6 +50,15 @@ jobs:
           kubectl logs -n statefun-e2e -l app=remote-function --tail=200 || true
           echo "=== Kafka logs ==="
           kubectl logs -n statefun-e2e -l app=kafka --tail=100 || true
+          echo "=== LocalStack logs ==="
+          kubectl logs -n statefun-e2e -l app=localstack --tail=100 || true
+          echo "=== Kinesis streams + S3 bucket ==="
+          LOCALSTACK_POD=$(kubectl get pod -n statefun-e2e -l app=localstack -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || echo "")
+          if [ -n "$LOCALSTACK_POD" ]; then
+            kubectl exec -n statefun-e2e "$LOCALSTACK_POD" -- awslocal kinesis list-streams || true
+            kubectl exec -n statefun-e2e "$LOCALSTACK_POD" -- awslocal s3 ls || true
+            kubectl exec -n statefun-e2e "$LOCALSTACK_POD" -- awslocal s3 ls s3://statefun-checkpoints/ --recursive || true
+          fi
           echo "=== All pods ==="
           kubectl get pods -A || true
           echo "=== Events ==="

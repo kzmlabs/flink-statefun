@@ -4,10 +4,10 @@
 
 This guide documents the release process for publishing to Maven Central and GitHub Container Registry (GHCR).
 
-## Current Release: 3.4.0-KZM-2.0
+## Current Release: 3.4.0-KZM-3.0-RC1
 
 - **Maven Central**: Published
-- **Docker Image**: `ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-2.0`
+- **Docker Image**: `ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.0-RC1`
 - **GitHub Release**: https://github.com/kzmlabs/flink-statefun/releases
 
 ---
@@ -20,14 +20,14 @@ Triggered automatically when pushing a tag starting with `v`:
 
 ```bash
 # Update version
-mvn versions:set -DnewVersion=3.4.0-KZM-2.0-RC8 -DgenerateBackupPoms=false
+mvn versions:set -DnewVersion=3.4.0-KZM-3.0-RC2 -DgenerateBackupPoms=false
 
 # Commit and tag
 git add -A
-git commit -m "Release 3.4.0-KZM-2.0-RC8"
+git commit -m "Release 3.4.0-KZM-3.0-RC2"
 git push origin release
-git tag v3.4.0-KZM-2.0-RC8
-git push origin v3.4.0-KZM-2.0-RC8
+git tag v3.4.0-KZM-3.0-RC2
+git push origin v3.4.0-KZM-3.0-RC2
 ```
 
 This runs `.github/workflows/release.yml` which:
@@ -43,11 +43,11 @@ but skips Maven Central deploy and GitHub Release creation.
 
 ```bash
 # Tag for Docker-only release
-git tag docker-3.4.0-KZM-2.0-test1
-git push origin docker-3.4.0-KZM-2.0-test1
+git tag docker-3.4.0-KZM-3.0-RC1-test1
+git push origin docker-3.4.0-KZM-3.0-RC1-test1
 ```
 
-This pushes the image as `ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-2.0-test1`.
+This pushes the image as `ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.0-RC1-test1`.
 
 There is also a `docker-release.yml` workflow with `workflow_dispatch` for manual triggers via the GitHub Actions UI.
 
@@ -196,5 +196,5 @@ mvn clean install -Prelease -DskipTests -Dgpg.skip=true
 gh run list --repo kzmlabs/flink-statefun
 
 # Pull Docker image
-docker pull ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-2.0
+docker pull ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.0-RC1
 ```

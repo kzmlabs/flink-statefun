@@ -2,6 +2,54 @@
 
 All notable changes to the Kzmlabs StateFun fork are documented in this file.
 
+## [3.4.0-KZM-3.0-RC1] - 2026-04-23
+
+### Added — Kinesis ingress/egress end-to-end support
+
+Restores full Kinesis I/O for Flink 2.x by wiring the `statefun-kinesis-io`
+SDK specs to Flink 2.x's `KinesisStreamsSource` / `KinesisStreamsSink`
+(connector `org.apache.flink:flink-connector-aws-kinesis-streams:6.0.0-2.0`,
+Source V2 / Sink V2 APIs). Closes the 3.4.0-KZM-2.0 regression where the
+SDK jar published to Maven Central without a runtime binding.
+
+**Runtime wiring (`statefun-flink-io-bundle`)**
+- `KinesisFlinkIoModule` registers source/sink providers via
+  `@AutoService(FlinkIoModule.class)`.
+- `KinesisSourceProvider` builds `KinesisStreamsSource` from
+  `KinesisIngressSpec`; maps the SDK's `KinesisIngressStartupPosition`
+  (LATEST/EARLIEST/AT_DATE) to `KinesisSourceConfigOptions.InitialPosition`.
+- `KinesisSinkProvider` builds `KinesisStreamsSink` from `KinesisEgressSpec`.
+- Shared `AwsConfigAppender` maps SDK `AwsCredentials` / `AwsRegion` into
+  `AWSConfigConstants` entries.
+- JSON v1 binders (`io.statefun.kinesis.v1/ingress` and `/egress`) restored
+  for `module.yaml` parsing.
+- 34 unit tests.
+
+**SDK extensions (`statefun-kinesis-io`)**
+- `KinesisIngressSpec.streamArn()` + `KinesisIngressBuilder.withStreamArn(arn)`
+  — Flink 2.x Kinesis source requires a stream ARN. Backwards compatible
+  with legacy `withStream(name)`.
+- `KinesisEgressSpec.streamName()` + `KinesisEgressBuilder.withStreamName(name)`
+  — Flink 2.x Kinesis sink is pre-bound to a single stream; `EgressRecord.getStream()`
+  is documented as runtime-ignored.
+- `AwsRegion.CustomEndpointAwsRegion` now accepts `http://` in addition to
+  `https://` (required for LocalStack in K8s E2E; real AWS usage unaffected).
+
+**Kubernetes native E2E gate**
+- LocalStack 4.1 deployed alongside Kafka + MinIO in the existing
+  `statefun-k8s-native-e2e` kind cluster.
+- `counter-commands` / `counter-results` Kinesis streams pre-created via
+  `awslocal`.
+- New `KinesisCounterFn` function mirrors `KafkaCounterFn` (renamed from
+  `CounterFn` for symmetry) — same `CounterCommand` / `CounterResult`
+  proto contract, different transport.
+- `StateFunKinesisE2E` tagged `@Tag("kinesis")`, runs alongside
+  `@Tag("kafka")` `StateFunK8sE2E`. Granular selection via
+  `-Dgroups=kinesis` or skip via `-DexcludedGroups=kinesis`.
+- Shared `KubectlPortForward` helper (AutoCloseable) replaces duplicated
+  `ProcessBuilder` boilerplate.
+- Both suites are release-blocking in `release.yml` / `docker-release.yml`.
+
 ## [3.4.0-KZM-2.0] - 2026-04-23
 
 First stable release of the KZM-2.0 line, promoting RC7 after successful Maven Central and GHCR validation, Kubernetes native E2E testing, and dependency/plugin modernization completed across RC1–RC7.
@@ -117,6 +165,7 @@ First stable release of the KZM-2.0 line, promoting RC7 after successful Maven C
 - Add Docker image publishing to GitHub Container Registry
 - Add release setup guide and release script
 
+[3.4.0-KZM-3.0-RC1]: https://github.com/kzmlabs/flink-statefun/releases/tag/v3.4.0-KZM-3.0-RC1
 [3.4.0-KZM-2.0]: https://github.com/kzmlabs/flink-statefun/releases/tag/v3.4.0-KZM-2.0
 [3.4.0-KZM-2.0-RC7]: https://github.com/kzmlabs/flink-statefun/releases/tag/v3.4.0-KZM-2.0-RC7
 [3.4.0-KZM-2.0-RC6]: https://github.com/kzmlabs/flink-statefun/releases/tag/v3.4.0-KZM-2.0-RC6

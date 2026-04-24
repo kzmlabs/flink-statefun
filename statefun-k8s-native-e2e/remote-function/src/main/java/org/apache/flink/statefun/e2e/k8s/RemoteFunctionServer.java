@@ -35,17 +35,24 @@ public class RemoteFunctionServer {
   private static final int PORT = 8080;
 
   public static void main(String[] args) throws IOException {
-    StatefulFunctionSpec counterSpec =
-        StatefulFunctionSpec.builder(CounterFn.FN_TYPE)
-            .withValueSpec(CounterFn.TOTAL)
-            .withSupplier(CounterFn::new)
+    StatefulFunctionSpec kafkaCounterSpec =
+        StatefulFunctionSpec.builder(KafkaCounterFn.FN_TYPE)
+            .withValueSpec(KafkaCounterFn.TOTAL)
+            .withSupplier(KafkaCounterFn::new)
+            .build();
+
+    StatefulFunctionSpec kinesisCounterSpec =
+        StatefulFunctionSpec.builder(KinesisCounterFn.FN_TYPE)
+            .withValueSpec(KinesisCounterFn.TOTAL)
+            .withSupplier(KinesisCounterFn::new)
             .build();
 
     StatefulFunctionSpec greeterSpec =
         StatefulFunctionSpec.builder(GreeterFn.FN_TYPE).withSupplier(GreeterFn::new).build();
 
     StatefulFunctions functions = new StatefulFunctions();
-    functions.withStatefulFunction(counterSpec);
+    functions.withStatefulFunction(kafkaCounterSpec);
+    functions.withStatefulFunction(kinesisCounterSpec);
     functions.withStatefulFunction(greeterSpec);
 
     RequestReplyHandler handler = functions.requestReplyHandler();
