@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
+// Copyright 2014 The Apache Software Foundation
 package org.apache.flink.statefun.flink.io.kafka;
 
 import org.apache.flink.api.connector.sink2.Sink;

@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
+// Copyright 2014 The Apache Software Foundation
 package org.apache.flink.statefun.flink.common.protobuf;
 
 import org.apache.flink.api.common.typeutils.SerializerTestBase;

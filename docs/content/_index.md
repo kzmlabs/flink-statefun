@@ -15,6 +15,7 @@ aliases:
   - /docs/getting-started/java_walkthrough/
 ---
 <!-- SPDX-License-Identifier: Apache-2.0 -->
+<!-- Copyright 2014 The Apache Software Foundation -->
 
 <div style="text-align: center">
   <h1>
