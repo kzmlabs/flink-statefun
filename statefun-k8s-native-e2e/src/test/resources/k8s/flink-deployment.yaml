@@ -176,6 +176,6 @@ spec:
       memory: "2048m"
       cpu: 1
   job:
-    jarURI: local:///opt/flink/statefun.jar
+    jarURI: local:///opt/flink/statefun-flink-runner.jar
     parallelism: 1
     upgradeMode: last-state

@@ -148,7 +148,8 @@ mvn install -Dskip.k8s.e2e -B
 mvn install -DskipTests -B
 
 # Build Docker image (after Maven build)
-./tools/docker/build-stateful-functions.sh
+mvn -pl statefun-docker -am package -DskipTests
+docker build -t flink-statefun:3.4.0-KZM-3.0-RC1 statefun-docker/target/docker
 ```
 
 For local development, the image will be tagged as `flink-statefun:3.4.0-KZM-3.0-RC1`.

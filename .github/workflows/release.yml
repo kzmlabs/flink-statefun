@@ -42,6 +42,8 @@ jobs:
     permissions:
       contents: write
       packages: write
+      id-token: write
+      attestations: write
 
     steps:
       - name: Checkout code
@@ -84,7 +86,7 @@ jobs:
         run: |
           # Exclude e2e tests from deployment
           mvn deploy -Prelease -DskipTests -B \
-            -pl '!:statefun-flink-runner,!:statefun-e2e-tests,!:statefun-e2e-tests-common,!:statefun-smoke-e2e-common,!:statefun-smoke-e2e-driver,!:statefun-smoke-e2e-embedded,!:statefun-smoke-e2e-multilang-base,!:statefun-smoke-e2e-multilang-harness,!:statefun-smoke-e2e-java,!:statefun-smoke-e2e-golang,!:statefun-smoke-e2e-js,!:statefun-k8s-native-e2e'
+            -pl '!:statefun-flink-runner,!:statefun-docker,!:statefun-e2e-tests,!:statefun-e2e-tests-common,!:statefun-smoke-e2e-common,!:statefun-smoke-e2e-driver,!:statefun-smoke-e2e-embedded,!:statefun-smoke-e2e-multilang-base,!:statefun-smoke-e2e-multilang-harness,!:statefun-smoke-e2e-java,!:statefun-smoke-e2e-golang,!:statefun-smoke-e2e-js,!:statefun-k8s-native-e2e'
         env:
           CENTRAL_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           CENTRAL_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
@@ -100,21 +102,32 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build Docker image
-        run: ./tools/docker/build-stateful-functions.sh ${{ steps.release_type.outputs.version }}
+      - name: Compute image tags
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=${{ steps.release_type.outputs.version }}
+            type=raw,value=latest,enable=${{ !contains(steps.release_type.outputs.version, 'RC') }}
 
-      - name: Tag and push to GHCR
-        run: |
-          VERSION="${{ steps.release_type.outputs.version }}"
-          docker tag flink-statefun:${VERSION} \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${VERSION}
-          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${VERSION}
-          # Only tag 'latest' for stable (non-RC) releases
-          if [[ "${VERSION}" != *"RC"* ]]; then
-            docker tag flink-statefun:${VERSION} \
-              ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-            docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-          fi
+      - name: Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: statefun-docker/target/docker
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          provenance: mode=max
+          sbom: true
+
+      - name: Attest image provenance (Sigstore keyless)
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          subject-digest: ${{ steps.build.outputs.digest }}
+          push-to-registry: true
 
       - name: Create GitHub Release
         if: steps.release_type.outputs.type == 'full'
