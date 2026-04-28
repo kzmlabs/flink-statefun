@@ -28,6 +28,8 @@ jobs:
     permissions:
       contents: read
       packages: write
+      id-token: write
+      attestations: write
 
     steps:
       - name: Checkout code
@@ -53,11 +55,28 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build Docker image
-        run: ./tools/docker/build-stateful-functions.sh ${{ github.event.inputs.version }}
+      - name: Compute image tags
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=${{ github.event.inputs.version }}
 
-      - name: Tag and push to GHCR
-        run: |
-          docker tag flink-statefun:${{ github.event.inputs.version }} \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.event.inputs.version }}
-          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.event.inputs.version }}
+      - name: Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: statefun-docker/target/docker
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          provenance: mode=max
+          sbom: true
+
+      - name: Attest image provenance (Sigstore keyless)
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          subject-digest: ${{ steps.build.outputs.digest }}
+          push-to-registry: true

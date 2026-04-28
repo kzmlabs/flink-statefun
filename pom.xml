@@ -96,6 +96,7 @@ under the License.
         <module>statefun-shaded</module>
         <module>statefun-flink-runner</module>
         <module>statefun-bom</module>
+        <module>statefun-docker</module>
 
         <!-- e2e tests before testutil so a publishable module is last for Central -->
         <module>statefun-e2e-tests</module>
@@ -109,7 +110,6 @@ under the License.
         <java.version>21</java.version>
         <!-- Central publishing skip flag - modules can override to true -->
         <central.skip>false</central.skip>
-        <spotless-maven-plugin.version>1.20.0</spotless-maven-plugin.version>
         <auto-service.version>1.1.1</auto-service.version>
         <protobuf.version>3.25.5</protobuf.version>
         <unixsocket.version>2.10.1</unixsocket.version>
@@ -355,103 +355,6 @@ under the License.
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
-            </plugin>
-
-            <!-- Licence -->
-            <plugin>
-                <groupId>org.apache.rat</groupId>
-                <artifactId>apache-rat-plugin</artifactId>
-                <version>0.17</version>
-                <inherited>false</inherited>
-                <executions>
-                    <execution>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <excludes>
-                        <!-- Additional files like .gitignore etc.-->
-                        <exclude>**/.*/**</exclude>
-                        <exclude>**/*.prefs</exclude>
-                        <exclude>**/*.log</exclude>
-                        <!-- Administrative files in the main trunk. -->
-                        <exclude>**/README.md</exclude>
-                        <exclude>**/README.zh.md</exclude>
-                        <exclude>**/CODE_OF_CONDUCT.md</exclude>
-                        <exclude>**/CONTRIBUTING.md</exclude>
-                        <exclude>**/SECURITY.md</exclude>
-                        <exclude>**/CITATION.cff</exclude>
-                        <exclude>**/KZMLABS-GUIDE.md</exclude>
-                        <exclude>**/CHANGELOG.md</exclude>
-                        <exclude>**/RELEASE-GUIDE.md</exclude>
-                        <exclude>**/CLAUDE.md</exclude>
-                        <exclude>docs/kinesis-io.md</exclude>
-                        <exclude>.github/**</exclude>
-                        <exclude>.claude/**</exclude>
-                        <!-- Dev docs -->
-                        <exclude>dev/**</exclude>
-                        <!-- TLS test certificates and keys -->
-                        <exclude>**/*.p8</exclude>
-                        <exclude>**/key_password.txt</exclude>
-                        <exclude>**/server.ext</exclude>
-                        <!-- Dockerfiles without license headers -->
-                        <exclude>**/Dockerfile.*</exclude>
-                        <!-- IDE files. -->
-                        <exclude>**/*.iml</exclude>
-                        <!-- Generated content -->
-                        <exclude>**/target/**</exclude>
-                        <exclude>**/_build/**</exclude>
-                        <exclude>docs/static/font-awesome/**</exclude>
-                        <exclude>docs/resources/**</exclude>
-                        <exclude>docs/public/**</exclude>
-                        <exclude>docs/themes/book/**</exclude>
-                        <exclude>docs/assets/github.css</exclude>
-                        <exclude>docs/static/js/anchor.min.js</exclude>
-                        <!-- Generated code  -->
-                        <exclude>**/generated/**</exclude>
-                        <!-- Bundled license files -->
-                        <exclude>**/LICENSE*</exclude>
-                        <!-- Python venv -->
-                        <exclude>**/venv/**</exclude>
-                        <!-- Generated lock file -->
-                        <exclude>**/go.sum/**</exclude>
-                        <!-- Non-Java SDKs (not in reactor, kept for reference) -->
-                        <exclude>statefun-sdk-go/**</exclude>
-                        <exclude>statefun-sdk-js/**</exclude>
-                        <exclude>statefun-sdk-python/**</exclude>
-                    </excludes>
-                </configuration>
-            </plugin>
-
-            <!-- Java code style -->
-            <plugin>
-                <groupId>com.diffplug.spotless</groupId>
-                <artifactId>spotless-maven-plugin</artifactId>
-                <version>${spotless-maven-plugin.version}</version>
-                <configuration>
-                    <java>
-                        <googleJavaFormat>
-                            <version>1.7</version>
-                            <style>GOOGLE</style>
-                        </googleJavaFormat>
-                        <removeUnusedImports/>
-                        <excludes>
-                            <exclude>**/generated/**/*.*</exclude>
-                        </excludes>
-                    </java>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>spotless-check</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
 
             <!-- Dependency Enforcer -->

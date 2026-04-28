@@ -42,6 +42,16 @@ under the License.
     </properties>
 
     <dependencies>
+        <!-- Reactor ordering: ensures statefun-docker is built (and target/docker
+             populated) before this module enters pre-integration-test. -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>statefun-docker</artifactId>
+            <version>${project.version}</version>
+            <type>pom</type>
+            <scope>provided</scope>
+        </dependency>
+
         <!-- Protobuf for shared message types (compile scope needed because
              protoc-jar-maven-plugin generates sources in generate-sources phase) -->
         <dependency>
@@ -159,7 +169,8 @@ under the License.
                             <skip>${skipTests}</skip>
                         </configuration>
                         <executions>
-                            <!-- 1. Build flink-statefun:e2e Docker image -->
+                            <!-- 1. Build flink-statefun:e2e Docker image
+                                 (context staged by statefun-docker/prepare-package). -->
                             <execution>
                                 <id>build-statefun-image</id>
                                 <phase>pre-integration-test</phase>
@@ -167,10 +178,13 @@ under the License.
                                     <goal>exec</goal>
                                 </goals>
                                 <configuration>
-                                    <executable>bash</executable>
+                                    <executable>docker</executable>
+                                    <workingDirectory>${project.basedir}/../statefun-docker/target/docker</workingDirectory>
                                     <arguments>
-                                        <argument>${project.basedir}/../tools/docker/build-stateful-functions.sh</argument>
-                                        <argument>e2e</argument>
+                                        <argument>build</argument>
+                                        <argument>-t</argument>
+                                        <argument>flink-statefun:e2e</argument>
+                                        <argument>.</argument>
                                     </arguments>
                                 </configuration>
                             </execution>

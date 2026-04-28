@@ -109,7 +109,14 @@ under the License.
                                 <inherited>false</inherited>
                                 <phase>pre-integration-test</phase>
                                 <configuration>
-                                    <executable>../tools/docker/build-stateful-functions.sh</executable>
+                                    <executable>docker</executable>
+                                    <workingDirectory>${project.basedir}/../statefun-docker/target/docker</workingDirectory>
+                                    <arguments>
+                                        <argument>build</argument>
+                                        <argument>-t</argument>
+                                        <argument>flink-statefun:${project.version}</argument>
+                                        <argument>.</argument>
+                                    </arguments>
                                 </configuration>
                             </execution>
                             <execution>

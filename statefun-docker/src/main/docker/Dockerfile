@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# syntax=docker/dockerfile:1.7
+
 FROM apache/flink:2.2.0-java21
 
 # Logging library versions (downloaded from Maven Central)
@@ -21,11 +23,6 @@ ARG LOGSTASH_LOGBACK_ENCODER_VERSION=7.4
 ARG SLF4J_VERSION=2.0.9
 
 ARG MAVEN_CENTRAL=https://repo1.maven.org/maven2
-
-# StateFun JARs (copied from Maven build output)
-ARG STATEFUN_CORE_JAR=flink/lib/statefun-flink-core.jar
-ARG STATEFUN_DIST_JAR=flink/lib/statefun-flink-distribution.jar
-ARG STATEFUN_RUNNER_JAR=statefun.jar
 
 # Remove unnecessary Flink libs
 RUN rm -rf ${FLINK_HOME}/lib/flink-table*jar \
@@ -42,8 +39,8 @@ RUN curl -fSL "${MAVEN_CENTRAL}/ch/qos/logback/logback-classic/${LOGBACK_VERSION
         -o ${FLINK_HOME}/lib/slf4j-api.jar
 
 # Copy StateFun JARs to Flink lib (parent classloader)
-COPY ${STATEFUN_CORE_JAR} ${FLINK_HOME}/lib/
-COPY ${STATEFUN_DIST_JAR} ${FLINK_HOME}/lib/
+COPY flink/lib/statefun-flink-core.jar ${FLINK_HOME}/lib/
+COPY flink/lib/statefun-flink-distribution.jar ${FLINK_HOME}/lib/
 
 # Configure storage plugins
 RUN mkdir -p ${FLINK_HOME}/plugins/s3-fs-presto \
@@ -57,7 +54,7 @@ RUN mkdir -p ${FLINK_HOME}/plugins/azure-fs-hadoop \
 RUN mv ${FLINK_HOME}/opt/flink-shaded-netty-tcnative-dynamic-*.jar ${FLINK_HOME}/lib/
 
 # Copy uber JAR as the StateFun job JAR
-COPY ${STATEFUN_RUNNER_JAR} ${FLINK_HOME}/statefun.jar
+COPY statefun-flink-runner.jar ${FLINK_HOME}/statefun-flink-runner.jar
 
 USER flink
 
