@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
+// Copyright 2014 The Apache Software Foundation
 
 module github.com/apache/flink-statefun/statefun-sdk-go/v3
 

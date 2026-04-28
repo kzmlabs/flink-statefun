@@ -6,6 +6,7 @@ aliases:
   - /deployment-and-operations/state-bootstrap.html
 ---
 <!-- SPDX-License-Identifier: Apache-2.0 -->
+<!-- Copyright 2014 The Apache Software Foundation -->
 
 # State Bootstrapping
 

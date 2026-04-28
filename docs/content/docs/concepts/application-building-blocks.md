@@ -6,6 +6,7 @@ aliases:
   - /concepts/application-building-blocks.html
 ---
 <!-- SPDX-License-Identifier: Apache-2.0 -->
+<!-- Copyright 2014 The Apache Software Foundation -->
 
 # Application Building Blocks
 

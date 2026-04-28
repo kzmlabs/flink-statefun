@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: Apache-2.0
+# Copyright 2014 The Apache Software Foundation
 
 HUGO_REPO=https://github.com/gohugoio/hugo/releases/download/v0.80.0/hugo_extended_0.80.0_Linux-64bit.tar.gz
 HUGO_ARTIFACT=hugo_extended_0.80.0_Linux-64bit.tar.gz

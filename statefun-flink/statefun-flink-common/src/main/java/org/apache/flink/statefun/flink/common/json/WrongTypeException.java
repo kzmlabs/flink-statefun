@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
+// Copyright 2014 The Apache Software Foundation
 package org.apache.flink.statefun.flink.common.json;
 
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.JsonPointer;

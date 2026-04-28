@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
+// Copyright 2014 The Apache Software Foundation
 package org.apache.flink.statefun.flink.io.kafka.binders.ingress.v1;
 
 import com.google.protobuf.Message;

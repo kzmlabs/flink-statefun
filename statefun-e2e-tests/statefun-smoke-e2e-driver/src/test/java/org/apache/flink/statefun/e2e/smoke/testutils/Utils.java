@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
+// Copyright 2014 The Apache Software Foundation
 package org.apache.flink.statefun.e2e.smoke.testutils;
 
 import org.apache.flink.statefun.e2e.smoke.generated.Command;

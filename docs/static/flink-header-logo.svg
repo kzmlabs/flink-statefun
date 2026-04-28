@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- SPDX-License-Identifier: Apache-2.0 -->
+<!-- Copyright 2014 The Apache Software Foundation -->
 <svg viewBox="36 127 427 220" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
   <defs>
     <linearGradient id="SVGID_20_" gradientUnits="userSpaceOnUse" x1="44097.3398" y1="69.6689" x2="44125.8086" y2="-63.1794" gradientTransform="matrix(-1 0 0 1 44076.3555 0)">

@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
+// Copyright 2014 The Apache Software Foundation
 package io.github.kzmlabs.statefun.runner;
 
 import org.apache.flink.statefun.flink.core.StatefulFunctionsConfig;

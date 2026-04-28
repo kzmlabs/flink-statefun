@@ -4,6 +4,7 @@ weight: 4
 type: docs
 ---
 <!-- SPDX-License-Identifier: Apache-2.0 -->
+<!-- Copyright 2014 The Apache Software Foundation -->
 
 # Golang SDK
 

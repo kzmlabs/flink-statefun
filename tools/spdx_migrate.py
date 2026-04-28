@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: Apache-2.0
 """SPDX license header migration.
 
 Replaces verbose ASF boilerplate with SPDX-License-Identifier one-liner
