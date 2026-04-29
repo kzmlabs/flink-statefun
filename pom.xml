@@ -9,7 +9,7 @@
     <groupId>io.github.kzmlabs.flinkstatefun</groupId>
     <artifactId>statefun-parent</artifactId>
     <name>Kzmlabs StateFun Parent</name>
-    <version>3.4.0-KZM-3.0-RC1</version>
+    <version>${revision}</version>
     <packaging>pom</packaging>
     <description>Kzmlabs Flink StateFun — actively maintained continuation of the Stateful Functions framework for building distributed stateful applications and event-driven microservices on Apache Flink 2.2.0 with Java 21. Provides a function-as-actor programming model with durable state, exactly-once messaging, Kafka and Kinesis ingress/egress, and Kubernetes-native deployment via the Flink Kubernetes Operator.</description>
 
@@ -91,11 +91,15 @@
     </modules>
 
     <properties>
+        <revision>3.4.0-KZM-3.0-RC1</revision>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>21</java.version>
+        <maven.minimum.version>3.9.0</maven.minimum.version>
         <!-- Central publishing skip flag - modules can override to true -->
         <central.skip>false</central.skip>
+        <awssdk.version>2.43.0</awssdk.version>
+        <flatten-maven-plugin.version>1.6.0</flatten-maven-plugin.version>
         <auto-service.version>1.1.1</auto-service.version>
         <protobuf.version>3.25.5</protobuf.version>
         <unixsocket.version>2.10.1</unixsocket.version>
@@ -140,12 +144,23 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- BOM: JUnit Jupiter — manages all junit-* artifact versions -->
             <dependency>
-                <groupId>org.junit.jupiter</groupId>
-                <artifactId>junit-jupiter</artifactId>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
                 <version>5.11.4</version>
-                <scope>test</scope>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
+            <!-- BOM: AWS SDK v2 — manages 200+ awssdk artifact versions -->
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>bom</artifactId>
+                <version>${awssdk.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
             <dependency>
                 <groupId>org.hamcrest</groupId>
                 <artifactId>hamcrest</artifactId>
@@ -157,6 +172,33 @@
                 <artifactId>assertj-core</artifactId>
                 <version>3.27.3</version>
                 <scope>test</scope>
+            </dependency>
+
+            <!-- Flink runtime — kept as <scope>provided</scope> by consumers -->
+            <dependency>
+                <groupId>org.apache.flink</groupId>
+                <artifactId>flink-core</artifactId>
+                <version>${flink.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.flink</groupId>
+                <artifactId>flink-streaming-java</artifactId>
+                <version>${flink.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.flink</groupId>
+                <artifactId>flink-runtime</artifactId>
+                <version>${flink.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.flink</groupId>
+                <artifactId>flink-clients</artifactId>
+                <version>${flink.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.flink</groupId>
+                <artifactId>flink-metrics-dropwizard</artifactId>
+                <version>${flink.version}</version>
             </dependency>
 
             <!-- Resolve dependency convergence issue -->
@@ -398,11 +440,44 @@
                         <id>enforce</id>
                         <configuration>
                             <rules>
+                                <requireMavenVersion>
+                                    <version>${maven.minimum.version}</version>
+                                </requireMavenVersion>
+                                <requireJavaVersion>
+                                    <version>${java.version}</version>
+                                </requireJavaVersion>
                                 <dependencyConvergence/>
                             </rules>
                         </configuration>
                         <goals>
                             <goal>enforce</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- flatten-maven-plugin resolves ${revision} for deployed POMs (CI-friendly versioning) -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+                <version>${flatten-maven-plugin.version}</version>
+                <configuration>
+                    <flattenMode>resolveCiFriendliesOnly</flattenMode>
+                    <updatePomFile>true</updatePomFile>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>flatten</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>flatten</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>flatten.clean</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>clean</goal>
                         </goals>
                     </execution>
                 </executions>

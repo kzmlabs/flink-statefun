@@ -6,7 +6,7 @@
     <parent>
         <artifactId>statefun-parent</artifactId>
         <groupId>io.github.kzmlabs.flinkstatefun</groupId>
-        <version>3.4.0-KZM-3.0-RC1</version>
+        <version>${revision}</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -17,7 +17,6 @@
         <central.skip>true</central.skip>
         <skipTests>false</skipTests>
         <kafka-clients.version>3.9.0</kafka-clients.version>
-        <awssdk.version>2.43.0</awssdk.version>
         <awaitility.version>4.2.2</awaitility.version>
         <assertj.version>3.27.3</assertj.version>
         
@@ -53,17 +52,16 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- AWS SDK v2 clients (drive Kinesis streams + S3 checkpoint bucket via LocalStack) -->
+        <!-- AWS SDK v2 clients (drive Kinesis streams + S3 checkpoint bucket via LocalStack);
+             versions managed by software.amazon.awssdk:bom in parent dependencyManagement. -->
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>kinesis</artifactId>
-            <version>${awssdk.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>s3</artifactId>
-            <version>${awssdk.version}</version>
             <scope>test</scope>
         </dependency>
 

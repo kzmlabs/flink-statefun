@@ -7,7 +7,7 @@
     <parent>
         <groupId>io.github.kzmlabs.flinkstatefun</groupId>
         <artifactId>statefun-smoke-e2e-multilang-base</artifactId>
-        <version>3.4.0-KZM-3.0-RC1</version>
+        <version>${revision}</version>
         <relativePath>../statefun-smoke-e2e-multilang-base/pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
