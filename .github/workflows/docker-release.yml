@@ -74,6 +74,15 @@ jobs:
           provenance: mode=max
           sbom: true
 
+      - name: Scan image for CVEs (Trivy)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}
+          format: table
+          exit-code: "1"
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+
       - name: Attest image provenance (Sigstore keyless)
         uses: actions/attest-build-provenance@v2
         with:
