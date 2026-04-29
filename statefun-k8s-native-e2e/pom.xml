@@ -17,7 +17,7 @@
         <central.skip>true</central.skip>
         <skipTests>false</skipTests>
         <kafka-clients.version>3.9.0</kafka-clients.version>
-        <awssdk.version>2.29.29</awssdk.version>
+        <awssdk.version>2.43.0</awssdk.version>
         <awaitility.version>4.2.2</awaitility.version>
         <assertj.version>3.27.3</assertj.version>
         
