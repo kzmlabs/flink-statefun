@@ -131,30 +131,74 @@ For complete examples, see the [Apache Flink StateFun Playground](https://github
 
 ### Prerequisites
 
-- Java 21 (set `JAVA_HOME` accordingly)
-- Maven 3.5+
-- Docker (for building images and running tests)
+- **Java 21** — set `JAVA_HOME`. Verify with `java -version`.
+- **Maven 3.9+** — or use the included `./mvnw` wrapper (no install needed).
+- **Docker** — only required for the K8s E2E tests and for building container images.
 
-### Build Commands
+### Quick start
+
+Use the Maven wrapper if you don't have Maven 3.9+ installed:
 
 ```bash
-# Full build with all tests including K8s E2E
-mvn install -B
-
-# Build with unit tests only (skip K8s E2E)
-mvn install -Dskip.k8s.e2e -B
-
-# Build without any tests
-mvn install -DskipTests -B
-
-# Build Docker image (after Maven build)
-mvn -pl statefun-docker -am package -DskipTests
-docker build -t flink-statefun:3.4.0-KZM-3.0-RC1 statefun-docker/target/docker
+./mvnw clean install -DskipTests       # Linux/macOS
+mvnw.cmd clean install -DskipTests     # Windows
 ```
 
-For local development, the image will be tagged as `flink-statefun:3.4.0-KZM-3.0-RC1`.
+Or use your system Maven:
 
-Official releases are published to GitHub Container Registry: `ghcr.io/kzmlabs/flink-statefun:<version>`
+```bash
+mvn clean install -DskipTests
+```
+
+### Common builds
+
+```bash
+# Compile + unit tests + integration tests + K8s E2E (full ~25-30 min)
+./mvnw clean install
+
+# Compile + unit tests + integration tests (skip kind cluster ~7 min)
+./mvnw clean install -Dskip.k8s.e2e
+
+# Compile only (skip all tests ~3-4 min)
+./mvnw clean install -DskipTests
+
+# Build only the Docker image (Maven assembles the build context)
+./mvnw -pl statefun-docker -am package -DskipTests
+docker build -t flink-statefun:local statefun-docker/target/docker
+```
+
+### Project version
+
+The version is declared in **one place** — the `<revision>` property at the top of the root `pom.xml`. Override per-build for CI or development snapshots:
+
+```bash
+./mvnw -Drevision=3.4.0-KZM-3.0-SNAPSHOT install -DskipTests
+```
+
+For permanent bumps, edit the property:
+
+```xml
+<properties>
+  <revision>3.4.0-KZM-3.0-RC2</revision>
+  ...
+</properties>
+```
+
+Or use Maven's versions plugin: `./mvnw versions:set -DnewVersion=X.Y.Z -DgenerateBackupPoms=false`.
+
+### Container image
+
+Local builds tag the image as `flink-statefun:local`. Official releases publish to GitHub Container Registry:
+
+```bash
+docker pull ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.0-RC1
+```
+
+Releases include SLSA provenance, CycloneDX SBOM, and Sigstore attestations. Verify with:
+
+```bash
+gh attestation verify oci://ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.0-RC1 --owner kzmlabs
+```
 
 ### Kubernetes E2E Tests (`statefun-k8s-native-e2e`)
 
