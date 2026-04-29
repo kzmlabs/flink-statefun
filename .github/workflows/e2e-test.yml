@@ -3,11 +3,7 @@ name: K8s E2E Test
 on:
   workflow_call:    # reusable by release workflows
   workflow_dispatch:
-  pull_request:
-    paths:
-      - 'statefun-k8s-native-e2e/**'
-      - 'statefun-flink-runner/**'
-      - 'tools/docker/**'
+  pull_request:    # gate every PR — no path filter, full E2E coverage
 
 jobs:
   k8s-e2e:
