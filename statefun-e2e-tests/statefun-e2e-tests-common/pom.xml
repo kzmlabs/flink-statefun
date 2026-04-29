@@ -14,7 +14,7 @@
     <artifactId>statefun-e2e-tests-common</artifactId>
 
     <properties>
-        <kafka.version>2.4.1</kafka.version>
+        <kafka.version>3.9.1</kafka.version>
         <central.skip>true</central.skip>
     </properties>
 
@@ -67,7 +67,7 @@
         <dependency>
             <groupId>net.java.dev.jna</groupId>
             <artifactId>jna</artifactId>
-            <version>5.5.0</version>
+            <version>5.14.0</version>
         </dependency>
 
         <dependency>
