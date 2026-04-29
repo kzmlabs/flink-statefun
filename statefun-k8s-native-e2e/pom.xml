@@ -149,7 +149,6 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
-                        <version>3.6.3</version>
                         <configuration>
                             <skip>${skipTests}</skip>
                         </configuration>
@@ -248,7 +247,6 @@
                     <!-- Failsafe for E2E tests -->
                     <plugin>
                         <artifactId>maven-failsafe-plugin</artifactId>
-                        <version>3.5.5</version>
                         <executions>
                             <execution>
                                 <goals>
