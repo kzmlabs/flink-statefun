@@ -26,10 +26,12 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -47,6 +49,27 @@
                         </goals>
                         <configuration>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <!--
+                                Industry-best approach: minimizeJar drops classes not reachable
+                                from project bytecode. Combined with <scope>test</scope> on test
+                                deps, ensures NO test framework classes leak into the published
+                                SDK. Belt-and-suspenders excludes catch any accidental
+                                introduction by transitive deps.
+                            -->
+                            <minimizeJar>true</minimizeJar>
+                            <artifactSet>
+                                <excludes>
+                                    <exclude>org.junit.jupiter:*</exclude>
+                                    <exclude>org.junit.platform:*</exclude>
+                                    <exclude>org.junit:*</exclude>
+                                    <exclude>org.opentest4j:*</exclude>
+                                    <exclude>org.apiguardian:*</exclude>
+                                    <exclude>org.hamcrest:*</exclude>
+                                    <exclude>org.assertj:*</exclude>
+                                    <exclude>org.mockito:*</exclude>
+                                    <exclude>org.awaitility:*</exclude>
+                                </excludes>
+                            </artifactSet>
                         </configuration>
                     </execution>
                 </executions>
