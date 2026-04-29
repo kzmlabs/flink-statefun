@@ -140,29 +140,31 @@ jobs:
 
       - name: Create GitHub Release
         if: steps.release_type.outputs.type == 'full'
-        uses: softprops/action-gh-release@v1
-        with:
-          name: Release ${{ steps.release_type.outputs.version }}
-          body: |
-            ## Kzmlabs StateFun ${{ steps.release_type.outputs.version }}
-
-            ### Maven Coordinates
-            ```xml
-            <dependency>
-                <groupId>io.github.kzmlabs.flinkstatefun</groupId>
-                <artifactId>statefun-sdk-java</artifactId>
-                <version>${{ steps.release_type.outputs.version }}</version>
-            </dependency>
-            ```
-
-            ### Docker Image
-            ```bash
-            docker pull ghcr.io/kzmlabs/flink-statefun:${{ steps.release_type.outputs.version }}
-            ```
-
-            ### Changes
-            See [CHANGELOG](https://github.com/kzmlabs/flink-statefun/blob/release/CHANGELOG.md) for details.
-          draft: false
-          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.release_type.outputs.version }}
+        run: |
+          gh release create "v${VERSION}" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --title "Release ${VERSION}" \
+            --notes "$(cat <<EOF
+          ## Kzmlabs StateFun ${VERSION}
+
+          ### Maven Coordinates
+          \`\`\`xml
+          <dependency>
+              <groupId>io.github.kzmlabs.flinkstatefun</groupId>
+              <artifactId>statefun-sdk-java</artifactId>
+              <version>${VERSION}</version>
+          </dependency>
+          \`\`\`
+
+          ### Docker Image
+          \`\`\`bash
+          docker pull ghcr.io/kzmlabs/flink-statefun:${VERSION}
+          \`\`\`
+
+          ### Changes
+          See [CHANGELOG](https://github.com/kzmlabs/flink-statefun/blob/release/CHANGELOG.md) for details.
+          EOF
+          )"
