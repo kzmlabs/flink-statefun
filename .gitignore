@@ -72,3 +72,4 @@ dev/
 # maven dependency:sources unpacks into ./org/
 /org/
 .claude/
+.flattened-pom.xml
