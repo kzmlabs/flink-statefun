@@ -1,0 +1,56 @@
+# SPDX-License-Identifier: Apache-2.0
+name: Feature request
+description: Suggest a new feature or enhancement
+title: "[FEATURE] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for proposing an improvement to Kzmlabs Flink StateFun!
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem statement
+      description: What problem does this feature solve? Who's affected?
+      placeholder: "When I try to ..., I can't because ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: How would you like this to work? Concrete API/behavior preferred.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Other approaches you've thought about and why they fall short.
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Scope
+      description: Where does this change live?
+      options:
+        - SDK (statefun-sdk-java / statefun-sdk-embedded)
+        - Runtime (statefun-flink-core / statefun-flink-distribution)
+        - I/O (statefun-kafka-io / statefun-kinesis-io)
+        - Build / packaging (statefun-docker / Maven / Dockerfile)
+        - K8s deployment (statefun-k8s-native-e2e / Flink Operator)
+        - Documentation
+        - CI / release process
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Links to related issues, upstream Flink/StateFun discussions, prior art.
