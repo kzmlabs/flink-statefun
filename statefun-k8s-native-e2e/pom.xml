@@ -21,7 +21,7 @@
         <awaitility.version>4.2.2</awaitility.version>
         <assertj.version>3.27.3</assertj.version>
         
-        <slf4j.version>2.0.9</slf4j.version>
+        <slf4j.version>2.0.17</slf4j.version>
         <!-- CI can set this true to keep the cluster alive for log collection -->
         <skip.teardown>false</skip.teardown>
     </properties>
