@@ -29,7 +29,7 @@ Kzmlabs Flink StateFun advances the original StateFun codebase with:
 <dependency>
     <groupId>io.github.kzmlabs.flinkstatefun</groupId>
     <artifactId>statefun-sdk-java</artifactId>
-    <version>3.4.0-KZM-3.0</version>
+    <version>3.4.0-KZM-3.1</version>
 </dependency>
 ```
 
@@ -93,7 +93,7 @@ A _module_ is the entry point for adding primitives (ingresses, egresses, router
 <dependency>
     <groupId>io.github.kzmlabs.flinkstatefun</groupId>
     <artifactId>statefun-sdk-java</artifactId>
-    <version>3.4.0-KZM-3.0</version>
+    <version>3.4.0-KZM-3.1</version>
 </dependency>
 ```
 
@@ -172,14 +172,14 @@ docker build -t flink-statefun:local statefun-docker/target/docker
 The version is declared in **one place** — the `<revision>` property at the top of the root `pom.xml`. Override per-build for CI or development snapshots:
 
 ```bash
-./mvnw -Drevision=3.4.0-KZM-3.0-SNAPSHOT install -DskipTests
+./mvnw -Drevision=3.4.0-KZM-3.1-SNAPSHOT install -DskipTests
 ```
 
 For permanent bumps, edit the property:
 
 ```xml
 <properties>
-  <revision>3.4.0-KZM-3.0-RC2</revision>
+  <revision>3.4.0-KZM-3.1-RC2</revision>
   ...
 </properties>
 ```
@@ -191,13 +191,13 @@ Or use Maven's versions plugin: `./mvnw versions:set -DnewVersion=X.Y.Z -Dgenera
 Local builds tag the image as `flink-statefun:local`. Official releases publish to GitHub Container Registry:
 
 ```bash
-docker pull ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.0
+docker pull ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.1
 ```
 
 Releases include SLSA provenance, CycloneDX SBOM, and Sigstore attestations. Verify with:
 
 ```bash
-gh attestation verify oci://ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.0 --owner kzmlabs
+gh attestation verify oci://ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.1 --owner kzmlabs
 ```
 
 ### Kubernetes E2E Tests (`statefun-k8s-native-e2e`)
