@@ -140,7 +140,7 @@ jobs:
 
       - name: Create GitHub Release
         if: steps.release_type.outputs.type == 'full'
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v3
         with:
           name: Release ${{ steps.release_type.outputs.version }}
           body: |
