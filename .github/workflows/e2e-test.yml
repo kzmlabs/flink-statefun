@@ -4,6 +4,8 @@ on:
   workflow_call:    # reusable by release workflows
   workflow_dispatch:
   pull_request:    # gate every PR — no path filter, full E2E coverage
+  push:
+    branches: [release, master]    # post-merge validation on protected branches
 
 jobs:
   k8s-e2e:
