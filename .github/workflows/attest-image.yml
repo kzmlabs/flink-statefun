@@ -1,0 +1,49 @@
+# SPDX-License-Identifier: Apache-2.0
+# One-shot Sigstore keyless attestation for an already-published image.
+# Use when the regular release pipeline shipped the image but its
+# attestation step was skipped/blocked (e.g. Trivy gate failed downstream
+# of build-push-action).
+#
+# Usage:
+#   gh workflow run attest-image.yml \
+#     --ref release \
+#     --field digest=sha256:aacd685add71900107a2069c27a41b60b5588ba3c7ac6ad5133936f713903ba3
+name: Attest Published Image (one-shot)
+
+on:
+  workflow_dispatch:
+    inputs:
+      digest:
+        description: 'Image digest (sha256:...) to attest'
+        required: true
+
+permissions:
+  id-token: write
+  attestations: write
+  packages: write
+  contents: read
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: kzmlabs/flink-statefun
+
+jobs:
+  attest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate Sigstore attestation
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          subject-digest: ${{ inputs.digest }}
+          push-to-registry: true
