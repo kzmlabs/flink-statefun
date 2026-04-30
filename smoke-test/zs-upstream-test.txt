@@ -1,0 +1,1 @@
+test direct on upstream — if this fails with 404/403, I don't have write access
