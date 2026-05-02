@@ -3,9 +3,9 @@ title: Kzmlabs StateFun
 description: Stateful actors on Apache Flink — durable per-key state, exactly-once messaging, Kafka and Kinesis I/O, Kubernetes-native deployment. Actively maintained continuation of Apache Stateful Functions for Flink 2.x and Java 21.
 ---
 
-# Kzmlabs StateFun
+# Kzmlabs StateFun · Actors
 
-> Stateful actors on Apache Flink — durable per-key state, exactly-once messaging, Kafka and Kinesis I/O, Kubernetes-native deployment.
+> **Stateful Actors on Apache Flink** — durable per-key state, exactly-once messaging, Kafka and Kinesis I/O, Kubernetes-native deployment.
 
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.kzmlabs.flinkstatefun/statefun-bom?label=Maven%20Central)](https://central.sonatype.com/artifact/io.github.kzmlabs.flinkstatefun/statefun-bom){ .md-button-link }
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue)](https://github.com/kzmlabs/flink-statefun/blob/release/LICENSE)
