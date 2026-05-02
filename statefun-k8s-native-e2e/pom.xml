@@ -184,6 +184,7 @@
                                         <argument>-f</argument>
                                         <argument>${project.basedir}/remote-function/pom.xml</argument>
                                         <argument>-DskipTests</argument>
+                                        <argument>-Drevision=${project.version}</argument>
                                         <argument>-B</argument>
                                     </arguments>
                                 </configuration>
