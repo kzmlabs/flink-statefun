@@ -1,8 +1,0 @@
-{{/* SPDX-License-Identifier: Apache-2.0 */}}
-{{/* Copyright 2014 The Apache Software Foundation */}}
-{{/*
-  Shortcode that only renders its contents if the site
-  is marked as stable.
-
-  Parmeters: Markdown text
-*/}}{{ if $.Site.Params.IsStable }}{{ .Inner | markdownify }}{{ end }}

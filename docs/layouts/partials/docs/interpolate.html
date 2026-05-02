@@ -1,8 +1,0 @@
-<!-- SPDX-License-Identifier: Apache-2.0 -->
-<!-- Copyright 2014 The Apache Software Foundation -->
-<!--
-    Partial that interpolates $scala_version and $version into strings.
--->
-{{ $str := replace . "$scala_version" site.Params.ScalaVersion }}
-{{ $str = replace $str "$version" site.Params.Version }} 
-{{ return $str }}
