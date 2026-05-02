@@ -122,6 +122,8 @@ gh attestation verify oci://ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.1 --owner
 | Run StateFun locally and send a test message | [Quickstart](quickstart.md) |
 | Add the dependency to your project | [Install](install.md) |
 | Build the project from source | [Building from source](build.md) |
+| **See real-time fraud detection end-to-end** | [Fraud detection example](examples/fraud-detection.md) |
+| **See an IoT digital-twin system end-to-end** | [IoT fleet example](examples/iot-fleet.md) |
 | Wire up Kafka ingress and egress | [Kafka I/O guide](guides/kafka-io.md) |
 | Wire up Kinesis ingress and egress | [Kinesis I/O guide](guides/kinesis-io.md) |
 | Deploy on a real Kubernetes cluster | [K8s deployment guide](guides/k8s-deployment.md) |

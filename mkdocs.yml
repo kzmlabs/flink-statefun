@@ -1,5 +1,5 @@
-site_name: Kzmlabs StateFun
-site_description: Actively maintained continuation of Apache Flink Stateful Functions on Flink 2.x and Java 21.
+site_name: Kzmlabs StateFun · Actors on Flink
+site_description: Stateful actors on Apache Flink — durable per-key state, exactly-once messaging, Kafka and Kinesis I/O, Kubernetes-native. Flink 2.2 + Java 21 continuation of Apache Stateful Functions.
 site_url: https://kzmlabs.github.io/flink-statefun/
 repo_url: https://github.com/kzmlabs/flink-statefun
 repo_name: kzmlabs/flink-statefun
@@ -64,6 +64,10 @@ nav:
       - Quickstart: quickstart.md
       - Install: install.md
       - Building from source: build.md
+  - Examples:
+      - Overview: examples/index.md
+      - Real-time fraud detection: examples/fraud-detection.md
+      - IoT fleet digital twins: examples/iot-fleet.md
   - Guides:
       - Kafka I/O: guides/kafka-io.md
       - Kinesis I/O: guides/kinesis-io.md
