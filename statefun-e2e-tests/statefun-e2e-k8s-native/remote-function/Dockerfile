@@ -7,7 +7,7 @@ ARG RUNTIME_BASE_IMAGE=${IMAGE_REGISTRY_PREFIX}alpine:3.21
 
 FROM ${JDK_BUILDER_IMAGE} AS jre-builder
 RUN "${JAVA_HOME}/bin/jlink" \
-        --add-modules java.base,java.compiler,java.desktop,java.instrument,java.logging,java.management,java.naming,java.net.http,java.security.jgss,java.security.sasl,java.sql,java.xml,jdk.crypto.ec,jdk.unsupported \
+        --add-modules java.base,java.compiler,java.desktop,java.instrument,java.logging,java.management,java.naming,java.net.http,java.security.jgss,java.security.sasl,java.sql,java.xml,jdk.crypto.ec,jdk.httpserver,jdk.unsupported \
         --strip-debug --no-man-pages --no-header-files --compress=2 \
         --output /opt/jre
 
