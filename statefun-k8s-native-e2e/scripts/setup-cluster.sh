@@ -44,8 +44,13 @@ ensure_tool() {
     command -v scoop >/dev/null 2>&1 || { echo "ERROR: install ${tool} manually (no scoop available)"; exit 1; }
     scoop install "${tool}"
   else
-    curl -fsSL "${linux_url}" -o "/usr/local/bin/${tool}"
-    chmod +x "/usr/local/bin/${tool}"
+    curl -fsSL "${linux_url}" -o "/tmp/${tool}"
+    if [[ $EUID -eq 0 ]]; then
+      install -m 0755 "/tmp/${tool}" "/usr/local/bin/${tool}"
+    else
+      sudo install -m 0755 "/tmp/${tool}" "/usr/local/bin/${tool}"
+    fi
+    rm -f "/tmp/${tool}"
   fi
 }
 
@@ -85,7 +90,8 @@ helm repo add flink-operator-repo \
   "https://archive.apache.org/dist/flink/flink-kubernetes-operator-${FLINK_OPERATOR_VERSION}/" || true
 helm repo update
 helm install flink-kubernetes-operator flink-operator-repo/flink-kubernetes-operator \
-  --namespace flink-operator --create-namespace --wait --timeout 5m
+  --namespace flink-operator --create-namespace --wait --timeout 5m \
+  --set image.tag="${FLINK_OPERATOR_VERSION}"
 
 # --- In-namespace infra -----------------------------------------------------
 
