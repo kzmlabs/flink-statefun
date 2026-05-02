@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: localstack
-          image: localstack/localstack:4.1
+          image: ${IMAGE_REGISTRY_PREFIX}localstack/localstack:4.1
           ports:
             - containerPort: 4566
           env:
