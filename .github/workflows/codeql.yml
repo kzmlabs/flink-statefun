@@ -43,6 +43,9 @@ jobs:
         with:
           languages: ${{ matrix.language }}
           queries: security-and-quality
+          paths-ignore: |
+            **/target/generated-sources/**
+            **/target/generated-test-sources/**
 
       - name: Build (skip tests)
         run: mvn install -DskipTests -B -Drat.skip=true -Dskip.k8s.e2e
