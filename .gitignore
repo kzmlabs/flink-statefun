@@ -73,3 +73,6 @@ dev/
 /org/
 .claude/
 .flattened-pom.xml
+
+# Internal planning / architecture docs (not for the public site)
+.docs-internal/
