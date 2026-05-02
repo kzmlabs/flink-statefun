@@ -1,6 +1,6 @@
 ---
 title: Kubernetes deployment
-description: Production deployment of Kzmlabs StateFun via the Flink Kubernetes Operator — FlinkDeployment CR, RocksDB checkpoints to S3, leader-election tuning, restricted-network mirrors.
+description: Production deployment of StateFun Actors via the Flink Kubernetes Operator — FlinkDeployment CR, RocksDB checkpoints to S3, leader-election tuning, restricted-network mirrors.
 ---
 
 # Kubernetes deployment
@@ -189,6 +189,6 @@ Set `IMAGE_REGISTRY_PREFIX` at build time to pull all base images through your i
 - :material-test-tube:{ .lg .middle } &nbsp; **[E2E test architecture](../architecture/e2e-tests.md)** — same Operator + manifests, exercised by CI.
 - :material-server-network:{ .lg .middle } &nbsp; **[Kafka I/O](kafka-io.md)** — production ingress/egress configuration patterns.
 - :material-aws:{ .lg .middle } &nbsp; **[Kinesis I/O](kinesis-io.md)** — IRSA-based AWS credential setup.
-- :material-source-branch-sync:{ .lg .middle } &nbsp; **[Migrate from Apache StateFun](../upstream-vs-kzm.md)** — what changes when moving to Kzmlabs StateFun on Flink 2.x.
+- :material-source-branch-sync:{ .lg .middle } &nbsp; **[Migrate from Apache StateFun](../upstream-vs-kzm.md)** — what changes when moving to StateFun Actors on Flink 2.x.
 
 </div>

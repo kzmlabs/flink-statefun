@@ -1,6 +1,6 @@
 ---
 title: IoT fleet digital twins
-description: A worked Kzmlabs StateFun example — per-device digital twins for industrial fleet telemetry with rolling sensor stats, anomaly detection, and command/response loop.
+description: A worked StateFun Actors example — per-device digital twins for industrial fleet telemetry with rolling sensor stats, anomaly detection, and command/response loop.
 ---
 
 # IoT fleet digital twins

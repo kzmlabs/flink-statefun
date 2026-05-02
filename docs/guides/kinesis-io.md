@@ -1,6 +1,6 @@
 ---
 title: Kinesis I/O
-description: AWS Kinesis ingress and egress configuration for Kzmlabs StateFun on Flink 2.x — ARN-keyed routing, LocalStack development, IAM credential modes.
+description: AWS Kinesis ingress and egress configuration for StateFun Actors on Flink 2.x — ARN-keyed routing, LocalStack development, IAM credential modes.
 ---
 
 # Kinesis I/O

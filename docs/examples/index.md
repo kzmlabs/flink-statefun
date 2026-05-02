@@ -1,6 +1,6 @@
 ---
 title: Examples
-description: Production-shaped Kzmlabs StateFun examples — financial fraud detection and IoT fleet telemetry, with full code, module.yaml wiring, and deployment notes.
+description: Production-shaped StateFun Actors examples — financial fraud detection and IoT fleet telemetry, with full code, module.yaml wiring, and deployment notes.
 ---
 
 # Examples

@@ -1,6 +1,6 @@
 ---
 title: Build from source
-description: Build Kzmlabs StateFun from source — full reactor, fast iteration modes, restricted-network registry mirrors, formatter, and contribution workflow.
+description: Build StateFun Actors from source — full reactor, fast iteration modes, restricted-network registry mirrors, formatter, and contribution workflow.
 ---
 
 # Build from source

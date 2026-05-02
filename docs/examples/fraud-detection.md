@@ -1,6 +1,6 @@
 ---
 title: Real-time fraud detection
-description: A worked Kzmlabs StateFun example — per-card risk scoring on a payments stream with velocity, geo-impossibility, and amount-anomaly detection.
+description: A worked StateFun Actors example — per-card risk scoring on a payments stream with velocity, geo-impossibility, and amount-anomaly detection.
 ---
 
 # Real-time fraud detection

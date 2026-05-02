@@ -1,11 +1,11 @@
 ---
 title: Install
-description: Maven Central coordinates, Bill of Materials import, Docker image, and supported version matrix for Kzmlabs StateFun.
+description: Maven Central coordinates, Bill of Materials import, Docker image, and supported version matrix for StateFun Actors.
 ---
 
 # Install
 
-> Add Kzmlabs StateFun to your project — Maven Central artifacts, Docker image, signed releases.
+> Add StateFun Actors to your project — Maven Central artifacts, Docker image, signed releases.
 
 ## Maven artifacts
 

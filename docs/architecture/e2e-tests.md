@@ -1,6 +1,6 @@
 ---
 title: End-to-end tests
-description: The Kubernetes-native E2E gate that runs before every Kzmlabs StateFun release — kind cluster, Flink Operator, Kafka, Kinesis-via-LocalStack, RocksDB checkpoints to S3.
+description: The Kubernetes-native E2E gate that runs before every StateFun Actors release — kind cluster, Flink Operator, Kafka, Kinesis-via-LocalStack, RocksDB checkpoints to S3.
 ---
 
 # End-to-end tests
