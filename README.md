@@ -18,6 +18,15 @@
 
 You write a function keyed by a logical id. The runtime gives it per-key durable state, routes messages to it, replays on failure, and connects it to Kafka and Kinesis. Actor programming on top of Apache Flink — without writing a Flink job by hand.
 
+```mermaid
+flowchart LR
+    KafkaIn[Kafka / Kinesis<br/>ingress] --> Dispatch[StateFun<br/>dispatcher]
+    Dispatch -->|state-keyed message| Func[Function instance]
+    Func -->|HTTP request-reply| Remote[Remote endpoint]
+    Func -->|emit| Egress[Kafka / Kinesis<br/>egress]
+    Func <-->|state I/O| State[(RocksDB keyed state<br/>checkpointed to S3)]
+```
+
 **Use cases:** event-driven microservices, real-time fraud detection, IoT digital twins, payment orchestration, actor-style stateful compute, distributed sagas, serverless stream processing.
 
 ## Why this exists
