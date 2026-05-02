@@ -1,11 +1,11 @@
 ---
 title: StateFun Actors by Kzmlabs
-description: Stateful Actors on Apache Flink — durable per-key state, exactly-once messaging, Kafka and Kinesis I/O, Kubernetes-native deployment. The actively maintained continuation of Apache Stateful Functions for Flink 2.x and Java 21.
+description: Stateful actors on Apache Flink 2.x and Java 21 — durable per-key state, exactly-once messaging, Kafka and Kinesis I/O, Kubernetes-native deployment. Continues the Apache Stateful Functions programming model on the modern Flink line.
 ---
 
 # StateFun Actors by Kzmlabs
 
-> **Stateful Actors on Apache Flink** — durable per-key state, exactly-once messaging, Kafka and Kinesis I/O, Kubernetes-native deployment.
+> **Stateful actors on Apache Flink 2.x and Java 21** — durable per-key state, exactly-once messaging, Kafka and Kinesis I/O, Kubernetes-native deployment.
 
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.kzmlabs.flinkstatefun/statefun-bom?label=Maven%20Central)](https://central.sonatype.com/artifact/io.github.kzmlabs.flinkstatefun/statefun-bom){ .md-button-link }
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue)](https://github.com/kzmlabs/flink-statefun/blob/release/LICENSE)
