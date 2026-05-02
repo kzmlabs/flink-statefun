@@ -37,6 +37,18 @@
          <lastmod>2026-05-02</lastmod>
     </url>
     <url>
+         <loc>https://kzmlabs.github.io/flink-statefun/examples/</loc>
+         <lastmod>2026-05-02</lastmod>
+    </url>
+    <url>
+         <loc>https://kzmlabs.github.io/flink-statefun/examples/fraud-detection/</loc>
+         <lastmod>2026-05-02</lastmod>
+    </url>
+    <url>
+         <loc>https://kzmlabs.github.io/flink-statefun/examples/iot-fleet/</loc>
+         <lastmod>2026-05-02</lastmod>
+    </url>
+    <url>
          <loc>https://kzmlabs.github.io/flink-statefun/guides/k8s-deployment/</loc>
          <lastmod>2026-05-02</lastmod>
     </url>
