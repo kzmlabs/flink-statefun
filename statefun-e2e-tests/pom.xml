@@ -15,7 +15,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <testcontainers.version>2.0.3</testcontainers.version>
+        <testcontainers.version>2.0.5</testcontainers.version>
         <central.skip>true</central.skip>
     </properties>
 
