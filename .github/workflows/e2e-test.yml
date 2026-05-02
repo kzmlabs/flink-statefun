@@ -7,6 +7,10 @@ on:
   push:
     branches: [release, master]    # post-merge validation on protected branches
 
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   k8s-e2e:
     runs-on: ubuntu-latest
@@ -31,7 +35,7 @@ jobs:
         # Skip mvn's post-integration-test teardown so the explicit Teardown
         # step below is the only one that runs — otherwise the cluster is
         # gone before 'Collect logs on failure' can reach it.
-        run: mvn verify -pl statefun-k8s-native-e2e -B -Dskip.teardown=true
+        run: mvn verify -pl :statefun-e2e-k8s-native -am -B -Dskip.teardown=true
 
       - name: Collect logs on failure
         if: failure()
@@ -64,4 +68,4 @@ jobs:
 
       - name: Teardown cluster
         if: always()
-        run: bash statefun-k8s-native-e2e/scripts/teardown-cluster.sh
+        run: bash statefun-e2e-tests/statefun-e2e-k8s-native/scripts/teardown-cluster.sh

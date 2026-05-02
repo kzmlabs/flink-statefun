@@ -11,7 +11,7 @@
 - [ ] `mvn spotless:apply` clean
 - [ ] `mvn install -Dskip.k8s.e2e -B` passes
 - [ ] New or updated tests cover the change
-- [ ] K8s E2E run (if touching runtime/runner): `mvn verify -pl statefun-k8s-native-e2e`
+- [ ] K8s E2E run (if touching runtime/runner): `mvn verify -pl :statefun-e2e-k8s-native -am`
 
 ## Related issues
 

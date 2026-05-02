@@ -6,9 +6,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.github.kzmlabs.flinkstatefun</groupId>
-    <artifactId>statefun-k8s-native-e2e-remote-function</artifactId>
+    <artifactId>statefun-e2e-k8s-native-remote-function</artifactId>
     <version>${revision}</version>
-    <name>statefun-k8s-native-e2e-remote-function</name>
+    <name>statefun-e2e-k8s-native-remote-function</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

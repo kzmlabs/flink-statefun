@@ -118,7 +118,7 @@ The SDK's `AwsRegion.CustomEndpointAwsRegion` accepts `http://` and
 
 ## See also
 
-- `statefun-k8s-native-e2e/src/test/resources/k8s/module-configmap.yaml` —
+- `statefun-e2e-tests/statefun-e2e-k8s-native/src/test/resources/k8s/module-configmap.yaml` —
   working ingress + egress example against LocalStack.
 - `RoutableKinesisIngressSpec` / `GenericKinesisEgressSpec` — Jackson
   deserializer definitions.
