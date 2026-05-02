@@ -42,7 +42,7 @@ body:
         - Runtime (statefun-flink-core / statefun-flink-distribution)
         - I/O (statefun-kafka-io / statefun-kinesis-io)
         - Build / packaging (statefun-docker / Maven / Dockerfile)
-        - K8s deployment (statefun-k8s-native-e2e / Flink Operator)
+        - K8s deployment (statefun-e2e-k8s-native / Flink Operator)
         - Documentation
         - CI / release process
         - Other

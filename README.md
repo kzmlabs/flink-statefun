@@ -200,7 +200,7 @@ Releases include SLSA provenance, CycloneDX SBOM, and Sigstore attestations. Ver
 gh attestation verify oci://ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.1 --owner kzmlabs
 ```
 
-### Kubernetes E2E Tests (`statefun-k8s-native-e2e`)
+### Kubernetes E2E Tests (`statefun-e2e-tests/statefun-e2e-k8s-native`)
 
 The project includes a full Kubernetes end-to-end test suite that validates StateFun running on a real Flink cluster with Kafka, MinIO, and the Flink Kubernetes Operator — the same topology you'd use in production.
 
@@ -231,7 +231,7 @@ mvn clean install -Dskip.k8s.e2e
 mvn clean install -DskipTests
 
 # Run only the E2E module (JARs must be built already)
-mvn verify -pl statefun-k8s-native-e2e
+mvn verify -pl statefun-e2e-tests/statefun-e2e-k8s-native
 ```
 
 **Prerequisites for E2E:** Docker running, ~10 min for cluster setup + tests. The setup script auto-installs `kubectl`, `kind`, and `helm` if missing (via scoop on Windows, direct download on Linux/macOS).
@@ -272,7 +272,7 @@ docker logs statefun-remote-function
 | `statefun-flink-runner` | Uber JAR for K8s deployment via Flink Operator |
 | `statefun-kinesis-io` | AWS Kinesis ingress/egress connectors |
 | `statefun-bom` | Bill of Materials for dependency version alignment |
-| `statefun-k8s-native-e2e` | Kubernetes end-to-end tests |
+| `statefun-e2e-tests/statefun-e2e-k8s-native` | Kubernetes end-to-end tests |
 
 ## Differences from Apache StateFun
 

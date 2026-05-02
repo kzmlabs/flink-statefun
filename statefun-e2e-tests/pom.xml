@@ -29,6 +29,7 @@
         <module>statefun-smoke-e2e-java</module>
         <module>statefun-smoke-e2e-golang</module>
         <module>statefun-smoke-e2e-js</module>
+        <module>statefun-e2e-k8s-native</module>
     </modules>
 
     <dependencyManagement>

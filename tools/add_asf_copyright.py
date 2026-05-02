@@ -20,7 +20,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 # Directories created from scratch in this fork — no ASF heritage.
 EXCLUDE_PATHS = {
     'statefun-docker',
-    'statefun-k8s-native-e2e',
+    'statefun-e2e-tests/statefun-e2e-k8s-native',
     'dev',
     'docs/superpowers',
     '.github',

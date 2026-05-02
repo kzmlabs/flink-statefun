@@ -55,7 +55,7 @@ updates:
       - docker
 
   - package-ecosystem: docker
-    directory: "/statefun-k8s-native-e2e/remote-function"
+    directory: "/statefun-e2e-tests/statefun-e2e-k8s-native/remote-function"
     schedule:
       interval: weekly
       day: monday
