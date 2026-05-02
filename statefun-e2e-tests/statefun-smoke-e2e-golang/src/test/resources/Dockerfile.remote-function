@@ -2,7 +2,9 @@
 # Copyright 2014 The Apache Software Foundation
 
 
-FROM golang:1.16-alpine
+ARG IMAGE_REGISTRY_PREFIX=
+ARG BASE_IMAGE=${IMAGE_REGISTRY_PREFIX}golang:1.16-alpine
+FROM ${BASE_IMAGE}
 RUN apk add --no-cache git
 
 RUN mkdir -p /app/test/smoketest

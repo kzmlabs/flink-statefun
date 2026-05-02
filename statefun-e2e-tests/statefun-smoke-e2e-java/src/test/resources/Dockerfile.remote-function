@@ -2,7 +2,9 @@
 # Copyright 2014 The Apache Software Foundation
 
 
-FROM openjdk:8
+ARG IMAGE_REGISTRY_PREFIX=
+ARG BASE_IMAGE=${IMAGE_REGISTRY_PREFIX}openjdk:8
+FROM ${BASE_IMAGE}
 
 RUN mkdir -p /app
 WORKDIR /app
