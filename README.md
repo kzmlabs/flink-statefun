@@ -10,7 +10,13 @@
 [![CodeQL](https://github.com/kzmlabs/flink-statefun/actions/workflows/codeql.yml/badge.svg?branch=release)](https://github.com/kzmlabs/flink-statefun/actions/workflows/codeql.yml?query=branch%3Arelease)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/kzmlabs/flink-statefun/badge)](https://scorecard.dev/viewer/?uri=github.com/kzmlabs/flink-statefun)
 
-📖 **[Documentation](https://kzmlabs.github.io/flink-statefun/)** &nbsp;·&nbsp; ⚡ **[Quickstart](https://kzmlabs.github.io/flink-statefun/quickstart/)** &nbsp;·&nbsp; 📦 **[Maven Central](https://central.sonatype.com/namespace/io.github.kzmlabs.flinkstatefun)** &nbsp;·&nbsp; 🐳 **[GHCR](https://github.com/kzmlabs/flink-statefun/pkgs/container/flink-statefun)** &nbsp;·&nbsp; 🆚 **[vs Apache StateFun](https://kzmlabs.github.io/flink-statefun/upstream-vs-kzm/)**
+[![Stars](https://img.shields.io/github/stars/kzmlabs/flink-statefun?style=social)](https://github.com/kzmlabs/flink-statefun/stargazers)
+[![Forks](https://img.shields.io/github/forks/kzmlabs/flink-statefun?style=social)](https://github.com/kzmlabs/flink-statefun/network/members)
+[![Contributors](https://img.shields.io/github/contributors/kzmlabs/flink-statefun)](https://github.com/kzmlabs/flink-statefun/graphs/contributors)
+[![Last commit](https://img.shields.io/github/last-commit/kzmlabs/flink-statefun/release)](https://github.com/kzmlabs/flink-statefun/commits/release)
+[![Open issues](https://img.shields.io/github/issues/kzmlabs/flink-statefun)](https://github.com/kzmlabs/flink-statefun/issues)
+
+📖 **[Documentation](https://kzmlabs.github.io/flink-statefun/)** &nbsp;·&nbsp; ⚡ **[Quickstart](https://kzmlabs.github.io/flink-statefun/quickstart/)** &nbsp;·&nbsp; 📦 **[Maven Central](https://central.sonatype.com/namespace/io.github.kzmlabs.flinkstatefun)** &nbsp;·&nbsp; 🐳 **[GHCR](https://github.com/kzmlabs/flink-statefun/pkgs/container/flink-statefun)** &nbsp;·&nbsp; 🆚 **[vs Apache StateFun](https://kzmlabs.github.io/flink-statefun/upstream-vs-kzm/)** &nbsp;·&nbsp; 🌟 **[Awesome StateFun](https://github.com/kzmlabs/awesome-statefun)**
 
 ---
 
@@ -180,6 +186,12 @@ Licensed under the [Apache License 2.0](LICENSE). Originally derived from [Apach
 ## Citing
 
 If you use StateFun Actors in research, please cite via the [`CITATION.cff`](CITATION.cff) file (GitHub's "Cite this repository" button).
+
+## See also
+
+- 🌟 **[awesome-statefun](https://github.com/kzmlabs/awesome-statefun)** — curated list of Stateful Functions runtimes, SDKs, examples, and adjacent actor frameworks.
+- 🔗 **[Apache Flink Stateful Functions](https://github.com/apache/flink-statefun)** — the upstream project this fork continues.
+- 🌊 **[awesome-flink](https://github.com/wuchong/awesome-flink)** — broader Apache Flink ecosystem.
 
 ## Links
 

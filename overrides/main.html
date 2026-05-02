@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block extrahead %}
+  {% set page_title = (page and page.title) or config.site_name %}
+  {% set page_description = (page and page.meta and page.meta.description) or config.site_description %}
+  {% set image = "https://kzmlabs.github.io/flink-statefun/assets/social-preview.png" %}
+  {% set page_url = (page and page.canonical_url) or config.site_url %}
+  {% set is_home = page and page.is_homepage %}
+
+  <!-- OpenGraph -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="{{ page_title }}">
+  <meta property="og:description" content="{{ page_description }}">
+  <meta property="og:image" content="{{ image }}">
+  <meta property="og:url" content="{{ page_url }}">
+  <meta property="og:site_name" content="{{ config.site_name }}">
+  <meta property="og:locale" content="en_US">
+
+  <!-- Twitter card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ page_title }}">
+  <meta name="twitter:description" content="{{ page_description }}">
+  <meta name="twitter:image" content="{{ image }}">
+
+  <!-- Canonical -->
+  {% if page and page.canonical_url %}
+  <link rel="canonical" href="{{ page.canonical_url }}">
+  {% endif %}
+
+  {% if is_home %}
+  <!-- JSON-LD: SoftwareApplication schema for Google rich-result eligibility -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "StateFun Actors by Kzmlabs",
+    "alternateName": "Kzmlabs StateFun",
+    "description": "Stateful actors on Apache Flink 2.x and Java 21 — durable per-key state, exactly-once messaging, Kafka and Kinesis I/O, Kubernetes-native deployment. Continues the Apache Stateful Functions programming model on the modern Flink line.",
+    "applicationCategory": "DeveloperApplication",
+    "applicationSubCategory": "Stream Processing Framework",
+    "operatingSystem": "Cross-platform (JVM)",
+    "softwareRequirements": "Java 21, Apache Flink 2.2",
+    "programmingLanguage": ["Java", "Python", "Go", "JavaScript"],
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "license": "https://www.apache.org/licenses/LICENSE-2.0",
+    "codeRepository": "https://github.com/kzmlabs/flink-statefun",
+    "downloadUrl": "https://central.sonatype.com/namespace/io.github.kzmlabs.flinkstatefun",
+    "softwareVersion": "3.4.0-KZM-3.1",
+    "author": {
+      "@type": "Organization",
+      "name": "Kzmlabs",
+      "url": "https://github.com/kzmlabs"
+    },
+    "isBasedOn": {
+      "@type": "SoftwareApplication",
+      "name": "Apache Stateful Functions",
+      "url": "https://github.com/apache/flink-statefun"
+    }
+  }
+  </script>
+  {% endif %}
+{% endblock %}

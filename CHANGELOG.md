@@ -1,6 +1,8 @@
 # Changelog
 
-All notable changes to the Kzmlabs StateFun fork are documented in this file.
+All notable changes to **StateFun Actors by Kzmlabs** are documented in this file. The fork continues the [Apache Stateful Functions](https://github.com/apache/flink-statefun) programming model on Apache Flink 2.x and Java 21.
+
+> **Reading guide:** "KZM-x.y" releases are this fork's versions on Flink 2.x. Apache StateFun's last release was [3.4.0](https://github.com/apache/flink-statefun/releases/tag/release-3.4.0) (October 2024) on Flink 1.16. See [docs/upstream-vs-kzm.md](https://kzmlabs.github.io/flink-statefun/upstream-vs-kzm/) for the full migration matrix.
 
 ## [3.4.0-KZM-3.0-RC1] - 2026-04-23
 
