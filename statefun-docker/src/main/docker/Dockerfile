@@ -3,7 +3,9 @@
 
 # syntax=docker/dockerfile:1.7
 
-FROM apache/flink:2.2.0-java21
+ARG IMAGE_REGISTRY_PREFIX=
+ARG FLINK_BASE_IMAGE=${IMAGE_REGISTRY_PREFIX}apache/flink:2.2.0-java21
+FROM ${FLINK_BASE_IMAGE}
 
 # Logging library versions (downloaded from Maven Central)
 ARG LOGBACK_VERSION=1.4.14
