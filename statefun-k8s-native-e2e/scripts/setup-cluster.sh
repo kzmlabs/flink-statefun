@@ -22,6 +22,8 @@ KAFKA_TOPICS=(counter.commands counter.results greeter.commands greeter.results)
 KINESIS_STREAMS=(counter.commands counter.results)
 S3_BUCKET=statefun-checkpoints
 
+IMAGE_REGISTRY_PREFIX="${IMAGE_REGISTRY_PREFIX:-}"
+
 BASEDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
 K8S_MANIFESTS="${BASEDIR}/../src/test/resources/k8s"
 
@@ -98,8 +100,10 @@ helm install flink-kubernetes-operator flink-operator-repo/flink-kubernetes-oper
 echo "=== Deploying namespace, RBAC, Kafka, LocalStack, remote function, module ==="
 kubectl apply -f "${K8S_MANIFESTS}/namespace.yaml"
 kubectl apply -f "${K8S_MANIFESTS}/flink-rbac.yaml"
-kubectl apply -f "${K8S_MANIFESTS}/kafka.yaml"
-kubectl apply -f "${K8S_MANIFESTS}/localstack.yaml"
+sed -e "s|\${IMAGE_REGISTRY_PREFIX}|${IMAGE_REGISTRY_PREFIX}|g" \
+    "${K8S_MANIFESTS}/kafka.yaml" | kubectl apply -f -
+sed -e "s|\${IMAGE_REGISTRY_PREFIX}|${IMAGE_REGISTRY_PREFIX}|g" \
+    "${K8S_MANIFESTS}/localstack.yaml" | kubectl apply -f -
 kubectl apply -f "${K8S_MANIFESTS}/remote-function.yaml"
 kubectl apply -f "${K8S_MANIFESTS}/module-configmap.yaml"
 
