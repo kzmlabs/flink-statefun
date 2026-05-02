@@ -1,6 +1,6 @@
-# Kzmlabs StateFun
+# Kzmlabs StateFun · Actors
 
-> Stateful actors on Apache Flink — durable per-key state, exactly-once messaging, Kafka and Kinesis I/O, Kubernetes-native deployment. The actively maintained continuation of [Apache Stateful Functions](https://github.com/apache/flink-statefun) for Flink 2.x and Java 21.
+> **Stateful Actors on Apache Flink** — durable per-key state, exactly-once messaging, Kafka and Kinesis I/O, Kubernetes-native deployment. The actively maintained continuation of [Apache Stateful Functions](https://github.com/apache/flink-statefun) for Flink 2.x and Java 21.
 
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.kzmlabs.flinkstatefun/statefun-bom?label=Maven%20Central)](https://central.sonatype.com/artifact/io.github.kzmlabs.flinkstatefun/statefun-bom)
 [![GitHub Release](https://img.shields.io/github/v/release/kzmlabs/flink-statefun?label=GHCR)](https://github.com/kzmlabs/flink-statefun/pkgs/container/flink-statefun)
