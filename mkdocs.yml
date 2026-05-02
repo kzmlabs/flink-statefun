@@ -1,0 +1,84 @@
+site_name: Kzmlabs StateFun
+site_description: Actively maintained continuation of Apache Flink Stateful Functions on Flink 2.x and Java 21.
+site_url: https://kzmlabs.github.io/flink-statefun/
+repo_url: https://github.com/kzmlabs/flink-statefun
+repo_name: kzmlabs/flink-statefun
+edit_uri: edit/release/docs/
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: deep purple
+      accent: amber
+      toggle: { icon: material/brightness-7, name: Switch to dark mode }
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: deep purple
+      accent: amber
+      toggle: { icon: material/brightness-4, name: Switch to light mode }
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.indexes
+    - navigation.top
+    - navigation.tracking
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+    - content.action.edit
+    - toc.follow
+  icon:
+    repo: fontawesome/brands/github
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+nav:
+  - Home: index.md
+  - Getting started:
+      - Quickstart: quickstart.md
+      - Install: install.md
+      - Building from source: build.md
+  - Guides:
+      - Kafka I/O: guides/kafka-io.md
+      - Kinesis I/O: guides/kinesis-io.md
+      - Kubernetes deployment: guides/k8s-deployment.md
+  - Architecture:
+      - Overview: architecture/index.md
+      - Shading layer: architecture/shading.md
+      - End-to-end tests: architecture/e2e-tests.md
+  - Differences from Apache StateFun: upstream-vs-kzm.md
+  - Release process: release-process.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/kzmlabs/flink-statefun
+    - icon: material/package-variant
+      link: https://central.sonatype.com/artifact/io.github.kzmlabs.flinkstatefun/statefun-bom
+      name: Maven Central
