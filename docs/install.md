@@ -1,11 +1,11 @@
 ---
 title: Install
-description: Maven Central coordinates, Bill of Materials import, Docker image, and supported version matrix for Kzmlabs StateFun.
+description: Maven Central coordinates, Bill of Materials import, Docker image, and supported version matrix for StateFun Actors — Apache Flink 2.2 + Java 21 stateful actor framework.
 ---
 
 # Install
 
-> Add Kzmlabs StateFun to your project — Maven Central artifacts, Docker image, signed releases.
+> Add StateFun Actors to your project — Maven Central artifacts, Docker image, signed releases.
 
 ## Maven artifacts
 

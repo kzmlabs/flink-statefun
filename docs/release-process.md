@@ -1,6 +1,6 @@
 ---
 title: Release process
-description: How Kzmlabs StateFun releases get cut and shipped — tag-driven CI, Maven Central + GHCR publishing, Sigstore attestation, branch protection.
+description: How StateFun Actors releases on Apache Flink get cut and shipped — tag-driven CI, Maven Central + GHCR publishing, Sigstore attestation, branch protection.
 ---
 
 # Release process

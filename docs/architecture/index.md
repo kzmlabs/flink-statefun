@@ -1,6 +1,6 @@
 ---
 title: Architecture
-description: Kzmlabs StateFun architecture — dispatcher, function model, ingress and egress, state and checkpointing, deployment topology.
+description: StateFun Actors architecture on Apache Flink — dispatcher, function model, ingress and egress, state and checkpointing, deployment topology.
 ---
 
 # Architecture

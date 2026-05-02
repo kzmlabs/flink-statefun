@@ -1,9 +1,9 @@
 ---
-title: Kzmlabs StateFun
-description: Stateful actors on Apache Flink — durable per-key state, exactly-once messaging, Kafka and Kinesis I/O, Kubernetes-native deployment. Actively maintained continuation of Apache Stateful Functions for Flink 2.x and Java 21.
+title: StateFun Actors by Kzmlabs
+description: Stateful Actors on Apache Flink — durable per-key state, exactly-once messaging, Kafka and Kinesis I/O, Kubernetes-native deployment. The actively maintained continuation of Apache Stateful Functions for Flink 2.x and Java 21.
 ---
 
-# Kzmlabs StateFun · Actors
+# StateFun Actors by Kzmlabs
 
 > **Stateful Actors on Apache Flink** — durable per-key state, exactly-once messaging, Kafka and Kinesis I/O, Kubernetes-native deployment.
 
@@ -14,7 +14,7 @@ description: Stateful actors on Apache Flink — durable per-key state, exactly-
 [![CodeQL](https://github.com/kzmlabs/flink-statefun/actions/workflows/codeql.yml/badge.svg?branch=release)](https://github.com/kzmlabs/flink-statefun/actions/workflows/codeql.yml?query=branch%3Arelease)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/kzmlabs/flink-statefun/badge)](https://scorecard.dev/viewer/?uri=github.com/kzmlabs/flink-statefun)
 
-## What is Kzmlabs StateFun?
+## What is StateFun Actors?
 
 You write a function keyed by a logical id. The runtime gives it per-key durable state, routes messages to it, replays on failure, and connects it to Kafka and Kinesis. **Actor programming on top of Apache Flink — without writing a Flink job by hand.**
 
@@ -62,9 +62,9 @@ This is the actively maintained continuation of [Apache Stateful Functions](http
 
 ## Why this fork exists
 
-Apache Stateful Functions stopped releasing in **October 2024** at version 3.4.0, locked to **Flink 1.16** and **Java 11**. Anyone wanting to run it against modern Flink either pinned old dependencies or vendored their own patches. Kzmlabs StateFun is the public, actively maintained branch — same code, modern stack, no vendor lock-in.
+Apache Stateful Functions stopped releasing in **October 2024** at version 3.4.0, locked to **Flink 1.16** and **Java 11**. Anyone wanting to run it against modern Flink either pinned old dependencies or vendored their own patches. StateFun Actors is the public, actively maintained branch — same code, modern stack, no vendor lock-in.
 
-| | Apache StateFun 3.4.0 | Kzmlabs StateFun KZM-3.1 |
+| | Apache StateFun 3.4.0 | StateFun Actors KZM-3.1 |
 |---|---|---|
 | **Flink runtime** | 1.16.2 | **2.2.0** |
 | **Java baseline** | 11 | **21** |

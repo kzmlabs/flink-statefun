@@ -1,15 +1,15 @@
 ---
 title: Differences from Apache StateFun
-description: Migration guide from Apache Stateful Functions 3.4.0 to Kzmlabs StateFun on Flink 2.x and Java 21 — coordinate change, runtime configuration, what stays the same.
+description: Migration guide from Apache Stateful Functions 3.4.0 to StateFun Actors on Flink 2.x and Java 21 — coordinate change, runtime configuration, what stays the same.
 ---
 
 # Differences from Apache StateFun
 
-> Apache Stateful Functions 3.4.0 (October 2024) is the last upstream release, locked to Flink 1.16 and Java 11. Kzmlabs StateFun continues the project against the modern Flink line. **Most user code keeps working unchanged**; the differences are at the runtime, dependency, and deployment layer.
+> Apache Stateful Functions 3.4.0 (October 2024) is the last upstream release, locked to Flink 1.16 and Java 11. StateFun Actors continues the project against the modern Flink line. **Most user code keeps working unchanged**; the differences are at the runtime, dependency, and deployment layer.
 
 ## At a glance
 
-| | Apache StateFun 3.4.0 | Kzmlabs StateFun KZM-3.1 |
+| | Apache StateFun 3.4.0 | StateFun Actors KZM-3.1 |
 |---|---|---|
 | **Flink runtime** | 1.16.2 | **2.2.0** |
 | **Java baseline** | 11 | **21** |
@@ -86,7 +86,7 @@ See the [Kinesis I/O guide](guides/kinesis-io.md) for the full Flink 2.x configu
 
 ## Why this fork exists
 
-Upstream Apache StateFun has not received releases since October 2024. As Flink 2.x ships and JDK 11 leaves the active LTS support window, downstream users are left choosing between staying on an old Flink line or vendoring their own runtime patches. Kzmlabs StateFun is the public, actively maintained continuation — same code, modern dependencies, no vendor lock-in.
+Upstream Apache StateFun has not received releases since October 2024. As Flink 2.x ships and JDK 11 leaves the active LTS support window, downstream users are left choosing between staying on an old Flink line or vendoring their own runtime patches. StateFun Actors is the public, actively maintained continuation — same code, modern dependencies, no vendor lock-in.
 
 ## Next steps
 
