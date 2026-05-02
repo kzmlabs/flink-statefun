@@ -109,7 +109,7 @@
         <scala.binary.version>2.12</scala.binary.version>
         <scala.version>2.12.7</scala.version>
         <lz4-java.version>1.8.1</lz4-java.version>
-        <flink-shaded-jackson.version>2.18.2-20.0</flink-shaded-jackson.version>
+        <flink-shaded-jackson.version>2.20.1-21.0</flink-shaded-jackson.version>
         <slf4j-log4j12.version>1.7.36</slf4j-log4j12.version>
         <test.unit.pattern>**/*Test.*</test.unit.pattern>
 
