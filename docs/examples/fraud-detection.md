@@ -1,6 +1,6 @@
 ---
 title: Real-time fraud detection
-description: A worked StateFun Actors example — per-card risk scoring on a payments stream with velocity, geo-impossibility, and amount-anomaly detection.
+description: Real-time fraud detection on Apache Flink with StateFun Actors — per-card risk scoring on a payments stream with velocity, geo-impossibility, and amount-anomaly detection.
 ---
 
 # Real-time fraud detection

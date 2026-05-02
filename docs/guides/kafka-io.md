@@ -1,6 +1,6 @@
 ---
 title: Kafka I/O
-description: Kafka ingress and egress configuration for StateFun Actors — exactly-once delivery, multi-topic ingresses, custom Protobuf types, routing patterns.
+description: Apache Kafka ingress and egress configuration for StateFun Actors on Apache Flink — exactly-once delivery, multi-topic ingresses, custom Protobuf types, routing patterns.
 ---
 
 # Kafka I/O

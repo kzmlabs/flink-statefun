@@ -1,6 +1,6 @@
 ---
 title: Shading layer
-description: How StateFun Actors relocates Protobuf so the runtime and user code can use different Protobuf versions on the same classpath without conflicts.
+description: How StateFun Actors on Apache Flink relocates Protobuf so the runtime and user code can use different Protobuf versions on the same classpath without conflicts.
 ---
 
 # Shading layer

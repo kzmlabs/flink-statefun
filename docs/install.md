@@ -1,6 +1,6 @@
 ---
 title: Install
-description: Maven Central coordinates, Bill of Materials import, Docker image, and supported version matrix for StateFun Actors.
+description: Maven Central coordinates, Bill of Materials import, Docker image, and supported version matrix for StateFun Actors — Apache Flink 2.2 + Java 21 stateful actor framework.
 ---
 
 # Install

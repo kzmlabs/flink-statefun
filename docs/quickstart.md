@@ -1,6 +1,6 @@
 ---
 title: Quickstart
-description: Run a StateFun Actors job locally in five minutes — Docker, Kafka, a remote function, and a verified round-trip message.
+description: Run a StateFun Actors job on Apache Flink locally in five minutes — Docker, Kafka, a remote function, and a verified round-trip message.
 ---
 
 # Quickstart

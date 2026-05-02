@@ -1,6 +1,6 @@
 ---
 title: IoT fleet digital twins
-description: A worked StateFun Actors example — per-device digital twins for industrial fleet telemetry with rolling sensor stats, anomaly detection, and command/response loop.
+description: IoT fleet digital twins on Apache Flink with StateFun Actors — per-device digital twins for industrial fleet telemetry with rolling sensor stats, anomaly detection, and command/response loop.
 ---
 
 # IoT fleet digital twins
