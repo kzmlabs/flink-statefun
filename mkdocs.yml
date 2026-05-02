@@ -82,3 +82,7 @@ extra:
     - icon: material/package-variant
       link: https://central.sonatype.com/artifact/io.github.kzmlabs.flinkstatefun/statefun-bom
       name: Maven Central
+
+extra_javascript:
+  - https://unpkg.com/mermaid@11/dist/mermaid.min.js
+  - assets/js/mermaid-init.js
