@@ -29,5 +29,6 @@ jobs:
         with:
           python-version: "3.13"
           cache: pip
-      - run: pip install mkdocs-material pymdown-extensions
+          cache-dependency-path: docs/requirements.txt
+      - run: pip install -r docs/requirements.txt
       - run: mkdocs gh-deploy --force
