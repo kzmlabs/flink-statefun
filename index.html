@@ -441,9 +441,6 @@
       
   
   <style>
-    /* Homepage-only: hide the auto-generated H1 (Material falls back to
-       the nav label "Home" when the markdown has no H1; the hero replaces it). */
-    article.md-content__inner > h1:first-of-type { display: none; }
     /* Tighten the gap between the hero and the first content section. */
     article.md-content__inner > h2:first-of-type { margin-top: 1rem; }
   </style>
@@ -1353,23 +1350,10 @@
             <div class="md-content" data-md-component="content">
               <article class="md-content__inner md-typeset">
                 
-                  
-  
-
-
-
-  
-    <a href="https://github.com/kzmlabs/flink-statefun/edit/release/docs/index.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
-      
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
-    </a>
   
   
-
-
-  <h1>Home</h1>
-
-<h2 id="what-is-statefun-actors">What is StateFun Actors?<a class="headerlink" href="#what-is-statefun-actors" title="Permanent link">&para;</a></h2>
+  <article class="md-content__inner md-typeset">
+    <h2 id="what-is-statefun-actors">What is StateFun Actors?<a class="headerlink" href="#what-is-statefun-actors" title="Permanent link">&para;</a></h2>
 <p>You write a function keyed by a logical id. The runtime gives it per-key durable state, routes messages to it, replays on failure, and connects it to Kafka and Kinesis. <strong>Actor programming on top of Apache Flink — without writing a Flink job by hand.</strong></p>
 <p>This is the actively maintained continuation of <a href="https://github.com/apache/flink-statefun">Apache Stateful Functions</a>: same programming model, current Flink, current Java, restored Kinesis I/O, and a real Kubernetes end-to-end gate before every release.</p>
 <h2 id="focus-on-logic-not-on-flink-plumbing">Focus on logic, not on Flink plumbing<a class="headerlink" href="#focus-on-logic-not-on-flink-plumbing" title="Permanent link">&para;</a></h2>
@@ -1585,24 +1569,9 @@
 </tr>
 </tbody>
 </table>
-
-
-
-
-
-
-
-  
+  </article>
   
 
-
-
-
-  
-
-
-
-                
               </article>
             </div>
           
