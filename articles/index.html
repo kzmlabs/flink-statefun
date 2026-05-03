@@ -6,26 +6,32 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Stateful actors on Apache Flink — durable per-key state, exactly-once Kafka/Kinesis I/O, Kubernetes-native. Flink 2.2 + Java 21.">
+        <meta name="description" content="Long-form notes on the StateFun Actors continuation — design decisions, migration playbooks, and lessons from running stateful actors on Apache Flink 2.x.">
       
       
       
+        <link rel="canonical" href="https://kzmlabs.github.io/flink-statefun/articles/">
       
       
+        <link rel="prev" href="../architecture/e2e-tests/">
       
-      <link rel="icon" href="/flink-statefun/assets/favicon-32.png">
+      
+        <link rel="next" href="forking-statefun/">
+      
+      
+      <link rel="icon" href="../assets/favicon-32.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.20">
     
     
       
-        <title>StateFun Actors by Kzmlabs</title>
+        <title>Articles - StateFun Actors by Kzmlabs</title>
       
     
     
-      <link rel="stylesheet" href="/flink-statefun/assets/stylesheets/main.e53b48f4.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.e53b48f4.min.css">
       
         
-        <link rel="stylesheet" href="/flink-statefun/assets/stylesheets/palette.06af60db.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
       
       
 
@@ -44,9 +50,9 @@
       
     
     
-      <link rel="stylesheet" href="/flink-statefun/assets/css/theme.css">
+      <link rel="stylesheet" href="../assets/css/theme.css">
     
-    <script>__md_scope=new URL("/flink-statefun/",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -60,27 +66,27 @@
   
 
   <!-- App icons (PWA + iOS) -->
-  <link rel="icon" type="image/png" sizes="32x32" href="/flink-statefun/assets/favicon-32.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="/flink-statefun/assets/favicon-192.png">
-  <link rel="icon" type="image/png" sizes="512x512" href="/flink-statefun/assets/favicon-512.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="/flink-statefun/assets/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="../assets/favicon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="../assets/favicon-512.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="../assets/apple-touch-icon.png">
   <meta name="theme-color" content="#0a0e27">
 
   <!-- OpenGraph -->
   <meta property="og:type" content="website">
-  <meta property="og:title" content="StateFun Actors by Kzmlabs">
-  <meta property="og:description" content="Stateful actors on Apache Flink — durable per-key state, exactly-once Kafka/Kinesis I/O, Kubernetes-native. Flink 2.2 + Java 21.">
+  <meta property="og:title" content="Overview">
+  <meta property="og:description" content="Long-form notes on the StateFun Actors continuation — design decisions, migration playbooks, and lessons from running stateful actors on Apache Flink 2.x.">
   <meta property="og:image" content="https://kzmlabs.github.io/flink-statefun/assets/social-preview.png">
   <meta property="og:image:width" content="1280">
   <meta property="og:image:height" content="640">
-  <meta property="og:url" content="https://kzmlabs.github.io/flink-statefun/">
+  <meta property="og:url" content="https://kzmlabs.github.io/flink-statefun/articles/">
   <meta property="og:site_name" content="StateFun Actors by Kzmlabs">
   <meta property="og:locale" content="en_US">
 
   <!-- Twitter card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="StateFun Actors by Kzmlabs">
-  <meta name="twitter:description" content="Stateful actors on Apache Flink — durable per-key state, exactly-once Kafka/Kinesis I/O, Kubernetes-native. Flink 2.2 + Java 21.">
+  <meta name="twitter:title" content="Overview">
+  <meta name="twitter:description" content="Long-form notes on the StateFun Actors continuation — design decisions, migration playbooks, and lessons from running stateful actors on Apache Flink 2.x.">
   <meta name="twitter:image" content="https://kzmlabs.github.io/flink-statefun/assets/social-preview.png">
 
   
@@ -105,6 +111,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#articles" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -115,9 +126,9 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="/flink-statefun/." title="StateFun Actors by Kzmlabs" class="md-header__button md-logo" aria-label="StateFun Actors by Kzmlabs" data-md-component="logo">
+    <a href=".." title="StateFun Actors by Kzmlabs" class="md-header__button md-logo" aria-label="StateFun Actors by Kzmlabs" data-md-component="logo">
       
-  <img src="/flink-statefun/assets/logo-horizontal.png" alt="logo">
+  <img src="../assets/logo-horizontal.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -134,7 +145,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              
+              Articles
             
           </span>
         </div>
@@ -248,7 +259,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="/flink-statefun/." class="md-tabs__link">
+      <a href=".." class="md-tabs__link">
         
   
   
@@ -269,7 +280,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="/flink-statefun/quickstart/" class="md-tabs__link">
+        <a href="../quickstart/" class="md-tabs__link">
           
   
   
@@ -291,7 +302,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="/flink-statefun/examples/" class="md-tabs__link">
+        <a href="../examples/" class="md-tabs__link">
           
   
   
@@ -313,7 +324,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="/flink-statefun/guides/kafka-io/" class="md-tabs__link">
+        <a href="../guides/kafka-io/" class="md-tabs__link">
           
   
   
@@ -335,7 +346,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="/flink-statefun/architecture/" class="md-tabs__link">
+        <a href="../architecture/" class="md-tabs__link">
           
   
   
@@ -353,11 +364,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="/flink-statefun/articles/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="./" class="md-tabs__link">
           
   
   
@@ -377,7 +390,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="/flink-statefun/upstream-vs-kzm/" class="md-tabs__link">
+      <a href="../upstream-vs-kzm/" class="md-tabs__link">
         
   
   
@@ -396,7 +409,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="/flink-statefun/release-process/" class="md-tabs__link">
+      <a href="../release-process/" class="md-tabs__link">
         
   
   
@@ -433,9 +446,9 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="/flink-statefun/." title="StateFun Actors by Kzmlabs" class="md-nav__button md-logo" aria-label="StateFun Actors by Kzmlabs" data-md-component="logo">
+    <a href=".." title="StateFun Actors by Kzmlabs" class="md-nav__button md-logo" aria-label="StateFun Actors by Kzmlabs" data-md-component="logo">
       
-  <img src="/flink-statefun/assets/logo-horizontal.png" alt="logo">
+  <img src="../assets/logo-horizontal.png" alt="logo">
 
     </a>
     StateFun Actors by Kzmlabs
@@ -462,7 +475,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/flink-statefun/." class="md-nav__link">
+      <a href=".." class="md-nav__link">
         
   
   
@@ -535,7 +548,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/flink-statefun/quickstart/" class="md-nav__link">
+      <a href="../quickstart/" class="md-nav__link">
         
   
   
@@ -558,7 +571,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/flink-statefun/install/" class="md-nav__link">
+      <a href="../install/" class="md-nav__link">
         
   
   
@@ -581,7 +594,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/flink-statefun/build/" class="md-nav__link">
+      <a href="../build/" class="md-nav__link">
         
   
   
@@ -638,7 +651,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="/flink-statefun/examples/" class="md-nav__link ">
+            <a href="../examples/" class="md-nav__link ">
               
   
   
@@ -673,7 +686,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/flink-statefun/examples/fraud-detection/" class="md-nav__link">
+      <a href="../examples/fraud-detection/" class="md-nav__link">
         
   
   
@@ -696,7 +709,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/flink-statefun/examples/iot-fleet/" class="md-nav__link">
+      <a href="../examples/iot-fleet/" class="md-nav__link">
         
   
   
@@ -777,7 +790,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/flink-statefun/guides/kafka-io/" class="md-nav__link">
+      <a href="../guides/kafka-io/" class="md-nav__link">
         
   
   
@@ -800,7 +813,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/flink-statefun/guides/kinesis-io/" class="md-nav__link">
+      <a href="../guides/kinesis-io/" class="md-nav__link">
         
   
   
@@ -823,7 +836,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/flink-statefun/guides/k8s-deployment/" class="md-nav__link">
+      <a href="../guides/k8s-deployment/" class="md-nav__link">
         
   
   
@@ -880,7 +893,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="/flink-statefun/architecture/" class="md-nav__link ">
+            <a href="../architecture/" class="md-nav__link ">
               
   
   
@@ -915,7 +928,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/flink-statefun/architecture/shading/" class="md-nav__link">
+      <a href="../architecture/shading/" class="md-nav__link">
         
   
   
@@ -938,7 +951,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/flink-statefun/architecture/e2e-tests/" class="md-nav__link">
+      <a href="../architecture/e2e-tests/" class="md-nav__link">
         
   
   
@@ -965,6 +978,8 @@
       
   
   
+    
+  
   
   
     
@@ -980,20 +995,23 @@
     
     
       
+        
+        
+      
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="/flink-statefun/articles/" class="md-nav__link ">
+            <a href="./" class="md-nav__link md-nav__link--active">
               
   
   
@@ -1006,13 +1024,13 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="0">
+              <label class="md-nav__link md-nav__link--active" for="__nav_6" id="__nav_6_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             Articles
@@ -1028,7 +1046,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/flink-statefun/articles/forking-statefun/" class="md-nav__link">
+      <a href="forking-statefun/" class="md-nav__link">
         
   
   
@@ -1058,7 +1076,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/flink-statefun/upstream-vs-kzm/" class="md-nav__link">
+      <a href="../upstream-vs-kzm/" class="md-nav__link">
         
   
   
@@ -1080,7 +1098,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/flink-statefun/release-process/" class="md-nav__link">
+      <a href="../release-process/" class="md-nav__link">
         
   
   
@@ -1112,6 +1130,25 @@
   
   
   
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#latest" class="md-nav__link">
+    <span class="md-ellipsis">
+      Latest
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
   
 </nav>
                   </div>
@@ -1123,7 +1160,45 @@
             <div class="md-content" data-md-component="content">
               <article class="md-content__inner md-typeset">
                 
-  <h1>404 - Not found</h1>
+  
+  
+  
+                  
+
+
+  
+    <a href="https://github.com/kzmlabs/flink-statefun/edit/release/docs/articles/index.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+
+
+<h1 id="articles">Articles<a class="headerlink" href="#articles" title="Permanent link">&para;</a></h1>
+<p>Long-form notes from the maintainers — the design decisions, migration playbooks, and engineering lessons behind running stateful actors on Apache Flink 2.x.</p>
+<h2 id="latest">Latest<a class="headerlink" href="#latest" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="forking-statefun/"><strong>We forked Apache Stateful Functions for Flink 2.x — here's why</strong></a>
+  Why the project exists, what we changed under the hood, what stayed the same for upstream users, and where this fits versus Kafka Streams, ksqlDB, and Akka. <em>2026-05-03</em></li>
+</ul>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+  
 
               </article>
             </div>
@@ -1190,14 +1265,14 @@
     
     
       
-      <script id="__config" type="application/json">{"base": "/flink-statefun/", "features": ["navigation.tabs", "navigation.sections", "navigation.indexes", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate", "content.action.edit", "toc.follow"], "search": "/flink-statefun/assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.indexes", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate", "content.action.edit", "toc.follow"], "search": "../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="/flink-statefun/assets/javascripts/bundle.f55a23d4.min.js"></script>
+      <script src="../assets/javascripts/bundle.f55a23d4.min.js"></script>
       
         <script src="https://unpkg.com/mermaid@11/dist/mermaid.min.js"></script>
       
-        <script src="/flink-statefun/assets/js/mermaid-init.js"></script>
+        <script src="../assets/js/mermaid-init.js"></script>
       
     
   </body>
