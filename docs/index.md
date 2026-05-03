@@ -1,18 +1,10 @@
 ---
 title: StateFun Actors by Kzmlabs
 description: Stateful actors on Apache Flink 2.x and Java 21 — durable per-key state, exactly-once messaging, Kafka and Kinesis I/O, Kubernetes-native deployment. Continues the Apache Stateful Functions programming model on the modern Flink line.
+hide:
+  - navigation
+  - toc
 ---
-
-# StateFun Actors by Kzmlabs
-
-> **Stateful actors on Apache Flink 2.x and Java 21** — durable per-key state, exactly-once messaging, Kafka and Kinesis I/O, Kubernetes-native deployment.
-
-[![Maven Central](https://img.shields.io/maven-central/v/io.github.kzmlabs.flinkstatefun/statefun-bom?label=Maven%20Central)](https://central.sonatype.com/artifact/io.github.kzmlabs.flinkstatefun/statefun-bom){ .md-button-link }
-[![License](https://img.shields.io/badge/license-Apache%202.0-blue)](https://github.com/kzmlabs/flink-statefun/blob/release/LICENSE)
-[![CI](https://github.com/kzmlabs/flink-statefun/actions/workflows/ci.yml/badge.svg?branch=release)](https://github.com/kzmlabs/flink-statefun/actions/workflows/ci.yml?query=branch%3Arelease)
-[![K8s E2E](https://github.com/kzmlabs/flink-statefun/actions/workflows/e2e-test.yml/badge.svg?branch=release)](https://github.com/kzmlabs/flink-statefun/actions/workflows/e2e-test.yml?query=branch%3Arelease)
-[![CodeQL](https://github.com/kzmlabs/flink-statefun/actions/workflows/codeql.yml/badge.svg?branch=release)](https://github.com/kzmlabs/flink-statefun/actions/workflows/codeql.yml?query=branch%3Arelease)
-[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/kzmlabs/flink-statefun/badge)](https://scorecard.dev/viewer/?uri=github.com/kzmlabs/flink-statefun)
 
 ## What is StateFun Actors?
 
@@ -20,44 +12,118 @@ You write a function keyed by a logical id. The runtime gives it per-key durable
 
 This is the actively maintained continuation of [Apache Stateful Functions](https://github.com/apache/flink-statefun): same programming model, current Flink, current Java, restored Kinesis I/O, and a real Kubernetes end-to-end gate before every release.
 
-**Use cases:** event-driven microservices, real-time fraud detection, IoT digital twins, payment orchestration, actor-style stateful compute, distributed sagas, serverless stream processing.
+## Focus on logic, not on Flink plumbing
 
-## Start here
+<div class="kzm-compare" markdown>
+<div class="kzm-compare__bad" markdown>
+
+#### Without StateFun
+
+```java
+public class CounterFunction
+    extends KeyedProcessFunction<String, Event, Result> {
+
+  private ValueState<Long> count;
+
+  @Override
+  public void open(Configuration cfg) {
+    count = getRuntimeContext().getState(
+      new ValueStateDescriptor<>("count", Long.class));
+  }
+
+  @Override
+  public void processElement(Event e, Context ctx, Collector<Result> out) {
+    Long c = count.value();
+    if (c == null) c = 0L;
+    count.update(c + 1);
+    out.collect(new Result(e.id(), c + 1));
+  }
+}
+// + Kafka source, sink, watermarks,
+//   keyBy, checkpoint config, etc.
+```
+
+</div>
+<div class="kzm-compare__good" markdown>
+
+#### With StateFun Actors
+
+```java
+public class Counter implements StatefulFunction {
+
+  @Persisted
+  PersistedValue<Long> count =
+      PersistedValue.of("count", Long.class);
+
+  @Override
+  public void invoke(Context ctx, Object input) {
+    long c = Optional.ofNullable(count.get()).orElse(0L) + 1;
+    count.set(c);
+    ctx.send(EgressIdentifier.of("results"),
+             new Result(ctx.self().id(), c));
+  }
+}
+// Routing, ingress, egress, checkpoints
+// declared in module.yaml.
+```
+
+</div>
+</div>
+
+## Built for
 
 <div class="grid cards" markdown>
 
--   :material-rocket-launch:{ .lg .middle } &nbsp; **Quickstart**
+-   :material-shield-alert:{ .lg .middle } &nbsp; **Real-time fraud detection**
 
     ---
 
-    Run a StateFun job locally in five minutes — Docker, Kafka, a remote function.
+    Per-account state, sub-second decisions on Kafka transaction streams.
+
+    [:octicons-arrow-right-24: Walkthrough](examples/fraud-detection.md)
+
+-   :material-router-network:{ .lg .middle } &nbsp; **IoT digital twins**
+
+    ---
+
+    Per-device state, command/control, telemetry rollups at fleet scale.
+
+    [:octicons-arrow-right-24: Walkthrough](examples/iot-fleet.md)
+
+-   :material-credit-card-fast:{ .lg .middle } &nbsp; **Payment orchestration**
+
+    ---
+
+    Per-payment sagas, compensations, exactly-once side effects.
+
+    [:octicons-arrow-right-24: Architecture](architecture/index.md)
+
+-   :material-graph:{ .lg .middle } &nbsp; **Event-driven microservices**
+
+    ---
+
+    Stateful HTTP endpoints in any language, called by the runtime.
 
     [:octicons-arrow-right-24: Quickstart](quickstart.md)
 
--   :material-package-variant:{ .lg .middle } &nbsp; **Install**
+</div>
 
-    ---
+## Polyglot SDKs and pluggable I/O
 
-    Maven coordinates, BOM import, Docker image, version matrix.
+Write functions in whichever language fits the team. Plug into the streaming and storage substrate you already run.
 
-    [:octicons-arrow-right-24: Install](install.md)
+<div class="kzm-logo-grid" markdown>
+<div>:fontawesome-brands-java:{ .twemoji } &nbsp; Java SDK</div>
+<div>:fontawesome-brands-python:{ .twemoji } &nbsp; Python SDK</div>
+<div>:fontawesome-brands-golang:{ .twemoji } &nbsp; Go SDK</div>
+<div>:fontawesome-brands-js:{ .twemoji } &nbsp; JavaScript SDK</div>
+</div>
 
--   :material-kubernetes:{ .lg .middle } &nbsp; **Deploy on Kubernetes**
-
-    ---
-
-    Production layout via the Flink Kubernetes Operator + RocksDB checkpoints to S3.
-
-    [:octicons-arrow-right-24: K8s deployment](guides/k8s-deployment.md)
-
--   :material-source-branch:{ .lg .middle } &nbsp; **Migrate from Apache StateFun**
-
-    ---
-
-    What's different, and what changes you need to make in your code.
-
-    [:octicons-arrow-right-24: Differences from upstream](upstream-vs-kzm.md)
-
+<div class="kzm-logo-grid" markdown>
+<div>:simple-apachekafka:{ .twemoji } &nbsp; Apache Kafka</div>
+<div>:simple-amazonaws:{ .twemoji } &nbsp; AWS Kinesis</div>
+<div>:simple-kubernetes:{ .twemoji } &nbsp; Kubernetes</div>
+<div>:material-database:{ .twemoji } &nbsp; S3 checkpoints</div>
 </div>
 
 ## Why this fork exists
@@ -74,7 +140,7 @@ Apache Stateful Functions stopped releasing in **October 2024** at version 3.4.0
 | **Active CI** | Inactive after 3.4.0 | Dependabot, CodeQL, Scorecard, Trivy |
 | **Release cadence** | Dormant | Active (Maven Central + GHCR) |
 
-Full migration notes → [Differences from Apache StateFun](upstream-vs-kzm.md).
+[Full migration notes →](upstream-vs-kzm.md)
 
 ## What you get
 

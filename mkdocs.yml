@@ -11,18 +11,16 @@ theme:
   logo: assets/logo-horizontal.png
   favicon: assets/favicon-32.png
   palette:
-    # Default: slate (dark) — matches the social preview's deep-navy +
-    # cyan-glow aesthetic. Press Start 2P H1 only reads right against
-    # this dark background; on the previous light default it rendered
-    # as washed-out ASCII art with a pink hard-shadow.
-    - scheme: slate
-      primary: deep purple
-      accent: amber
-      toggle: { icon: material/brightness-4, name: Switch to light mode }
+    # Light default — clean Inter + cyan accent on white,
+    # matches the restate.dev visual approach.
     - scheme: default
-      primary: deep purple
-      accent: amber
+      primary: custom
+      accent: custom
       toggle: { icon: material/brightness-7, name: Switch to dark mode }
+    - scheme: slate
+      primary: custom
+      accent: custom
+      toggle: { icon: material/brightness-4, name: Switch to light mode }
   features:
     - navigation.tabs
     - navigation.sections
@@ -93,7 +91,7 @@ extra:
       name: Maven Central
 
 extra_css:
-  - assets/css/8bit.css
+  - assets/css/theme.css
 
 extra_javascript:
   - https://unpkg.com/mermaid@11/dist/mermaid.min.js
