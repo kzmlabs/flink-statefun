@@ -8,19 +8,21 @@ edit_uri: edit/release/docs/
 theme:
   name: material
   custom_dir: overrides
-  logo: assets/logo-mark.png
+  logo: assets/logo-horizontal.png
   favicon: assets/favicon-32.png
   palette:
-    - media: "(prefers-color-scheme: light)"
-      scheme: default
-      primary: deep purple
-      accent: amber
-      toggle: { icon: material/brightness-7, name: Switch to dark mode }
-    - media: "(prefers-color-scheme: dark)"
-      scheme: slate
+    # Default: slate (dark) — matches the social preview's deep-navy +
+    # cyan-glow aesthetic. Press Start 2P H1 only reads right against
+    # this dark background; on the previous light default it rendered
+    # as washed-out ASCII art with a pink hard-shadow.
+    - scheme: slate
       primary: deep purple
       accent: amber
       toggle: { icon: material/brightness-4, name: Switch to light mode }
+    - scheme: default
+      primary: deep purple
+      accent: amber
+      toggle: { icon: material/brightness-7, name: Switch to dark mode }
   features:
     - navigation.tabs
     - navigation.sections
