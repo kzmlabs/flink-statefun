@@ -189,6 +189,7 @@ If you use StateFun Actors in research, please cite via the [`CITATION.cff`](CIT
 
 ## See also
 
+- 📝 **[We forked Apache Stateful Functions for Flink 2.x — here's why](https://kzmlabs.github.io/flink-statefun/articles/forking-statefun/)** — design rationale, what we changed, what stayed the same. Also on [dev.to](https://dev.to/okazimirov/we-forked-apache-stateful-functions-for-flink-2x-heres-why-18oj).
 - 🌟 **[awesome-statefun](https://github.com/kzmlabs/awesome-statefun)** — curated list of Stateful Functions runtimes, SDKs, examples, and adjacent actor frameworks.
 - 🔗 **[Apache Flink Stateful Functions](https://github.com/apache/flink-statefun)** — the upstream project this fork continues.
 - 🌊 **[awesome-flink](https://github.com/wuchong/awesome-flink)** — broader Apache Flink ecosystem.
