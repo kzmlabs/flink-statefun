@@ -84,7 +84,7 @@ See the [Kinesis I/O guide](guides/kinesis-io.md) for the full Flink 2.x configu
 - State backend semantics (RocksDB, exactly-once via Flink checkpointing)
 - Ingress/egress declarations for Kafka
 
-## Why this fork exists
+## Why this continuation exists
 
 Upstream Apache StateFun has not received releases since October 2024. As Flink 2.x ships and JDK 11 leaves the active LTS support window, downstream users are left choosing between staying on an old Flink line or vendoring their own runtime patches. StateFun Actors is the public, actively maintained continuation — same code, modern dependencies, no vendor lock-in.
 

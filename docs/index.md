@@ -90,23 +90,9 @@ public class Counter implements StatefulFunction {
 
     [:octicons-arrow-right-24: Walkthrough](examples/iot-fleet.md)
 
--   :material-credit-card-fast:{ .lg .middle } &nbsp; **Payment orchestration**
-
-    ---
-
-    Per-payment sagas, compensations, exactly-once side effects.
-
-    [:octicons-arrow-right-24: Architecture](architecture/index.md)
-
--   :material-graph:{ .lg .middle } &nbsp; **Event-driven microservices**
-
-    ---
-
-    Stateful HTTP endpoints in any language, called by the runtime.
-
-    [:octicons-arrow-right-24: Quickstart](quickstart.md)
-
 </div>
+
+More patterns work the same way — order workflows, payment sagas, polyglot microservices, real-time scoring. The model in [Architecture overview](architecture/index.md) is the same in every case: durable per-key state plus exactly-once messaging.
 
 ## Polyglot SDKs and pluggable I/O
 
@@ -126,9 +112,9 @@ Write functions in whichever language fits the team. Plug into the streaming and
 <div>:material-database:{ .twemoji } &nbsp; S3 checkpoints</div>
 </div>
 
-## Why this fork exists
+## Why this continuation exists
 
-Apache Stateful Functions stopped releasing in **October 2024** at version 3.4.0, locked to **Flink 1.16** and **Java 11**. Anyone wanting to run it against modern Flink either pinned old dependencies or vendored their own patches. StateFun Actors is the public, actively maintained branch — same code, modern stack, no vendor lock-in.
+Apache Stateful Functions stopped releasing in **October 2024** at version 3.4.0, locked to **Flink 1.16** and **Java 11**. Anyone wanting to run it against modern Flink either pinned old dependencies or vendored their own patches. StateFun Actors is the public, actively maintained continuation — same code, modern stack, no vendor lock-in.
 
 | | Apache StateFun 3.4.0 | StateFun Actors KZM-3.1 |
 |---|---|---|
