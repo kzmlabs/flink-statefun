@@ -73,3 +73,44 @@
   </script>
   {% endif %}
 {% endblock %}
+
+{% block tabs %}
+  {{ super() }}
+  {% if page and page.is_homepage %}
+  <style>
+    /* Homepage-only: hide the auto-generated H1 (Material falls back to
+       the nav label "Home" when the markdown has no H1; the hero replaces it). */
+    article.md-content__inner > h1:first-of-type { display: none; }
+    /* Tighten the gap between the hero and the first content section. */
+    article.md-content__inner > h2:first-of-type { margin-top: 1rem; }
+  </style>
+  <section class="kzm-hero">
+    <div class="kzm-hero__brackets" aria-hidden="true"></div>
+    <span class="kzm-hero__eyebrow">kzmlabs / flink-statefun</span>
+    <h1 class="kzm-hero__title">
+      <span class="kzm-grad-cyan">Stateful</span> <span class="kzm-grad-yellow">actors</span><br>on Apache Flink
+    </h1>
+    <p class="kzm-hero__subtitle">
+      Durable per-key state, exactly-once messaging, Kafka and Kinesis I/O —
+      without writing a Flink job by hand. The actively maintained continuation
+      of Apache Stateful Functions.
+    </p>
+    <div class="kzm-hero__ctas">
+      <a href="{{ 'quickstart/' | url }}" class="md-button md-button--primary">Get started</a>
+      <a href="https://github.com/kzmlabs/flink-statefun" class="md-button">View on GitHub</a>
+    </div>
+    <div class="kzm-hero__badges">
+      <a href="https://central.sonatype.com/artifact/io.github.kzmlabs.flinkstatefun/statefun-bom"><img src="https://img.shields.io/maven-central/v/io.github.kzmlabs.flinkstatefun/statefun-bom?label=Maven%20Central" alt="Maven Central"></a>
+      <a href="https://github.com/kzmlabs/flink-statefun/blob/release/LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-blue" alt="License"></a>
+      <a href="https://scorecard.dev/viewer/?uri=github.com/kzmlabs/flink-statefun"><img src="https://api.scorecard.dev/projects/github.com/kzmlabs/flink-statefun/badge" alt="OpenSSF Scorecard"></a>
+    </div>
+    <div class="kzm-hero__tags" aria-hidden="true">
+      <span>Java 21</span>
+      <span>Flink 2.2</span>
+      <span>Kafka &amp; Kinesis I/O</span>
+      <span>Kubernetes-native</span>
+      <span>Polyglot SDKs</span>
+    </div>
+  </section>
+  {% endif %}
+{% endblock %}
