@@ -34,12 +34,13 @@ on Flink 2.x and Java 21. Maintained on Maven Central + GHCR with a
 Kubernetes-native E2E gate. Fits under the Stateful Functions section.
 ```
 
-## Other lists worth a PR
+## Other lists with their own submission file
 
-| List | Section to target |
-|---|---|
-| [manuzhang/awesome-streaming](https://github.com/manuzhang/awesome-streaming) | "Stream Processing Frameworks" or "Libraries" |
-| [infoslack/awesome-kafka](https://github.com/infoslack/awesome-kafka) | "Frameworks" — frame as Kafka I/O |
-| [ramitsurana/awesome-kubernetes](https://github.com/ramitsurana/awesome-kubernetes) | "Stream Processing" — frame as the K8s-native deployment story |
+Per-audience framing — see the dedicated submission file for the list-specific bullet, PR body, and pitch angle:
 
-For each list, the same one-line entry works; just adjust the framing in the PR body to match the list's audience (Kafka users care about exactly-once delivery, K8s users care about Operator integration, etc.).
+- [`sindresorhus-awesome.md`](sindresorhus-awesome.md) — master list of awesome lists (high authority, strict lint)
+- [`awesome-streaming.md`](awesome-streaming.md) — manuzhang/awesome-streaming
+- [`awesome-kafka.md`](awesome-kafka.md) — infoslack/awesome-kafka (Kafka audience)
+- [`awesome-kubernetes.md`](awesome-kubernetes.md) — ramitsurana/awesome-kubernetes (K8s audience)
+
+The headline bullet stays the same; only the PR body framing changes per audience.

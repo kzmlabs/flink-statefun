@@ -8,6 +8,8 @@ edit_uri: edit/release/docs/
 theme:
   name: material
   custom_dir: overrides
+  logo: assets/logo-mark.png
+  favicon: assets/favicon-32.png
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
