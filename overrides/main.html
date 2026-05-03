@@ -71,13 +71,23 @@
   {% endif %}
 {% endblock %}
 
+{% block content %}
+  {# On the homepage, skip Material's auto-injected <h1> (page.title fallback)
+     so the hero <h1> in the tabs block is the only <h1> in the DOM.
+     Two <h1> tags trip Bing's SEO checks even when one is CSS-hidden. #}
+  {% if page and page.is_homepage %}
+  <article class="md-content__inner md-typeset">
+    {{ page.content }}
+  </article>
+  {% else %}
+  {{ super() }}
+  {% endif %}
+{% endblock %}
+
 {% block tabs %}
   {{ super() }}
   {% if page and page.is_homepage %}
   <style>
-    /* Homepage-only: hide the auto-generated H1 (Material falls back to
-       the nav label "Home" when the markdown has no H1; the hero replaces it). */
-    article.md-content__inner > h1:first-of-type { display: none; }
     /* Tighten the gap between the hero and the first content section. */
     article.md-content__inner > h2:first-of-type { margin-top: 1rem; }
   </style>
