@@ -69,8 +69,15 @@ body { font-size: clamp(16px, 1rem + 0.1vw, 17px); }
   letter-spacing: 0;
   text-shadow: 0 0 8px var(--8bit-glow-cyan), 0 0 18px rgba(0, 212, 170, 0.35);
 }
+/* In light mode, Press Start 2P + a pink shadow renders as washed-out
+   ASCII art. Drop the pixel font for h1 in light mode and use Inter
+   Bold instead — the rest of the 8-bit chrome (square borders, hard
+   shadows) still carries the brand. */
 [data-md-color-scheme="default"] .md-typeset h1 {
-  text-shadow: 0 0 6px rgba(255, 84, 112, 0.25), 0 0 14px rgba(255, 84, 112, 0.12);
+  font-family: var(--md-text-font) !important;
+  font-weight: 800;
+  text-shadow: none;
+  letter-spacing: -0.01em;
 }
 .md-typeset h1::after {
   content: "▮";
@@ -107,11 +114,17 @@ body { font-size: clamp(16px, 1rem + 0.1vw, 17px); }
   margin-top: 1.8em;
 }
 
+/* Header title hidden — the theme.logo (horizontal wordmark image)
+   replaces the textual brand entirely in the navbar. Keeps the rule
+   here for fallback if the logo fails to load. */
 .md-header__title {
   font-family: "Press Start 2P", system-ui, sans-serif !important;
   font-size: clamp(0.7rem, 0.6rem + 0.4vw, 0.9rem);
   line-height: 1.6;
   letter-spacing: 0;
+}
+.md-header__topic > .md-ellipsis {
+  display: none;  /* hide repeated text title — the logo image is enough */
 }
 
 /* ═══ Subtle pixel grid background ═══════════════════════════ */
