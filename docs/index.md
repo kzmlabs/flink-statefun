@@ -99,17 +99,17 @@ More patterns work the same way — order workflows, payment sagas, polyglot mic
 Write functions in whichever language fits the team. Plug into the streaming and storage substrate you already run.
 
 <div class="kzm-logo-grid" markdown>
-<div>:fontawesome-brands-java:{ .twemoji } &nbsp; Java SDK</div>
-<div>:fontawesome-brands-python:{ .twemoji } &nbsp; Python SDK</div>
-<div>:fontawesome-brands-golang:{ .twemoji } &nbsp; Go SDK</div>
-<div>:fontawesome-brands-js:{ .twemoji } &nbsp; JavaScript SDK</div>
+<div markdown="span">:fontawesome-brands-java:{ .twemoji } &nbsp; Java SDK</div>
+<div markdown="span">:fontawesome-brands-python:{ .twemoji } &nbsp; Python SDK</div>
+<div markdown="span">:fontawesome-brands-golang:{ .twemoji } &nbsp; Go SDK</div>
+<div markdown="span">:fontawesome-brands-js:{ .twemoji } &nbsp; JavaScript SDK</div>
 </div>
 
 <div class="kzm-logo-grid" markdown>
-<div>:simple-apachekafka:{ .twemoji } &nbsp; Apache Kafka</div>
-<div>:simple-amazonaws:{ .twemoji } &nbsp; AWS Kinesis</div>
-<div>:simple-kubernetes:{ .twemoji } &nbsp; Kubernetes</div>
-<div>:material-database:{ .twemoji } &nbsp; S3 checkpoints</div>
+<div markdown="span">:simple-apachekafka:{ .twemoji } &nbsp; Apache Kafka</div>
+<div markdown="span">:simple-amazonaws:{ .twemoji } &nbsp; AWS Kinesis</div>
+<div markdown="span">:simple-kubernetes:{ .twemoji } &nbsp; Kubernetes</div>
+<div markdown="span">:material-database:{ .twemoji } &nbsp; S3 checkpoints</div>
 </div>
 
 ## Why this continuation exists
