@@ -12,28 +12,28 @@ How a single `mvn install` run turns into a coverage number, from JVM agent inje
 
 ```mermaid
 flowchart TB
-    subgraph "Reactor build (per production module)"
-        A[mvn verify] --> B[jacoco:prepare-agent]
-        B -->|sets ${argLine} to<br/>-javaagent:jacocoagent.jar| C[surefire:test]
-        C -->|forks JVM with agent attached| D[Tests run<br/>agent instruments classes<br/>as they load]
-        D -->|on JVM exit| E[target/jacoco.exec<br/>binary trace data]
-        E --> F[jacoco:report<br/>verify phase]
-        F --> G[target/site/jacoco/<br/>per-module HTML + XML]
+    subgraph PROD["Reactor build (per production module)"]
+        A["mvn verify"] --> B["jacoco:prepare-agent"]
+        B -->|"sets argLine to -javaagent flag"| C["surefire:test"]
+        C -->|"forks JVM with agent attached"| D["Tests run<br/>agent instruments classes<br/>as they load"]
+        D -->|"on JVM exit"| E["target/jacoco.exec<br/>binary trace data"]
+        E --> F["jacoco:report<br/>verify phase"]
+        F --> G["target/site/jacoco/<br/>per-module HTML + XML"]
     end
 
-    subgraph "statefun-coverage-report (LAST in reactor)"
-        H[jacoco:report-aggregate<br/>verify phase] -->|walks ${project.build.directory}<br/>of every dependency module| I[Reads each module's<br/>target/jacoco.exec<br/>+ target/classes]
-        I --> J[Merges + filters<br/>via class-level excludes]
-        J --> K[target/site/jacoco-aggregate/<br/>jacoco.xml + index.html]
+    subgraph AGG["statefun-coverage-report (LAST in reactor)"]
+        H["jacoco:report-aggregate<br/>verify phase"] -->|"walks project.build.directory<br/>of every dependency module"| I["Reads each module's<br/>target/jacoco.exec<br/>plus target/classes"]
+        I --> J["Merges + filters<br/>via class-level excludes"]
+        J --> K["target/site/jacoco-aggregate/<br/>jacoco.xml + index.html"]
     end
 
-    G -.->|all per-module .exec files exist| H
+    G -.->|"all per-module exec files exist"| H
 
-    subgraph "CI consumption (.github/workflows/ci.yml)"
-        K --> L[Sanity check:<br/>grep '&lt;counter ' jacoco.xml]
-        L -->|empty = loud failure| M[Job summary:<br/>markdown table in run UI]
-        L --> N[Upload HTML artifact<br/>retention: 30 days]
-        L --> O[Upload jacoco.xml<br/>to Codecov via OIDC]
+    subgraph CI["CI consumption (.github/workflows/ci.yml)"]
+        K --> L["Sanity check:<br/>grep counter in jacoco.xml"]
+        L -->|"empty = loud failure"| M["Job summary:<br/>markdown table in run UI"]
+        L --> N["Upload HTML artifact<br/>retention: 30 days"]
+        L --> O["Upload jacoco.xml<br/>to Codecov via OIDC"]
     end
 
     style B fill:#e1f5ff
