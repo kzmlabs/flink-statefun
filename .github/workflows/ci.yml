@@ -42,10 +42,47 @@ jobs:
           test -s "$REPORT"
           grep -q '<counter ' "$REPORT" || { echo "::error::jacoco.xml has no <counter> elements - argLine likely broken again"; exit 1; }
 
+      # Render coverage table directly in the Actions run summary — visible without
+      # leaving GitHub, no third-party dependency.
+      - name: Coverage summary in run UI
+        if: always()
+        run: |
+          REPORT=statefun-coverage-report/target/site/jacoco-aggregate/jacoco.xml
+          [ -s "$REPORT" ] || { echo "No coverage report to summarize"; exit 0; }
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET, os
+          root = ET.parse('statefun-coverage-report/target/site/jacoco-aggregate/jacoco.xml').getroot()
+          # Top-level <counter> elements are the project totals.
+          counters = [c for c in root if c.tag == 'counter']
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as f:
+              f.write('## Coverage report (aggregate)\n\n')
+              f.write('| Metric | Covered | Total | % |\n')
+              f.write('|---|---:|---:|---:|\n')
+              for c in counters:
+                  t, m, cv = c.get('type').title(), int(c.get('missed')), int(c.get('covered'))
+                  total = m + cv
+                  pct = 100 * cv / total if total else 0.0
+                  f.write(f'| {t} | {cv:,} | {total:,} | **{pct:.1f}%** |\n')
+              f.write('\nFull HTML report attached as artifact `coverage-report-html` (drill-down by module / package / class / line).\n')
+          PY
+
+      # Upload the full HTML report as a downloadable artifact. No external service required —
+      # anyone with read access to the repo can grab the ZIP from the Actions run page.
+      - name: Upload coverage HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report-html
+          path: statefun-coverage-report/target/site/jacoco-aggregate/
+          retention-days: 30
+          if-no-files-found: warn
+
       - name: Upload coverage to Codecov
+        if: always()
         uses: codecov/codecov-action@v5
         with:
           files: ./statefun-coverage-report/target/site/jacoco-aggregate/jacoco.xml
           flags: unittests
           fail_ci_if_error: false
+          disable_search: true
           use_oidc: true
