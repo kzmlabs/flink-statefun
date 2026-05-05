@@ -8,19 +8,19 @@ This module has **no source code** and produces **no published artifact**. Its o
 
 ```mermaid
 flowchart LR
-    subgraph PROD["Production modules (statefun-flink-core, statefun-sdk-java, ...)"]
-        P1[surefire test JVM<br/>agent attached] --> P2[target/jacoco.exec]
+    subgraph PROD["Production modules"]
+        P1["surefire test JVM<br/>agent attached"] --> P2["target/jacoco.exec"]
     end
 
     subgraph EMB["statefun-smoke-e2e-embedded (in-process E2E)"]
-        E1[surefire test JVM<br/>agent attached<br/>destFile overridden] --> E2[target/jacoco-e2e.exec]
+        E1["surefire test JVM<br/>agent attached<br/>destFile overridden"] --> E2["target/jacoco-e2e.exec"]
     end
 
-    P2 -->|scanned by **/jacoco.exec| AGG1[statefun-coverage-report<br/>report-aggregate]
-    E2 -->|scanned by **/jacoco-e2e.exec| AGG2[statefun-e2e-coverage-report<br/>report-aggregate]
+    P2 -->|"scanned by jacoco.exec pattern"| AGG1["statefun-coverage-report<br/>report-aggregate"]
+    E2 -->|"scanned by jacoco-e2e.exec pattern"| AGG2["statefun-e2e-coverage-report<br/>report-aggregate"]
 
-    AGG1 --> CV1[Codecov flag: unittests<br/>jacoco-aggregate/jacoco.xml]
-    AGG2 --> CV2[Codecov flag: e2e<br/>jacoco-e2e-aggregate/jacoco.xml]
+    AGG1 --> CV1["Codecov flag: unittests<br/>jacoco-aggregate/jacoco.xml"]
+    AGG2 --> CV2["Codecov flag: e2e<br/>jacoco-e2e-aggregate/jacoco.xml"]
 
     style AGG1 fill:#e1f5ff
     style AGG2 fill:#fff4e1
@@ -88,52 +88,47 @@ flowchart TB
 
 ---
 
-## How E2E tests fit in (and why they don't)
+## How E2E tests fit in
 
-E2E tests **do not contribute coverage**, by design. Three independent mechanisms enforce this:
+The 10 modules under `statefun-e2e-tests/` split into two camps with very different coverage behavior:
 
 ```mermaid
 flowchart LR
-    subgraph "Production module (e.g. statefun-flink-core)"
-        P1[parent pom<br/>jacoco-prepare-agent execution<br/>jacoco.skip = false] -->|injects agent| P2[surefire test JVM<br/>argLine = -javaagent:...]
-        P2 --> P3[target/jacoco.exec<br/>WRITTEN]
+    subgraph IN["In-process (statefun-smoke-e2e-embedded only)"]
+        I1["jacoco.skip = false<br/>(overrides parent cascade)"] --> I2["surefire test JVM<br/>agent attached<br/>destFile = jacoco-e2e.exec"]
+        I2 --> I3["target/jacoco-e2e.exec<br/>WRITTEN"]
     end
 
-    subgraph "E2E module (e.g. statefun-smoke-e2e-driver)"
-        E1[statefun-e2e-tests/pom.xml<br/>cascades jacoco.skip = true] -.->|skips| E2[jacoco-prepare-agent<br/>NO-OP]
-        E2 --> E3[surefire/failsafe test JVM<br/>argLine = empty]
-        E3 --> E4[NO target/jacoco.exec written]
+    subgraph OUT["Container-based (driver, java, multilang, k8s — 9 modules)"]
+        O1["jacoco.skip = true<br/>(parent cascade)"] -.->|"skips"| O2["surefire/failsafe<br/>argLine empty"]
+        O2 --> O3["NO exec file<br/>written locally"]
+        O2 --> O4["Tests run inside<br/>TC containers / kind pods<br/>(separate JVMs, no agent)"]
     end
 
-    P3 -->|listed as dep<br/>in aggregator| AGG[report-aggregate]
-    E4 -.->|NOT listed as dep<br/>in aggregator| AGG
+    I3 -->|"scanned by e2e aggregator"| AGG2["statefun-e2e-coverage-report<br/>(flag: e2e)"]
+    O3 -.->|"not in any aggregator deps"| AGG2
 
-    AGG --> RPT[Coverage % reflects<br/>unit tests only]
-
-    style E1 fill:#ffe1e1
-    style E4 fill:#ffe1e1
-    style P3 fill:#e1ffe1
+    style I1 fill:#e1ffe1
+    style I3 fill:#e1ffe1
+    style O1 fill:#ffe1e1
+    style O3 fill:#ffe1e1
+    style O4 fill:#ffe1e1
 ```
 
-**Three layers preventing E2E from polluting coverage:**
+**Why the split:**
 
-1. **`<jacoco.skip>true</jacoco.skip>`** in `statefun-e2e-tests/pom.xml` cascades to all 10 child modules. The `prepare-agent` execution becomes a no-op, so no `-javaagent` flag is injected into the test JVM.
-2. **No `jacoco.exec` is written** for any E2E module. Even if `report-aggregate` tried to scan them (it doesn't), there would be no data.
-3. **The aggregator's `<dependencies>` block does not list any `statefun-e2e-tests/*` module**. `report-aggregate` walks declared dependencies only, so E2E modules are never inspected.
+- **In-process E2E** (`statefun-smoke-e2e-embedded`) runs StateFun via `statefun-flink-harness` directly in the surefire JVM. The JaCoCo agent attaches normally, instruments the production classes, and writes `jacoco-e2e.exec`. The dedicated `statefun-e2e-coverage-report` aggregator picks this up and produces the `e2e` flag.
+- **Container-based E2E** (the other 9 modules — `statefun-smoke-e2e-driver`, `-java`, `-multilang-*`, `-golang`, `-js`, `statefun-e2e-k8s-native`) execute production code inside **separate JVMs** (Testcontainers spawns Docker containers; kind launches Flink JobManager/TaskManager pods). The agent attached to the surefire driver JVM never reaches that code. Instrumenting it requires multi-day plumbing: bake `jacocoagent.jar` into the runtime image, configure Flink's `env.java.opts` to load it, mount a write-volume, extract `.exec` via `kubectl cp` or `docker cp` before container teardown, then merge.
 
-**Cross-JVM isolation matters too.** When `statefun-smoke-e2e-driver` boots a Flink job that exercises code in `statefun-flink-core`, the executions happen in **separate JVMs** (Testcontainers spawns containers; kind launches Flink JM/TM pods). Those JVMs don't have the agent attached, so `statefun-flink-core`'s coverage data is unaffected by E2E activity.
+### When container-based E2E coverage would be added
 
-**Net effect**: the headline coverage number is **honest unit-test reach** — not "tested by anything". E2E tests still run (validate end-to-end behavior, fail loudly on regressions), they just don't show up as covered lines in the report.
+Three trigger conditions, per [issue #149 §E2E](https://github.com/kzmlabs/flink-statefun/issues/149):
 
-### When E2E coverage WOULD be added
+1. A module's combined (unit + embedded-E2E) coverage plateaus low (<40%) and the gap is provably in container-only code paths (Kinesis source bootstrap, K8s manifest binder, module-loader classpath scanning).
+2. A regression slips through both unit AND embedded-E2E but is caught by container E2E.
+3. Apache Flink upstream ships a coverage-friendly container/kind E2E harness pattern.
 
-Three trigger conditions, documented in [issue #149 §E2E](https://github.com/kzmlabs/flink-statefun/issues/149):
-
-1. A module's unit-test coverage plateaus low (<40%) and the gap is provably in E2E-only code paths (Kinesis source bootstrap, K8s manifest binder, module-loader classpath scanning).
-2. A regression slips through unit tests but is caught by E2E.
-3. Apache Flink upstream ships a coverage-friendly E2E harness pattern.
-
-Until then, the multi-day plumbing required to extract `.exec` files from kind-cluster pods is not worth the marginal gain (<5% across the project, mostly already covered by unit tests).
+Until then, the marginal gain (<5% across the project, mostly already covered by unit + embedded-E2E) is not worth the multi-day plumbing.
 
 ---
 
@@ -141,21 +136,23 @@ Until then, the multi-day plumbing required to extract `.exec` files from kind-c
 
 ```mermaid
 flowchart TB
-    M[All modules in reactor] --> CHK{Module type?}
+    M["All modules in reactor"] --> CHK{"Module type?"}
 
-    CHK -->|Production code| P[prepare-agent active<br/>jacoco.exec written]
-    CHK -->|Test scaffolding<br/>statefun-testutil<br/>statefun-e2e-tests/*| S1[<jacoco.skip>true</jacoco.skip><br/>module-level skip]
-    CHK -->|Aggregator self<br/>statefun-coverage-report| S2[<jacoco.skip>true</jacoco.skip><br/>only report-aggregate runs]
+    CHK -->|"Production code"| P["prepare-agent active<br/>writes jacoco.exec"]
+    CHK -->|"In-process E2E (embedded)"| EE["jacoco.skip overridden to false<br/>writes jacoco-e2e.exec<br/>(separate flag)"]
+    CHK -->|"Container E2E +<br/>test scaffolding"| S1["jacoco.skip = true<br/>module-level skip"]
+    CHK -->|"Aggregator self"| S2["jacoco.skip = true<br/>only report-aggregate runs"]
 
-    P --> CL{Class matches<br/>plugin-level excludes?}
-    CL -->|Yes:<br/>**/generated/**<br/>**/*Proto*.class<br/>**/*OuterClass*.class<br/>org/.../sdk/shaded/**| EX[Excluded from instrumentation<br/>AND from report]
-    CL -->|No| INC[Instrumented<br/>counted in jacoco.xml]
+    P --> CL{"Class matches<br/>plugin-level excludes?"}
+    CL -->|"Yes (generated, Proto, OuterClass, shaded)"| EX["Excluded from instrumentation<br/>AND from report"]
+    CL -->|"No"| INC["Instrumented<br/>counted in jacoco.xml"]
 
-    S1 --> SKIP[No jacoco.exec written<br/>NOT in aggregator deps<br/>invisible in report]
+    S1 --> SKIP["No exec file written<br/>NOT in aggregator deps<br/>invisible in report"]
 
     style EX fill:#ffe1e1
     style SKIP fill:#ffe1e1
     style INC fill:#e1ffe1
+    style EE fill:#fff4e1
 ```
 
 **Why two layers (module-level skip + class-level exclude)?**
@@ -169,23 +166,25 @@ This matters for `statefun-flink-runner`, `statefun-sdk-protos`, and `statefun-s
 
 `statefun-bom` and `statefun-docker` are NOT in the aggregator dependencies — they have no JAR / no Java code at all, so there's nothing for `report-aggregate` to walk.
 
+**Special case — `statefun-smoke-e2e-embedded`**: this module's pom OVERRIDES the parent `statefun-e2e-tests` cascade by setting `<jacoco.skip>false</jacoco.skip>` in its own properties, AND points the JaCoCo agent at a different output file (`jacoco-e2e.exec` instead of `jacoco.exec`). That keeps E2E coverage data flowing into the dedicated `statefun-e2e-coverage-report` aggregator without ever mixing into the unit-test totals.
+
 ---
 
-## Three publication guards
+## Four publication guards
 
-The aggregator must never be published to Maven Central or Docker Hub. Four independent mechanisms enforce this — any one failing still blocks publication:
+Both aggregators (`statefun-coverage-report` and `statefun-e2e-coverage-report`) must never be published to Maven Central or Docker Hub. Four independent mechanisms enforce this — any one failing still blocks publication:
 
 ```mermaid
 flowchart LR
-    PUB{Try to publish<br/>statefun-coverage-report?} --> G1{central.skip<br/>= true?}
-    G1 -->|yes| BLOCK1[Sonatype Central plugin<br/>refuses upload]
-    G1 -.->|no| G2{maven.deploy.skip<br/>= true?}
-    G2 -->|yes| BLOCK2[maven-deploy-plugin<br/>refuses upload]
-    G2 -.->|no| G3{maven.install.skip<br/>= true?}
-    G3 -->|yes| BLOCK3[maven-install-plugin<br/>refuses local install]
-    G3 -.->|no| G4{In release.yml<br/>-pl exclusion?}
-    G4 -->|yes| BLOCK4[Reactor never<br/>runs deploy here]
-    G4 -.->|no| LEAK[would publish]
+    PUB{"Try to publish<br/>aggregator?"} --> G1{"central.skip<br/>= true?"}
+    G1 -->|"yes"| BLOCK1["Sonatype Central plugin<br/>refuses upload"]
+    G1 -.->|"no"| G2{"maven.deploy.skip<br/>= true?"}
+    G2 -->|"yes"| BLOCK2["maven-deploy-plugin<br/>refuses upload"]
+    G2 -.->|"no"| G3{"maven.install.skip<br/>= true?"}
+    G3 -->|"yes"| BLOCK3["maven-install-plugin<br/>refuses local install"]
+    G3 -.->|"no"| G4{"In release.yml<br/>-pl exclusion?"}
+    G4 -->|"yes"| BLOCK4["Reactor never<br/>runs deploy here"]
+    G4 -.->|"no"| LEAK["would publish"]
 
     style BLOCK1 fill:#e1ffe1
     style BLOCK2 fill:#e1ffe1
@@ -194,7 +193,7 @@ flowchart LR
     style LEAK fill:#ffe1e1
 ```
 
-`<central.skip>` only covers the Sonatype plugin path. `maven-deploy-plugin` and `maven-install-plugin` are independent and would still try to push to whatever `<distributionManagement>` resolves to if the `-pl` exclusion were ever edited. The four-guard design means an aggregator pom edit that accidentally removes one guard still leaves three intact.
+`central.skip` only covers the Sonatype plugin path. `maven-deploy-plugin` and `maven-install-plugin` are independent and would still try to push to whatever `distributionManagement` resolves to if the `-pl` exclusion were ever edited. The four-guard design means an aggregator pom edit that accidentally removes one guard still leaves three intact.
 
 ---
 
@@ -202,25 +201,28 @@ flowchart LR
 
 | Location | What you get | Latency from CI run |
 |---|---|---|
-| **GitHub Actions run summary** | Markdown table with all 6 JaCoCo metric counters (Instruction, Branch, Line, Complexity, Method, Class) | Visible immediately in the run UI |
-| **`coverage-report-html` artifact** on the run page | Full drillable JaCoCo HTML site (per-module → package → class → line-level red/green) — download ZIP, open `index.html` | Available as soon as the upload step completes (~10 sec after build) |
-| **Codecov dashboard** at `app.codecov.io/gh/kzmlabs/flink-statefun` | Trend graphs, PR coverage delta comments, per-module breakdown, badge URL | ~30 sec after CI uploads (Phase 2 — optional, third-party) |
-| **Local `mvn install`** | `statefun-coverage-report/target/site/jacoco-aggregate/index.html` | Immediate — same as the CI artifact, just generated locally |
+| **GitHub Actions run summary** | Two markdown tables (unit + E2E) with all 6 JaCoCo metric counters (Instruction, Branch, Line, Complexity, Method, Class) | Visible immediately in the run UI |
+| **`coverage-report-html` artifact** | Full drillable JaCoCo HTML site for unit-test coverage — download ZIP, open `index.html` | ~10 sec after Build & Test step completes |
+| **`coverage-report-e2e-html` artifact** | Same drillable site, scoped to in-process E2E coverage from the embedded module | ~10 sec after Build & Test step completes |
+| **Codecov dashboard** at `app.codecov.io/gh/kzmlabs/flink-statefun` | Two flags (`unittests`, `e2e`), trend graphs, PR delta comments, per-component breakdown | ~30 sec after CI uploads |
+| **Local `mvn install`** | `statefun-coverage-report/target/site/jacoco-aggregate/index.html` and `statefun-e2e-coverage-report/target/site/jacoco-e2e-aggregate/index.html` | Immediate — same data as the CI artifacts |
 
 ---
 
 ## Skip flag reference
 
-| Module / pattern | `jacoco.skip` | In aggregator deps | Reason |
-|---|---|---|---|
-| `statefun-flink/*` (rich tests) | false | yes | Production code with unit tests — primary signal |
-| `statefun-sdk-java`, `statefun-sdk-embedded` | false | yes | SDK code with unit tests |
-| `statefun-kafka-io`, `statefun-kinesis-io` | false | yes | Connector code with unit tests |
-| `statefun-sdk-protos` | false | yes | Generated protobuf — class-level excludes drop content; appears as N/A |
-| `statefun-flink-runner` | false | yes | Assembly module today; future-proof for code growth |
-| `statefun-shaded/*` | false | yes | Relocated bytecode — class-level excludes drop content; appears as N/A |
-| `statefun-bom` | n/a | **no** | No JAR, no `.class` files; nothing to walk |
-| `statefun-docker` | n/a | **no** | Docker assembly only, no Java |
-| `statefun-testutil` | **true** | no | Test scaffolding only |
-| `statefun-e2e-tests/*` (10 modules) | **true** | no | E2E in containers; see flow diagram above |
-| `statefun-coverage-report` (this module) | **true** | n/a | Aggregator itself; only `report-aggregate` execution runs |
+| Module / pattern | `jacoco.skip` | Exec output | Aggregator | Reason |
+|---|---|---|---|---|
+| `statefun-flink/*` (rich tests) | false | `jacoco.exec` | unit | Production code with unit tests — primary signal |
+| `statefun-sdk-java`, `statefun-sdk-embedded` | false | `jacoco.exec` | unit | SDK code with unit tests |
+| `statefun-kafka-io`, `statefun-kinesis-io` | false | `jacoco.exec` | unit | Connector code with unit tests |
+| `statefun-sdk-protos` | false | `jacoco.exec` | unit | Generated protobuf — class-level excludes drop content; appears as N/A |
+| `statefun-flink-runner` | false | `jacoco.exec` | unit | Assembly module today; future-proof for code growth |
+| `statefun-shaded/*` | false | `jacoco.exec` | unit | Relocated bytecode — class-level excludes drop content; appears as N/A |
+| `statefun-bom` | n/a | none | none | No JAR, no `.class` files; nothing to walk |
+| `statefun-docker` | n/a | none | none | Docker assembly only, no Java |
+| `statefun-testutil` | **true** | none | none | Test scaffolding only |
+| `statefun-smoke-e2e-embedded` | **false** (overrides parent) | **`jacoco-e2e.exec`** | **e2e** | In-process E2E — agent attaches in surefire JVM, separate exec file keeps data out of the unit aggregator |
+| `statefun-e2e-tests/*` (other 9 modules) | **true** (parent cascade) | none | none | Container-based E2E — production code runs in TC/kind JVMs the agent cannot reach |
+| `statefun-coverage-report` (this module) | **true** | none | runs `report-aggregate` only | Aggregator itself, scans `**/jacoco.exec` → unit flag |
+| `statefun-e2e-coverage-report` (sibling) | **true** | none | runs `report-aggregate` only | E2E aggregator, scans `**/jacoco-e2e.exec` → e2e flag |
