@@ -5,7 +5,7 @@ description: Apache Stateful Functions has been dormant since October 2024. Here
 
 # We forked Apache Stateful Functions for Flink 2.x — here's why
 
-*Published 2026-05-03 · by the kzmlabs maintainers · [Read on dev.to](https://dev.to/okazimirov/we-forked-apache-stateful-functions-for-flink-2x-heres-why-18oj)*
+*Published 2026-05-03 · by the kzmlabs maintainers · [Read on dev.to](https://dev.to/okazimirov/we-forked-apache-stateful-functions-for-flink-2x-heres-why-18oj) · [Read on Hashnode](https://kzmlabs.hashnode.dev/we-forked-apache-stateful-functions-for-flink-2-x-here-s-why)*
 
 [Apache Stateful Functions][upstream] is one of the quietly powerful frameworks in the Flink ecosystem — durable per-key state, exactly-once messaging, polyglot remote functions, all on top of Apache Flink. It's also been functionally dormant since **October 2024**, and it doesn't run on Flink 2.x.
 
