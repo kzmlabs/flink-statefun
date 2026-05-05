@@ -14,6 +14,11 @@
     <artifactId>statefun-testutil</artifactId>
     <name>statefun-testutil</name>
 
+    <properties>
+        <!-- Test scaffolding only; no production code to cover. -->
+        <jacoco.skip>true</jacoco.skip>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>io.github.kzmlabs.flinkstatefun</groupId>

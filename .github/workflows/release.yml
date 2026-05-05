@@ -86,7 +86,7 @@ jobs:
         run: |
           # Exclude e2e tests from deployment
           mvn deploy -Prelease -DskipTests -B \
-            -pl '!:statefun-flink-runner,!:statefun-docker,!:statefun-e2e-tests,!:statefun-e2e-tests-common,!:statefun-smoke-e2e-common,!:statefun-smoke-e2e-driver,!:statefun-smoke-e2e-embedded,!:statefun-smoke-e2e-multilang-base,!:statefun-smoke-e2e-multilang-harness,!:statefun-smoke-e2e-java,!:statefun-smoke-e2e-golang,!:statefun-smoke-e2e-js,!:statefun-e2e-k8s-native'
+            -pl '!:statefun-flink-runner,!:statefun-docker,!:statefun-e2e-tests,!:statefun-e2e-tests-common,!:statefun-smoke-e2e-common,!:statefun-smoke-e2e-driver,!:statefun-smoke-e2e-embedded,!:statefun-smoke-e2e-multilang-base,!:statefun-smoke-e2e-multilang-harness,!:statefun-smoke-e2e-java,!:statefun-smoke-e2e-golang,!:statefun-smoke-e2e-js,!:statefun-e2e-k8s-native,!:statefun-coverage-report,!:statefun-e2e-coverage-report'
         env:
           CENTRAL_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           CENTRAL_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}

@@ -87,6 +87,11 @@
         <!-- e2e tests before testutil so a publishable module is last for Central -->
         <module>statefun-e2e-tests</module>
         <module>statefun-testutil</module>
+
+        <!-- coverage aggregators: must be last so all modules' jacoco*.exec files exist before report-aggregate runs.
+             Two separate aggregators keep unit and E2E coverage as independent Codecov flags rather than mixed. -->
+        <module>statefun-coverage-report</module>
+        <module>statefun-e2e-coverage-report</module>
     </modules>
 
     <properties>
@@ -131,6 +136,7 @@
         <maven-assembly-plugin.version>3.8.0</maven-assembly-plugin.version>
         <exec-maven-plugin.version>3.6.3</exec-maven-plugin.version>
         <central-publishing-maven-plugin.version>0.10.0</central-publishing-maven-plugin.version>
+        <jacoco-maven-plugin.version>0.8.14</jacoco-maven-plugin.version>
     </properties>
 
     <dependencies>
@@ -439,6 +445,53 @@
                     <artifactId>exec-maven-plugin</artifactId>
                     <version>${exec-maven-plugin.version}</version>
                 </plugin>
+                <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <version>${jacoco-maven-plugin.version}</version>
+                    <configuration>
+                        <excludes>
+                            <exclude>**/generated/**</exclude>
+                            <exclude>**/*Proto*.class</exclude>
+                            <exclude>**/*OuterClass*.class</exclude>
+                            <exclude>org/apache/flink/statefun/sdk/shaded/**</exclude>
+                        </excludes>
+                    </configuration>
+                    <!--
+                        Both prepare-agent* executions write the JaCoCo agent flag into the same
+                        ${argLine} property. The default phase ordering (initialize → test →
+                        pre-integration-test → integration-test) is what keeps unit-test coverage
+                        intact: surefire reads argLine in `test` before prepare-agent-integration
+                        overwrites it for failsafe in `pre-integration-test`. Reordering the
+                        executions or rebinding their phases will silently break unit coverage.
+                    -->
+                    <executions>
+                        <execution>
+                            <id>jacoco-prepare-agent</id>
+                            <goals>
+                                <goal>prepare-agent</goal>
+                            </goals>
+                        </execution>
+                        <!--
+                            No-op today: the project has no maven-failsafe-plugin configured, so
+                            target/jacoco-it.exec is never written. Kept as forward-compat scaffolding
+                            for Phase 3, when failsafe ITs may be added and would need this binding.
+                        -->
+                        <execution>
+                            <id>jacoco-prepare-agent-integration</id>
+                            <goals>
+                                <goal>prepare-agent-integration</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>jacoco-report</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>report</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
             </plugins>
         </pluginManagement>
 
@@ -529,7 +582,7 @@
                         <forkNumber>0${surefire.forkNumber}</forkNumber>
                         <project.basedir>${project.basedir}</project.basedir>
                     </systemPropertyVariables>
-                    <argLine>-Xms256m -Xmx2048m -Dmvn.forkNumber=${surefire.forkNumber} -XX:+UseG1GC</argLine>
+                    <argLine>@{argLine} -Xms256m -Xmx2048m -Dmvn.forkNumber=${surefire.forkNumber} -XX:+UseG1GC</argLine>
                 </configuration>
                 <executions>
                     <!--execute all the unit tests-->
@@ -564,6 +617,12 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+
+            <!-- JaCoCo: prepare-agent injects the coverage agent into surefire's @{argLine}; report generates per-module HTML/XML in verify phase. Aggregated report lives in statefun-coverage-report. -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>

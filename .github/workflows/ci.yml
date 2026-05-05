@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  id-token: write   # required for codecov-action OIDC token verification (use_oidc: true)
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -32,3 +33,110 @@ jobs:
 
       - name: Build and test
         run: mvn clean install -B
+
+      # Fail loud if argLine regresses and the agent silently writes nothing.
+      - name: Sanity-check coverage report is non-empty
+        run: |
+          set -e
+          REPORT=statefun-coverage-report/target/site/jacoco-aggregate/jacoco.xml
+          test -s "$REPORT"
+          grep -q '<counter ' "$REPORT" || { echo "::error::jacoco.xml has no <counter> elements - argLine likely broken again"; exit 1; }
+
+      # Render coverage table directly in the Actions run summary — visible without
+      # leaving GitHub, no third-party dependency.
+      - name: Coverage summary in run UI
+        if: always()
+        run: |
+          REPORT=statefun-coverage-report/target/site/jacoco-aggregate/jacoco.xml
+          [ -s "$REPORT" ] || { echo "No coverage report to summarize"; exit 0; }
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET, os
+          root = ET.parse('statefun-coverage-report/target/site/jacoco-aggregate/jacoco.xml').getroot()
+          # Top-level <counter> elements are the project totals.
+          counters = [c for c in root if c.tag == 'counter']
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as f:
+              f.write('## Coverage report (aggregate)\n\n')
+              f.write('| Metric | Covered | Total | % |\n')
+              f.write('|---|---:|---:|---:|\n')
+              for c in counters:
+                  t, m, cv = c.get('type').title(), int(c.get('missed')), int(c.get('covered'))
+                  total = m + cv
+                  pct = 100 * cv / total if total else 0.0
+                  f.write(f'| {t} | {cv:,} | {total:,} | **{pct:.1f}%** |\n')
+              f.write('\nFull HTML report attached as artifact `coverage-report-html` (drill-down by module / package / class / line).\n')
+          PY
+
+      # Upload the full HTML report as a downloadable artifact. No external service required —
+      # anyone with read access to the repo can grab the ZIP from the Actions run page.
+      - name: Upload coverage HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report-html
+          path: statefun-coverage-report/target/site/jacoco-aggregate/
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: Upload unit-test coverage to Codecov
+        if: always()
+        uses: codecov/codecov-action@v5
+        with:
+          files: ./statefun-coverage-report/target/site/jacoco-aggregate/jacoco.xml
+          flags: unittests
+          fail_ci_if_error: false
+          disable_search: true
+          use_oidc: true
+
+      # ---- E2E coverage (separate flag, separate aggregator) ----
+      # In-process E2E only — statefun-smoke-e2e-embedded runs via statefun-flink-harness in
+      # the surefire JVM where the agent can attach. Container-based E2E (driver/java/multilang/k8s)
+      # runs production code in separate JVMs; not instrumented (see statefun-coverage-report/README.md).
+
+      - name: Sanity-check E2E coverage report is non-empty
+        if: always()
+        run: |
+          set -e
+          REPORT=statefun-e2e-coverage-report/target/site/jacoco-e2e-aggregate/jacoco.xml
+          test -s "$REPORT"
+          grep -q '<counter ' "$REPORT" || { echo "::error::jacoco-e2e-aggregate/jacoco.xml has no <counter> elements - destFile likely broken"; exit 1; }
+
+      - name: E2E coverage summary in run UI
+        if: always()
+        run: |
+          REPORT=statefun-e2e-coverage-report/target/site/jacoco-e2e-aggregate/jacoco.xml
+          [ -s "$REPORT" ] || { echo "No E2E coverage report to summarize"; exit 0; }
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET, os
+          root = ET.parse('statefun-e2e-coverage-report/target/site/jacoco-e2e-aggregate/jacoco.xml').getroot()
+          counters = [c for c in root if c.tag == 'counter']
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as f:
+              f.write('## E2E coverage report (in-process embedded)\n\n')
+              f.write('Source: `statefun-smoke-e2e-embedded` running StateFun in-process via `statefun-flink-harness`.\n\n')
+              f.write('| Metric | Covered | Total | % |\n')
+              f.write('|---|---:|---:|---:|\n')
+              for c in counters:
+                  t, m, cv = c.get('type').title(), int(c.get('missed')), int(c.get('covered'))
+                  total = m + cv
+                  pct = 100 * cv / total if total else 0.0
+                  f.write(f'| {t} | {cv:,} | {total:,} | **{pct:.1f}%** |\n')
+              f.write('\nFull HTML report attached as artifact `coverage-report-e2e-html`.\n')
+          PY
+
+      - name: Upload E2E coverage HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report-e2e-html
+          path: statefun-e2e-coverage-report/target/site/jacoco-e2e-aggregate/
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: Upload E2E coverage to Codecov
+        if: always()
+        uses: codecov/codecov-action@v5
+        with:
+          files: ./statefun-e2e-coverage-report/target/site/jacoco-e2e-aggregate/jacoco.xml
+          flags: e2e
+          fail_ci_if_error: false
+          disable_search: true
+          use_oidc: true

@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<!-- Copyright 2014 The Apache Software Foundation -->
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>statefun-parent</artifactId>
+        <groupId>io.github.kzmlabs.flinkstatefun</groupId>
+        <version>${revision}</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>statefun-e2e-coverage-report</artifactId>
+    <name>statefun-e2e-coverage-report</name>
+    <packaging>pom</packaging>
+
+    <properties>
+        <!-- Belt + suspenders: three independent guards against ever publishing this aggregator. -->
+        <central.skip>true</central.skip>
+        <maven.deploy.skip>true</maven.deploy.skip>
+        <maven.install.skip>true</maven.install.skip>
+        <!-- This module has no source code of its own. -->
+        <jacoco.skip>true</jacoco.skip>
+    </properties>
+
+    <!--
+        Aggregates JaCoCo coverage from in-process E2E suites (statefun-smoke-e2e-embedded today)
+        against the production code they exercise. report-aggregate is configured below to scan
+        only **/jacoco-e2e.exec so it never conflates with unit-test data (which lives in
+        **/jacoco.exec and is aggregated by statefun-coverage-report).
+
+        The embedded module itself is listed FIRST so report-aggregate finds the .exec there;
+        production modules follow so coverage attributes against their classes/source.
+
+        WHY the embedded module: it runs StateFun entirely in-process via statefun-flink-harness —
+        no Testcontainers, no kind cluster — so the surefire JVM agent captures real production
+        code paths. Container-based E2E (statefun-smoke-e2e-driver/-java/-multilang-*, kind
+        cluster) is NOT included here: those run production code in separate JVMs (TC containers,
+        K8s pods) where the agent cannot reach without multi-day plumbing. See
+        statefun-coverage-report/README.md §"How E2E tests fit in".
+    -->
+    <dependencies>
+        <!-- E2E source (.exec lives in this module's target/) -->
+        <dependency>
+            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
+            <artifactId>statefun-smoke-e2e-embedded</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- Production modules whose classes the E2E exercises -->
+        <dependency>
+            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
+            <artifactId>statefun-sdk-embedded</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
+            <artifactId>statefun-sdk-protos</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
+            <artifactId>statefun-sdk-java</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
+            <artifactId>statefun-flink-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
+            <artifactId>statefun-flink-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
+            <artifactId>statefun-flink-datastream</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
+            <artifactId>statefun-flink-distribution</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
+            <artifactId>statefun-flink-extensions</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
+            <artifactId>statefun-flink-harness</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
+            <artifactId>statefun-flink-io</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
+            <artifactId>statefun-flink-io-bundle</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
+            <artifactId>statefun-flink-launcher</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
+            <artifactId>statefun-flink-state-processor</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
+            <artifactId>statefun-kafka-io</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
+            <artifactId>statefun-kinesis-io</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- See statefun-coverage-report/pom.xml for the dependency-convergence rationale. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>aggregate-e2e-report</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>report-aggregate</goal>
+                        </goals>
+                        <configuration>
+                            <!-- Override the parent jacoco.skip=true so this execution actually runs. -->
+                            <skip>false</skip>
+                            <!-- Critical: scan ONLY for the E2E exec file. Default would be **/jacoco.exec,
+                                 which would conflate with unit-test data. -->
+                            <dataFileIncludes>
+                                <dataFileInclude>**/jacoco-e2e.exec</dataFileInclude>
+                            </dataFileIncludes>
+                            <outputDirectory>${project.build.directory}/site/jacoco-e2e-aggregate</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Belt + suspenders against accidental publication. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

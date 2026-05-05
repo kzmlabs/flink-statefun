@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<!-- Copyright 2014 The Apache Software Foundation -->
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>statefun-parent</artifactId>
+        <groupId>io.github.kzmlabs.flinkstatefun</groupId>
+        <version>${revision}</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>statefun-coverage-report</artifactId>
+    <name>statefun-coverage-report</name>
+    <packaging>pom</packaging>
+
+    <properties>
+        <!-- Belt + suspenders: three independent guards against ever publishing this aggregator. -->
+        <central.skip>true</central.skip>
+        <maven.deploy.skip>true</maven.deploy.skip>
+        <maven.install.skip>true</maven.install.skip>
+        <!-- This module has no source code of its own; only consumes other modules' jacoco.exec files. -->
+        <jacoco.skip>true</jacoco.skip>
+    </properties>
+
+    <!--
+        Aggregate JaCoCo coverage across every production module in the reactor.
+        Test-scaffolding modules (statefun-testutil, statefun-e2e-tests/*) and the BOM are NOT listed here —
+        they either have no tests worth measuring or are excluded via <jacoco.skip>true</jacoco.skip>.
+        Modules with no Java code or only generated/shaded bytecode (statefun-bom, statefun-docker,
+        statefun-shaded/*, statefun-sdk-protos, statefun-flink-runner) ARE listed: class-level excludes
+        in the parent pom's jacoco config keep them at N/A in the per-module table rather than vanished.
+    -->
+    <dependencies>
+        <dependency>
+            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
+            <artifactId>statefun-sdk-embedded</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
+            <artifactId>statefun-sdk-protos</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
+            <artifactId>statefun-sdk-java</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
+            <artifactId>statefun-kafka-io</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
+            <artifactId>statefun-kinesis-io</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
+            <artifactId>statefun-flink-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
+            <artifactId>statefun-flink-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
+            <artifactId>statefun-flink-datastream</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
+            <artifactId>statefun-flink-distribution</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
+            <artifactId>statefun-flink-extensions</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
+            <artifactId>statefun-flink-harness</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
+            <artifactId>statefun-flink-io</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
+            <artifactId>statefun-flink-io-bundle</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
+            <artifactId>statefun-flink-launcher</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
+            <artifactId>statefun-flink-state-processor</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
+            <artifactId>statefun-protobuf-shaded</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
+            <artifactId>statefun-protocol-shaded</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.kzmlabs.flinkstatefun</groupId>
+            <artifactId>statefun-flink-runner</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- This module aggregates other modules' coverage data; it produces no artifact and has no source.
+                 The parent's dependencyConvergence rule checks the merged transitive graph here, but the only
+                 reason we depend on those modules is to give report-aggregate something to walk — convergence
+                 conflicts (httpcore 4.4.13 vs 4.4.16 from the AWS connector) are already resolved in the parent
+                 pom's dependencyManagement and don't affect the aggregator's purpose. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>aggregate-report</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>report-aggregate</goal>
+                        </goals>
+                        <configuration>
+                            <!-- report-aggregate ignores parent <jacoco.skip>; we set it explicitly here so the agent execution stays disabled but reporting runs. -->
+                            <skip>false</skip>
+                            <outputDirectory>${project.build.directory}/site/jacoco-aggregate</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Belt + suspenders against accidental publication. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
