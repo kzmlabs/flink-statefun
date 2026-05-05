@@ -455,6 +455,14 @@
                             <exclude>org/apache/flink/statefun/sdk/shaded/**</exclude>
                         </excludes>
                     </configuration>
+                    <!--
+                        Both prepare-agent* executions write the JaCoCo agent flag into the same
+                        ${argLine} property. The default phase ordering (initialize → test →
+                        pre-integration-test → integration-test) is what keeps unit-test coverage
+                        intact: surefire reads argLine in `test` before prepare-agent-integration
+                        overwrites it for failsafe in `pre-integration-test`. Reordering the
+                        executions or rebinding their phases will silently break unit coverage.
+                    -->
                     <executions>
                         <execution>
                             <id>jacoco-prepare-agent</id>
@@ -462,6 +470,11 @@
                                 <goal>prepare-agent</goal>
                             </goals>
                         </execution>
+                        <!--
+                            No-op today: the project has no maven-failsafe-plugin configured, so
+                            target/jacoco-it.exec is never written. Kept as forward-compat scaffolding
+                            for Phase 3, when failsafe ITs may be added and would need this binding.
+                        -->
                         <execution>
                             <id>jacoco-prepare-agent-integration</id>
                             <goals>
