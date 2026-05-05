@@ -15,6 +15,14 @@
 
     <properties>
         <central.skip>true</central.skip>
+        <!--
+            Override the parent statefun-e2e-tests cascade (which sets jacoco.skip=true).
+            This module runs StateFun entirely in-process via statefun-flink-harness — no
+            Testcontainers, no kind cluster — so the JaCoCo agent CAN attach to the surefire
+            JVM and capture genuine production-code coverage from end-to-end scenarios.
+            See statefun-e2e-coverage-report/README.md for the two-flag separation rationale.
+        -->
+        <jacoco.skip>false</jacoco.skip>
     </properties>
 
     <dependencies>
@@ -53,6 +61,26 @@
 
     <build>
         <plugins>
+            <!--
+                JaCoCo agent writes to jacoco-e2e.exec (NOT the default jacoco.exec) so the
+                main aggregator's report-aggregate (which scans for **/jacoco.exec by default)
+                will not pick this data up. The dedicated statefun-e2e-coverage-report
+                aggregator scans for **/jacoco-e2e.exec — keeps unit and E2E coverage as
+                two separate Codecov flags rather than one mixed number.
+            -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>jacoco-prepare-agent</id>
+                        <configuration>
+                            <destFile>${project.build.directory}/jacoco-e2e.exec</destFile>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
             <!-- embedded module should be built into a fat-jar -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

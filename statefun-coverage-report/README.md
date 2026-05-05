@@ -1,8 +1,47 @@
 # statefun-coverage-report
 
-Aggregates JaCoCo code coverage across every production module in the reactor and produces a single project-wide report.
+Aggregates JaCoCo **unit-test** coverage across every production module in the reactor and produces a single project-wide report. There's a **sibling aggregator**, [`statefun-e2e-coverage-report`](../statefun-e2e-coverage-report/pom.xml), that does the same thing for in-process E2E coverage — see §Two-flag separation below.
 
 This module has **no source code** and produces **no published artifact**. Its only job is to run JaCoCo's `report-aggregate` goal in the `verify` phase, after every other module has written its own `target/jacoco.exec` file.
+
+## Two-flag separation: unit vs E2E
+
+```mermaid
+flowchart LR
+    subgraph PROD["Production modules (statefun-flink-core, statefun-sdk-java, ...)"]
+        P1[surefire test JVM<br/>agent attached] --> P2[target/jacoco.exec]
+    end
+
+    subgraph EMB["statefun-smoke-e2e-embedded (in-process E2E)"]
+        E1[surefire test JVM<br/>agent attached<br/>destFile overridden] --> E2[target/jacoco-e2e.exec]
+    end
+
+    P2 -->|scanned by **/jacoco.exec| AGG1[statefun-coverage-report<br/>report-aggregate]
+    E2 -->|scanned by **/jacoco-e2e.exec| AGG2[statefun-e2e-coverage-report<br/>report-aggregate]
+
+    AGG1 --> CV1[Codecov flag: unittests<br/>jacoco-aggregate/jacoco.xml]
+    AGG2 --> CV2[Codecov flag: e2e<br/>jacoco-e2e-aggregate/jacoco.xml]
+
+    style AGG1 fill:#e1f5ff
+    style AGG2 fill:#fff4e1
+    style CV1 fill:#e1f5ff
+    style CV2 fill:#fff4e1
+```
+
+**How separation is enforced (three layers):**
+
+1. **Different output filenames**: production modules write `target/jacoco.exec` (JaCoCo default); `statefun-smoke-e2e-embedded` overrides `<destFile>` in its prepare-agent execution to `target/jacoco-e2e.exec`.
+2. **Different `dataFileIncludes` patterns**: this aggregator scans `**/jacoco.exec` (default); the E2E aggregator scans `**/jacoco-e2e.exec` only. Each ignores the other's data files even if they were in the same module.
+3. **Different aggregator dependency lists**: this aggregator does NOT list `statefun-smoke-e2e-embedded` as a dep, so `report-aggregate` never even walks its `target/`. The E2E aggregator lists it FIRST.
+
+**What's in each flag:**
+
+| Flag | Source modules | Coverage signal |
+|---|---|---|
+| `unittests` | All `*Test.java` in production modules + `**/*ITCase.*` integration tests | Per-module unit-test reach against production code |
+| `e2e` | `statefun-smoke-e2e-embedded` only — runs StateFun via `statefun-flink-harness` in the surefire JVM | End-to-end scenarios exercising real production paths in-process |
+
+**Container-based E2E (Testcontainers smoke + kind K8s) is intentionally NOT instrumented.** Those tests run production code in separate JVMs (TC containers, K8s pods) where the agent cannot reach without multi-day plumbing (image bake-in, volume mounts, post-run `.exec` extraction). Defer indefinitely per [issue #149 §E2E](https://github.com/kzmlabs/flink-statefun/issues/149) trigger conditions.
 
 ---
 

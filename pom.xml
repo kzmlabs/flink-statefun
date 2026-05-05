@@ -88,8 +88,10 @@
         <module>statefun-e2e-tests</module>
         <module>statefun-testutil</module>
 
-        <!-- coverage aggregator: must be last so all modules' jacoco.exec files exist before report-aggregate runs -->
+        <!-- coverage aggregators: must be last so all modules' jacoco*.exec files exist before report-aggregate runs.
+             Two separate aggregators keep unit and E2E coverage as independent Codecov flags rather than mixed. -->
         <module>statefun-coverage-report</module>
+        <module>statefun-e2e-coverage-report</module>
     </modules>
 
     <properties>
