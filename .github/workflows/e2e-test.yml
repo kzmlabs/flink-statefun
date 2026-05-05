@@ -11,6 +11,10 @@ concurrency:
   group: e2e-${{ github.ref }}
   cancel-in-progress: true
 
+# Read-only by default — this workflow only needs to fetch source and run tests.
+permissions:
+  contents: read
+
 jobs:
   k8s-e2e:
     runs-on: ubuntu-latest

@@ -26,6 +26,12 @@ concurrency:
   group: release-${{ github.ref }}
   cancel-in-progress: false
 
+# Default to read-only for GITHUB_TOKEN. The `release` job overrides with the writes it
+# actually needs (contents:write for tag/release push, packages:write for GHCR, id-token +
+# attestations for Sigstore signing).
+permissions:
+  contents: read
+
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: kzmlabs/flink-statefun
