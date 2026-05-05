@@ -12,6 +12,11 @@ concurrency:
   group: docker-release-${{ github.ref }}
   cancel-in-progress: false
 
+# Default to read-only for GITHUB_TOKEN (principle of least privilege).
+# The `docker` job overrides with the writes it actually needs (packages, attestations, id-token).
+permissions:
+  contents: read
+
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: kzmlabs/flink-statefun
