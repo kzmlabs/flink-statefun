@@ -17,6 +17,8 @@
     <properties>
         <testcontainers.version>2.0.5</testcontainers.version>
         <central.skip>true</central.skip>
+        <!-- E2E suites run inside kind-cluster JM/TM pods; agent injection requires container plumbing not worth the marginal coverage. See issue #149 §E2E. -->
+        <jacoco.skip>true</jacoco.skip>
     </properties>
 
     <modules>

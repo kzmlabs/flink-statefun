@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  id-token: write   # required for codecov-action OIDC token verification (use_oidc: true)
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -32,3 +33,19 @@ jobs:
 
       - name: Build and test
         run: mvn clean install -B
+
+      # Fail loud if argLine regresses and the agent silently writes nothing.
+      - name: Sanity-check coverage report is non-empty
+        run: |
+          set -e
+          REPORT=statefun-coverage-report/target/site/jacoco-aggregate/jacoco.xml
+          test -s "$REPORT"
+          grep -q '<counter ' "$REPORT" || { echo "::error::jacoco.xml has no <counter> elements - argLine likely broken again"; exit 1; }
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: ./statefun-coverage-report/target/site/jacoco-aggregate/jacoco.xml
+          flags: unittests
+          fail_ci_if_error: false
+          use_oidc: true
