@@ -14,7 +14,6 @@ import org.apache.flink.statefun.flink.io.generated.RoutingConfig;
 import org.apache.flink.statefun.flink.io.generated.TargetFunctionType;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -43,9 +42,8 @@ class RoutableKafkaIngressDeserializerTest {
         new RoutableKafkaIngressDeserializer(routingMap(ORDERS_TOPIC, ORDERS_ROUTING));
   }
 
-  @DisplayName("routes records on a configured topic to the configured value type and targets")
   @Test
-  void deserialize_withConfiguredTopic_routesToTargets() {
+  void routesConfiguredTopicToTargets() {
     final byte[] payload = "order-payload".getBytes(StandardCharsets.UTF_8);
     final byte[] key = "pk-7".getBytes(StandardCharsets.UTF_8);
     final ConsumerRecord<byte[], byte[]> record = consumerRecord(ORDERS_TOPIC, key, payload);
@@ -60,9 +58,8 @@ class RoutableKafkaIngressDeserializerTest {
     assertThat(routable.getConfig().getTargetFunctionTypesList()).containsExactly(ORDERS_TARGET);
   }
 
-  @DisplayName("throws routing-miss error when topic is not in the routing map")
   @Test
-  void deserialize_withUnknownTopic_throwsRoutingMissError() {
+  void throwsWhenTopicIsNotInRoutingMap() {
     final ConsumerRecord<byte[], byte[]> record =
         consumerRecord(
             "unknown-topic",

@@ -16,7 +16,6 @@ import org.apache.flink.statefun.flink.io.generated.RoutingConfig;
 import org.apache.flink.statefun.flink.io.generated.TargetFunctionType;
 import org.apache.flink.statefun.sdk.kinesis.ingress.IngressRecord;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -59,9 +58,8 @@ class RoutableKinesisIngressDeserializerTest {
     deserializer = new RoutableKinesisIngressDeserializer(routingMap(ORDERS_ARN, ORDERS_ROUTING));
   }
 
-  @DisplayName("routes ARN-keyed records to configured value type and targets")
   @Test
-  void deserialize_withArnAsStream_routesToConfiguredTargets() {
+  void routesArnKeyedRecordsToConfiguredTargets() {
     final byte[] payload = "order-123".getBytes(StandardCharsets.UTF_8);
     final IngressRecord record = ingressRecord(ORDERS_ARN, "pk-42", payload);
 
@@ -80,11 +78,9 @@ class RoutableKinesisIngressDeserializerTest {
    * unconfigured ARN must both fail loudly so the regression is detected, rather than silently
    * dropping records.
    */
-  @DisplayName("throws routing-miss error when stream key is not in the routing map")
   @ParameterizedTest(name = "{1}")
   @MethodSource("nonMatchingStreamKeys")
-  void deserialize_withNonMatchingStreamKey_throwsRoutingMissError(
-      String streamKey, String reason) {
+  void throwsWhenStreamKeyIsNotInRoutingMap(String streamKey, String reason) {
     final IngressRecord record =
         ingressRecord(streamKey, "pk-1", "x".getBytes(StandardCharsets.UTF_8));
 
@@ -105,9 +101,8 @@ class RoutableKinesisIngressDeserializerTest {
    * {@link AutoRoutable} envelope without parsing the payload itself (parsing is downstream), so
    * an empty payload should round-trip cleanly: success with zero-byte payload.
    */
-  @DisplayName("round-trips empty payload as zero-byte AutoRoutable envelope")
   @Test
-  void deserialize_withEmptyPayload_handlesGracefully() {
+  void wrapsEmptyPayloadInAutoRoutableEnvelope() {
     final IngressRecord record = ingressRecord(ORDERS_ARN, "pk-empty", new byte[0]);
 
     final Message result = deserializer.deserialize(record);
@@ -123,9 +118,8 @@ class RoutableKinesisIngressDeserializerTest {
    * Kinesis records cap at 1 MiB. The deserializer must not truncate. Uses a deterministic byte
    * pattern so we can verify exact bytes (including the boundary bytes) made it through.
    */
-  @DisplayName("preserves full 1 MiB payload without truncation")
   @Test
-  void deserialize_withMaxSizePayload_succeeds() {
+  void preservesMaxSizePayloadWithoutTruncation() {
     final int oneMiB = 1024 * 1024;
     final byte[] payload = new byte[oneMiB];
     for (int i = 0; i < oneMiB; i++) {
@@ -147,9 +141,8 @@ class RoutableKinesisIngressDeserializerTest {
    * its own configured value type / targets, even when the same deserializer instance handles
    * interleaved records from both streams.
    */
-  @DisplayName("dispatches interleaved records from multiple ARNs independently")
   @Test
-  void deserialize_multipleArnRoutingEntries_dispatchesIndependently() {
+  void dispatchesMultipleArnEntriesIndependently() {
     final RoutingConfig eventsRouting =
         routingConfig(EVENTS_VALUE_TYPE, EVENTS_TARGET_A, EVENTS_TARGET_B);
 
