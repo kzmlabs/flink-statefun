@@ -13,6 +13,8 @@ import org.apache.flink.statefun.flink.io.generated.AutoRoutable;
 import org.apache.flink.statefun.flink.io.generated.RoutingConfig;
 import org.apache.flink.statefun.flink.io.generated.TargetFunctionType;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -27,25 +29,26 @@ class RoutableKafkaIngressDeserializerTest {
   private static final String ORDERS_VALUE_TYPE = "com.googleapis/com.mycomp.foo.OrderMessage";
   private static final TargetFunctionType ORDERS_TARGET =
       TargetFunctionType.newBuilder().setNamespace("com.mycomp.foo").setType("orders-fn").build();
+  private static final RoutingConfig ORDERS_ROUTING =
+      RoutingConfig.newBuilder()
+          .setTypeUrl(ORDERS_VALUE_TYPE)
+          .addTargetFunctionTypes(ORDERS_TARGET)
+          .build();
 
+  private RoutableKafkaIngressDeserializer deserializer;
+
+  @BeforeEach
+  void setUp() {
+    deserializer =
+        new RoutableKafkaIngressDeserializer(routingMap(ORDERS_TOPIC, ORDERS_ROUTING));
+  }
+
+  @DisplayName("routes records on a configured topic to the configured value type and targets")
   @Test
   void deserialize_withConfiguredTopic_routesToTargets() {
-    final RoutingConfig ordersRouting =
-        RoutingConfig.newBuilder()
-            .setTypeUrl(ORDERS_VALUE_TYPE)
-            .addTargetFunctionTypes(ORDERS_TARGET)
-            .build();
-
-    final Map<String, RoutingConfig> routings = new HashMap<>();
-    routings.put(ORDERS_TOPIC, ordersRouting);
-
-    final RoutableKafkaIngressDeserializer deserializer =
-        new RoutableKafkaIngressDeserializer(routings);
-
     final byte[] payload = "order-payload".getBytes(StandardCharsets.UTF_8);
     final byte[] key = "pk-7".getBytes(StandardCharsets.UTF_8);
-    final ConsumerRecord<byte[], byte[]> record =
-        new ConsumerRecord<>(ORDERS_TOPIC, 0, 0L, key, payload);
+    final ConsumerRecord<byte[], byte[]> record = consumerRecord(ORDERS_TOPIC, key, payload);
 
     final Message result = deserializer.deserialize(record);
 
@@ -57,25 +60,12 @@ class RoutableKafkaIngressDeserializerTest {
     assertThat(routable.getConfig().getTargetFunctionTypesList()).containsExactly(ORDERS_TARGET);
   }
 
+  @DisplayName("throws routing-miss error when topic is not in the routing map")
   @Test
   void deserialize_withUnknownTopic_throwsRoutingMissError() {
-    final RoutingConfig ordersRouting =
-        RoutingConfig.newBuilder()
-            .setTypeUrl(ORDERS_VALUE_TYPE)
-            .addTargetFunctionTypes(ORDERS_TARGET)
-            .build();
-
-    final Map<String, RoutingConfig> routings = new HashMap<>();
-    routings.put(ORDERS_TOPIC, ordersRouting);
-
-    final RoutableKafkaIngressDeserializer deserializer =
-        new RoutableKafkaIngressDeserializer(routings);
-
     final ConsumerRecord<byte[], byte[]> record =
-        new ConsumerRecord<>(
+        consumerRecord(
             "unknown-topic",
-            0,
-            0L,
             "pk".getBytes(StandardCharsets.UTF_8),
             "x".getBytes(StandardCharsets.UTF_8));
 
@@ -83,5 +73,18 @@ class RoutableKafkaIngressDeserializerTest {
         .isInstanceOf(IllegalStateException.class)
         .hasMessageContaining("unknown-topic")
         .hasMessageContaining("no routing config");
+  }
+
+  // --- helpers ---------------------------------------------------------------------------------
+
+  private static Map<String, RoutingConfig> routingMap(String key, RoutingConfig value) {
+    final Map<String, RoutingConfig> map = new HashMap<>(1);
+    map.put(key, value);
+    return map;
+  }
+
+  private static ConsumerRecord<byte[], byte[]> consumerRecord(
+      String topic, byte[] partitionKey, byte[] payload) {
+    return new ConsumerRecord<>(topic, 0, 0L, partitionKey, payload);
   }
 }

@@ -10,11 +10,17 @@ import com.google.protobuf.Message;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 import org.apache.flink.statefun.flink.io.generated.AutoRoutable;
 import org.apache.flink.statefun.flink.io.generated.RoutingConfig;
 import org.apache.flink.statefun.flink.io.generated.TargetFunctionType;
 import org.apache.flink.statefun.sdk.kinesis.ingress.IngressRecord;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * Unit tests for {@link RoutableKinesisIngressDeserializer}.
@@ -43,12 +49,19 @@ class RoutableKinesisIngressDeserializerTest {
   private static final TargetFunctionType EVENTS_TARGET_B =
       TargetFunctionType.newBuilder().setNamespace("com.mycomp.foo").setType("events-fn-b").build();
 
+  private static final RoutingConfig ORDERS_ROUTING =
+      routingConfig(ORDERS_VALUE_TYPE, ORDERS_TARGET);
+
+  private RoutableKinesisIngressDeserializer deserializer;
+
+  @BeforeEach
+  void setUp() {
+    deserializer = new RoutableKinesisIngressDeserializer(routingMap(ORDERS_ARN, ORDERS_ROUTING));
+  }
+
+  @DisplayName("routes ARN-keyed records to configured value type and targets")
   @Test
   void deserialize_withArnAsStream_routesToConfiguredTargets() {
-    final RoutingConfig ordersRouting = routingConfig(ORDERS_VALUE_TYPE, ORDERS_TARGET);
-    final RoutableKinesisIngressDeserializer deserializer =
-        new RoutableKinesisIngressDeserializer(singleton(ORDERS_ARN, ordersRouting));
-
     final byte[] payload = "order-123".getBytes(StandardCharsets.UTF_8);
     final IngressRecord record = ingressRecord(ORDERS_ARN, "pk-42", payload);
 
@@ -63,38 +76,28 @@ class RoutableKinesisIngressDeserializerTest {
   }
 
   /**
-   * Regression guard: routing map is keyed by ARN (Flink 2.x contract). If the connector ever
-   * passed the short stream name instead, the lookup must fail loudly so the regression is
-   * detected, rather than silently dropping records.
+   * Regression guard: routing map is keyed by ARN (Flink 2.x contract). A short stream name or an
+   * unconfigured ARN must both fail loudly so the regression is detected, rather than silently
+   * dropping records.
    */
-  @Test
-  void deserialize_withShortNameAsStream_throwsRoutingMissError() {
-    final RoutingConfig ordersRouting = routingConfig(ORDERS_VALUE_TYPE, ORDERS_TARGET);
-    final RoutableKinesisIngressDeserializer deserializer =
-        new RoutableKinesisIngressDeserializer(singleton(ORDERS_ARN, ordersRouting));
-
+  @DisplayName("throws routing-miss error when stream key is not in the routing map")
+  @ParameterizedTest(name = "{1}")
+  @MethodSource("nonMatchingStreamKeys")
+  void deserialize_withNonMatchingStreamKey_throwsRoutingMissError(
+      String streamKey, String reason) {
     final IngressRecord record =
-        ingressRecord("orders", "pk-1", "x".getBytes(StandardCharsets.UTF_8));
+        ingressRecord(streamKey, "pk-1", "x".getBytes(StandardCharsets.UTF_8));
 
     assertThatThrownBy(() -> deserializer.deserialize(record))
         .isInstanceOf(IllegalStateException.class)
-        .hasMessageContaining("orders")
+        .hasMessageContaining(streamKey)
         .hasMessageContaining("no routing config");
   }
 
-  @Test
-  void deserialize_withUnknownArn_throwsRoutingMissError() {
-    final RoutingConfig ordersRouting = routingConfig(ORDERS_VALUE_TYPE, ORDERS_TARGET);
-    final RoutableKinesisIngressDeserializer deserializer =
-        new RoutableKinesisIngressDeserializer(singleton(ORDERS_ARN, ordersRouting));
-
-    final IngressRecord record =
-        ingressRecord(EVENTS_ARN, "pk-1", "x".getBytes(StandardCharsets.UTF_8));
-
-    assertThatThrownBy(() -> deserializer.deserialize(record))
-        .isInstanceOf(IllegalStateException.class)
-        .hasMessageContaining(EVENTS_ARN)
-        .hasMessageContaining("no routing config");
+  static Stream<Arguments> nonMatchingStreamKeys() {
+    return Stream.of(
+        Arguments.of("orders", "short name (Flink 2.x regression guard)"),
+        Arguments.of(EVENTS_ARN, "unconfigured ARN"));
   }
 
   /**
@@ -102,12 +105,9 @@ class RoutableKinesisIngressDeserializerTest {
    * {@link AutoRoutable} envelope without parsing the payload itself (parsing is downstream), so
    * an empty payload should round-trip cleanly: success with zero-byte payload.
    */
+  @DisplayName("round-trips empty payload as zero-byte AutoRoutable envelope")
   @Test
   void deserialize_withEmptyPayload_handlesGracefully() {
-    final RoutingConfig ordersRouting = routingConfig(ORDERS_VALUE_TYPE, ORDERS_TARGET);
-    final RoutableKinesisIngressDeserializer deserializer =
-        new RoutableKinesisIngressDeserializer(singleton(ORDERS_ARN, ordersRouting));
-
     final IngressRecord record = ingressRecord(ORDERS_ARN, "pk-empty", new byte[0]);
 
     final Message result = deserializer.deserialize(record);
@@ -123,12 +123,9 @@ class RoutableKinesisIngressDeserializerTest {
    * Kinesis records cap at 1 MiB. The deserializer must not truncate. Uses a deterministic byte
    * pattern so we can verify exact bytes (including the boundary bytes) made it through.
    */
+  @DisplayName("preserves full 1 MiB payload without truncation")
   @Test
   void deserialize_withMaxSizePayload_succeeds() {
-    final RoutingConfig ordersRouting = routingConfig(ORDERS_VALUE_TYPE, ORDERS_TARGET);
-    final RoutableKinesisIngressDeserializer deserializer =
-        new RoutableKinesisIngressDeserializer(singleton(ORDERS_ARN, ordersRouting));
-
     final int oneMiB = 1024 * 1024;
     final byte[] payload = new byte[oneMiB];
     for (int i = 0; i < oneMiB; i++) {
@@ -150,17 +147,17 @@ class RoutableKinesisIngressDeserializerTest {
    * its own configured value type / targets, even when the same deserializer instance handles
    * interleaved records from both streams.
    */
+  @DisplayName("dispatches interleaved records from multiple ARNs independently")
   @Test
   void deserialize_multipleArnRoutingEntries_dispatchesIndependently() {
-    final RoutingConfig ordersRouting = routingConfig(ORDERS_VALUE_TYPE, ORDERS_TARGET);
     final RoutingConfig eventsRouting =
         routingConfig(EVENTS_VALUE_TYPE, EVENTS_TARGET_A, EVENTS_TARGET_B);
 
     final Map<String, RoutingConfig> routings = new HashMap<>();
-    routings.put(ORDERS_ARN, ordersRouting);
+    routings.put(ORDERS_ARN, ORDERS_ROUTING);
     routings.put(EVENTS_ARN, eventsRouting);
 
-    final RoutableKinesisIngressDeserializer deserializer =
+    final RoutableKinesisIngressDeserializer multiDeserializer =
         new RoutableKinesisIngressDeserializer(routings);
 
     final byte[] orderPayload = "order".getBytes(StandardCharsets.UTF_8);
@@ -169,15 +166,17 @@ class RoutableKinesisIngressDeserializerTest {
 
     // Interleave the records to exercise both lookups within the same instance.
     final AutoRoutable orderResult =
-        (AutoRoutable) deserializer.deserialize(ingressRecord(ORDERS_ARN, "o-1", orderPayload));
+        (AutoRoutable)
+            multiDeserializer.deserialize(ingressRecord(ORDERS_ARN, "o-1", orderPayload));
     final AutoRoutable eventResult1 =
         (AutoRoutable)
-            deserializer.deserialize(ingressRecord(EVENTS_ARN, "e-1", eventPayloadFirst));
+            multiDeserializer.deserialize(ingressRecord(EVENTS_ARN, "e-1", eventPayloadFirst));
     final AutoRoutable orderResult2 =
-        (AutoRoutable) deserializer.deserialize(ingressRecord(ORDERS_ARN, "o-2", orderPayload));
+        (AutoRoutable)
+            multiDeserializer.deserialize(ingressRecord(ORDERS_ARN, "o-2", orderPayload));
     final AutoRoutable eventResult2 =
         (AutoRoutable)
-            deserializer.deserialize(ingressRecord(EVENTS_ARN, "e-2", eventPayloadSecond));
+            multiDeserializer.deserialize(ingressRecord(EVENTS_ARN, "e-2", eventPayloadSecond));
 
     // Orders side: orders value type and a single target.
     assertThat(orderResult.getId()).isEqualTo("o-1");
@@ -213,7 +212,7 @@ class RoutableKinesisIngressDeserializerTest {
     return builder.build();
   }
 
-  private static Map<String, RoutingConfig> singleton(String key, RoutingConfig value) {
+  private static Map<String, RoutingConfig> routingMap(String key, RoutingConfig value) {
     final Map<String, RoutingConfig> map = new HashMap<>(1);
     map.put(key, value);
     return map;
