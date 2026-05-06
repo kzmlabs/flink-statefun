@@ -11,11 +11,11 @@ description: Production deployment of StateFun Actors via the Flink Kubernetes O
 
 ```mermaid
 flowchart LR
-    Producer[Upstream producer] -->|records| KafkaIn[(Kafka /<br/>Kinesis)]
+    Producer[Upstream producer] -->|records| KafkaIn[("Kafka /<br/>Kinesis")]
     KafkaIn --> JM[JobManager pod]
     JM --> TM[TaskManager pod]
     TM -->|HTTP request-reply| RF[Remote function pod]
-    TM -->|state I/O| S3[(S3 / GCS<br/>checkpoint store)]
+    TM -->|"state I/O"| S3[("S3 / GCS<br/>checkpoint store")]
     Op[Flink Operator] -.->|reconciles| JM
     JM -.->|status| Op
 ```

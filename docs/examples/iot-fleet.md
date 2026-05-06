@@ -25,15 +25,15 @@ A relational DB updates per device get expensive at this scale (100k devices × 
 
 ```mermaid
 flowchart LR
-    Devices[100k devices] -->|Telemetry| KinesisIn[(Kinesis<br/>device.telemetry)]
-    KinesisIn --> Dispatch[StateFun dispatcher<br/>routes by deviceId]
-    Dispatch --> Twin[DeviceFn<br/>digital twin actor]
-    Twin <-->|state I/O| State[(RocksDB:<br/>rolling stats<br/>last seen<br/>battery curve)]
-    Twin -->|alert| AlertOut[(Kinesis<br/>device.alerts)]
-    Twin -->|command| CmdOut[(Kinesis<br/>device.commands)]
-    Twin -.->|self-tick<br/>every 5 min| Twin
+    Devices[100k devices] -->|Telemetry| KinesisIn[("Kinesis<br/>device.telemetry")]
+    KinesisIn --> Dispatch["StateFun dispatcher<br/>routes by deviceId"]
+    Dispatch --> Twin["DeviceFn<br/>digital twin actor"]
+    Twin <-->|"state I/O"| State[("RocksDB:<br/>rolling stats<br/>last seen<br/>battery curve")]
+    Twin -->|alert| AlertOut[("Kinesis<br/>device.alerts")]
+    Twin -->|command| CmdOut[("Kinesis<br/>device.commands")]
+    Twin -.->|"self-tick<br/>every 5 min"| Twin
     CmdOut --> Devices
-    AlertOut --> Ops[Operator dashboard<br/>+ pager]
+    AlertOut --> Ops["Operator dashboard<br/>+ pager"]
 ```
 
 Each `deviceId` is its own actor. The actor processes telemetry, runs anomaly checks, emits alerts and commands, and self-ticks to detect offline status.

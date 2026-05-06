@@ -25,12 +25,12 @@ Doing this with a relational DB doesn't scale: every swipe needs read-modify-wri
 
 ```mermaid
 flowchart LR
-    Producer[Card terminals] -->|TransactionEvent| KafkaIn[(Kafka<br/>payments.swipes)]
-    KafkaIn --> Dispatch[StateFun dispatcher<br/>routes by cardId]
-    Dispatch --> Card[CardRiskFn<br/>per-card actor]
-    Card -->|state I/O| State[(RocksDB:<br/>rolling window<br/>risk score<br/>last city)]
-    Card -->|on threshold| KafkaOut[(Kafka<br/>risk.alerts)]
-    Card -.->|self-message<br/>after 60s| Card
+    Producer[Card terminals] -->|TransactionEvent| KafkaIn[("Kafka<br/>payments.swipes")]
+    KafkaIn --> Dispatch["StateFun dispatcher<br/>routes by cardId"]
+    Dispatch --> Card["CardRiskFn<br/>per-card actor"]
+    Card -->|"state I/O"| State[("RocksDB:<br/>rolling window<br/>risk score<br/>last city")]
+    Card -->|on threshold| KafkaOut[("Kafka<br/>risk.alerts")]
+    Card -.->|"self-message<br/>after 60s"| Card
     KafkaOut --> Reviewer[Fraud review system]
 ```
 

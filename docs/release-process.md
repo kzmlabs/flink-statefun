@@ -31,13 +31,13 @@ The tag push triggers `release.yml`.
 
 ```mermaid
 flowchart TB
-    A[Tag push v*] --> B[K8s E2E gate]
+    A["Tag push v*"] --> B[K8s E2E gate]
     B --> C{Green?}
     C -->|no| Abort[abort release]
     C -->|yes| Build[Build with all tests]
-    Build --> Publish[Publish to Maven Central<br/>autoPublish + waitUntil=published]
-    Publish --> Image[Build &amp; push image -> GHCR]
-    Image --> Attest[Sigstore keyless attestation<br/>SLSA build provenance]
+    Build --> Publish["Publish to Maven Central<br/>autoPublish + waitUntil published"]
+    Publish --> Image["Build and push image to GHCR"]
+    Image --> Attest["Sigstore keyless attestation<br/>SLSA build provenance"]
     Attest --> Release[GitHub Release notes]
 ```
 

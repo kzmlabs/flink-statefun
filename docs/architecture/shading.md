@@ -59,11 +59,11 @@ A user can put StateFun on their classpath alongside any Protobuf version they w
 ```mermaid
 flowchart LR
     subgraph "Your application"
-        UserCode[Your code] --> UserPB[com.google.protobuf<br/>3.21 / 4.x / whatever]
+        UserCode[Your code] --> UserPB["com.google.protobuf<br/>3.21 / 4.x / whatever"]
     end
 
     subgraph "StateFun runtime"
-        SFCode[StateFun internals] --> ShadedPB[org.apache.flink.statefun<br/>.sdk.shaded.com.google.protobuf<br/>3.25.5]
+        SFCode[StateFun internals] --> ShadedPB["org.apache.flink.statefun<br/>.sdk.shaded.com.google.protobuf<br/>3.25.5"]
     end
 
     subgraph "Same JVM, same classpath"

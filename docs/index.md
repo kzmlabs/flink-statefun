@@ -140,12 +140,12 @@ Apache Stateful Functions stopped releasing in **October 2024** at version 3.4.0
 
 ```mermaid
 flowchart LR
-    Kafka[Kafka / Kinesis ingress]:::ingress --> Dispatch[StateFun dispatcher]
+    Kafka["Kafka / Kinesis ingress"]:::ingress --> Dispatch[StateFun dispatcher]
     Dispatch -->|state-keyed message| Func[Function instance]
     Func -->|invoke| Remote[Remote HTTP endpoint]
     Remote -->|response| Func
-    Func -->|emit| Egress[Kafka / Kinesis egress]:::egress
-    Func -->|state I/O| State[(RocksDB keyed state<br/>checkpointed to S3)]
+    Func -->|emit| Egress["Kafka / Kinesis egress"]:::egress
+    Func -->|"state I/O"| State[("RocksDB keyed state<br/>checkpointed to S3")]
 
     classDef ingress fill:#fef3c7,stroke:#f59e0b,color:#92400e
     classDef egress fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
