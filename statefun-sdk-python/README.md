@@ -1,3 +1,16 @@
+> ## 🚧 Under development — not released
+>
+> This SDK is **inherited as-is from [Apache Stateful Functions](https://github.com/apache/flink-statefun)** and is **not actively maintained on the Flink 2.x runtime in this fork**.
+>
+> - **Not in the Maven reactor** — `mvn -B verify` does not build this module.
+> - **Not in CI** — no automated build, test, or version bump runs against this code.
+> - **Not released** — no PyPI publication from this fork; not part of any release tag.
+> - **May be revived** if a consumer drives the modernization (toolchain, deps, protocol, CI). See [issue #160](https://github.com/kzmlabs/flink-statefun/issues/160) for the re-introduction policy.
+>
+> **For non-Java users today**: integrate via the [request/reply HTTP protocol](https://nightlies.apache.org/flink/flink-statefun-docs-release-3.4/docs/sdk/external/) directly. The wire format is language-agnostic; an official SDK is convenience, not a hard requirement.
+
+---
+
 # Apache Flink Stateful Functions
 
 Stateful Functions is an API that simplifies the building of **distributed stateful applications** with a **runtime built for serverless architectures**.
