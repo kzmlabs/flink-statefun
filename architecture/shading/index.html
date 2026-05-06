@@ -1371,11 +1371,11 @@
 <p>A user can put StateFun on their classpath alongside any Protobuf version they want. StateFun internally uses its private relocated copy; your <code>com.google.protobuf.Message</code> is whatever you brought.</p>
 <pre class="mermaid"><code>flowchart LR
     subgraph "Your application"
-        UserCode[Your code] --&gt; UserPB[com.google.protobuf&lt;br/&gt;3.21 / 4.x / whatever]
+        UserCode[Your code] --&gt; UserPB["com.google.protobuf&lt;br/&gt;3.21 / 4.x / whatever"]
     end
 
     subgraph "StateFun runtime"
-        SFCode[StateFun internals] --&gt; ShadedPB[org.apache.flink.statefun&lt;br/&gt;.sdk.shaded.com.google.protobuf&lt;br/&gt;3.25.5]
+        SFCode[StateFun internals] --&gt; ShadedPB["org.apache.flink.statefun&lt;br/&gt;.sdk.shaded.com.google.protobuf&lt;br/&gt;3.25.5"]
     end
 
     subgraph "Same JVM, same classpath"

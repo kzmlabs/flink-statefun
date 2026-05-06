@@ -1372,12 +1372,12 @@
 <p>Doing this with a relational DB doesn't scale: every swipe needs read-modify-write on the card row, contention destroys you above ~5k TPS. Doing it with a Flink job means writing windowed state primitives by hand. <strong>A StateFun per-card actor gives you both per-key state isolation and exactly-once messaging without the boilerplate.</strong></p>
 <h2 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>flowchart LR
-    Producer[Card terminals] --&gt;|TransactionEvent| KafkaIn[(Kafka&lt;br/&gt;payments.swipes)]
-    KafkaIn --&gt; Dispatch[StateFun dispatcher&lt;br/&gt;routes by cardId]
-    Dispatch --&gt; Card[CardRiskFn&lt;br/&gt;per-card actor]
-    Card --&gt;|state I/O| State[(RocksDB:&lt;br/&gt;rolling window&lt;br/&gt;risk score&lt;br/&gt;last city)]
-    Card --&gt;|on threshold| KafkaOut[(Kafka&lt;br/&gt;risk.alerts)]
-    Card -.-&gt;|self-message&lt;br/&gt;after 60s| Card
+    Producer[Card terminals] --&gt;|TransactionEvent| KafkaIn[("Kafka&lt;br/&gt;payments.swipes")]
+    KafkaIn --&gt; Dispatch["StateFun dispatcher&lt;br/&gt;routes by cardId"]
+    Dispatch --&gt; Card["CardRiskFn&lt;br/&gt;per-card actor"]
+    Card --&gt;|"state I/O"| State[("RocksDB:&lt;br/&gt;rolling window&lt;br/&gt;risk score&lt;br/&gt;last city")]
+    Card --&gt;|on threshold| KafkaOut[("Kafka&lt;br/&gt;risk.alerts")]
+    Card -.-&gt;|"self-message&lt;br/&gt;after 60s"| Card
     KafkaOut --&gt; Reviewer[Fraud review system]</code></pre>
 <p>Each <code>cardId</code> is its own actor instance, scaled across TaskManager slots. The actor reads its own state, runs the three checks, and either falls through silently or emits a <code>RiskAlert</code>.</p>
 <h2 id="message-types">Message types<a class="headerlink" href="#message-types" title="Permanent link">&para;</a></h2>

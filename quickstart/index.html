@@ -1460,10 +1460,10 @@
 <pre class="mermaid"><code>sequenceDiagram
     autonumber
     participant You
-    participant K as Kafka&lt;br/&gt;(ingress)
-    participant SF as StateFun&lt;br/&gt;dispatcher
-    participant Fn as GreeterFn&lt;br/&gt;(remote)
-    participant E as Kafka&lt;br/&gt;(egress)
+    participant K as Kafka ingress
+    participant SF as StateFun dispatcher
+    participant Fn as GreeterFn (remote)
+    participant E as Kafka egress
 
     You-&gt;&gt;K: produce key=alice, value={message}
     K-&gt;&gt;SF: poll record

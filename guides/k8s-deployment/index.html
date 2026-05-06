@@ -1424,11 +1424,11 @@
 </blockquote>
 <h2 id="topology">Topology<a class="headerlink" href="#topology" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>flowchart LR
-    Producer[Upstream producer] --&gt;|records| KafkaIn[(Kafka /&lt;br/&gt;Kinesis)]
+    Producer[Upstream producer] --&gt;|records| KafkaIn[("Kafka /&lt;br/&gt;Kinesis")]
     KafkaIn --&gt; JM[JobManager pod]
     JM --&gt; TM[TaskManager pod]
     TM --&gt;|HTTP request-reply| RF[Remote function pod]
-    TM --&gt;|state I/O| S3[(S3 / GCS&lt;br/&gt;checkpoint store)]
+    TM --&gt;|"state I/O"| S3[("S3 / GCS&lt;br/&gt;checkpoint store")]
     Op[Flink Operator] -.-&gt;|reconciles| JM
     JM -.-&gt;|status| Op</code></pre>
 <h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>

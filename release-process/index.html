@@ -1367,13 +1367,13 @@
 <p>The tag push triggers <code>release.yml</code>.</p>
 <h2 id="pipeline">Pipeline<a class="headerlink" href="#pipeline" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>flowchart TB
-    A[Tag push v*] --&gt; B[K8s E2E gate]
+    A["Tag push v*"] --&gt; B[K8s E2E gate]
     B --&gt; C{Green?}
     C --&gt;|no| Abort[abort release]
     C --&gt;|yes| Build[Build with all tests]
-    Build --&gt; Publish[Publish to Maven Central&lt;br/&gt;autoPublish + waitUntil=published]
-    Publish --&gt; Image[Build &amp;amp; push image -&gt; GHCR]
-    Image --&gt; Attest[Sigstore keyless attestation&lt;br/&gt;SLSA build provenance]
+    Build --&gt; Publish["Publish to Maven Central&lt;br/&gt;autoPublish + waitUntil published"]
+    Publish --&gt; Image["Build and push image to GHCR"]
+    Image --&gt; Attest["Sigstore keyless attestation&lt;br/&gt;SLSA build provenance"]
     Attest --&gt; Release[GitHub Release notes]</code></pre>
 <table>
 <thead>

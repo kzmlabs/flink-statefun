@@ -1271,11 +1271,11 @@
     KafkaIn[Kafka ingress]:::ingress --&gt; Dispatch[Dispatcher operator]
     KinesisIn[Kinesis ingress]:::ingress --&gt; Dispatch
     Dispatch --&gt;|state-keyed message| Func[Function instance]
-    Func --&gt;|HTTP POST /statefun| Remote[Remote endpoint]
+    Func --&gt;|"HTTP POST /statefun"| Remote[Remote endpoint]
     Remote --&gt;|response| Func
     Func --&gt;|emit| KafkaOut[Kafka egress]:::egress
     Func --&gt;|emit| KinesisOut[Kinesis egress]:::egress
-    Func &lt;--&gt;|state I/O| State[(RocksDB keyed state&lt;br/&gt;checkpointed to S3)]
+    Func &lt;--&gt;|"state I/O"| State[("RocksDB keyed state&lt;br/&gt;checkpointed to S3")]
 
     classDef ingress fill:#fef3c7,stroke:#f59e0b,color:#92400e
     classDef egress fill:#dbeafe,stroke:#2563eb,color:#1e3a8a</code></pre>

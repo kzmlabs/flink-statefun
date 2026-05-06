@@ -1607,12 +1607,12 @@
 </ul>
 <h2 id="at-a-glance">At a glance<a class="headerlink" href="#at-a-glance" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>flowchart LR
-    Kafka[Kafka / Kinesis ingress]:::ingress --&gt; Dispatch[StateFun dispatcher]
+    Kafka["Kafka / Kinesis ingress"]:::ingress --&gt; Dispatch[StateFun dispatcher]
     Dispatch --&gt;|state-keyed message| Func[Function instance]
     Func --&gt;|invoke| Remote[Remote HTTP endpoint]
     Remote --&gt;|response| Func
-    Func --&gt;|emit| Egress[Kafka / Kinesis egress]:::egress
-    Func --&gt;|state I/O| State[(RocksDB keyed state&lt;br/&gt;checkpointed to S3)]
+    Func --&gt;|emit| Egress["Kafka / Kinesis egress"]:::egress
+    Func --&gt;|"state I/O"| State[("RocksDB keyed state&lt;br/&gt;checkpointed to S3")]
 
     classDef ingress fill:#fef3c7,stroke:#f59e0b,color:#92400e
     classDef egress fill:#dbeafe,stroke:#2563eb,color:#1e3a8a</code></pre>

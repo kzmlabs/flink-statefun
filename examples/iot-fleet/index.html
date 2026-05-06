@@ -1390,15 +1390,15 @@
 <p>A relational DB updates per device get expensive at this scale (100k devices × 6 updates/min = 600k writes/min). Time-series DBs handle the writes but make per-device anomaly logic awkward. <strong>A StateFun per-device actor gives you the twin, the anomaly logic, the command channel, and exactly-once delivery in one runtime.</strong></p>
 <h2 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>flowchart LR
-    Devices[100k devices] --&gt;|Telemetry| KinesisIn[(Kinesis&lt;br/&gt;device.telemetry)]
-    KinesisIn --&gt; Dispatch[StateFun dispatcher&lt;br/&gt;routes by deviceId]
-    Dispatch --&gt; Twin[DeviceFn&lt;br/&gt;digital twin actor]
-    Twin &lt;--&gt;|state I/O| State[(RocksDB:&lt;br/&gt;rolling stats&lt;br/&gt;last seen&lt;br/&gt;battery curve)]
-    Twin --&gt;|alert| AlertOut[(Kinesis&lt;br/&gt;device.alerts)]
-    Twin --&gt;|command| CmdOut[(Kinesis&lt;br/&gt;device.commands)]
-    Twin -.-&gt;|self-tick&lt;br/&gt;every 5 min| Twin
+    Devices[100k devices] --&gt;|Telemetry| KinesisIn[("Kinesis&lt;br/&gt;device.telemetry")]
+    KinesisIn --&gt; Dispatch["StateFun dispatcher&lt;br/&gt;routes by deviceId"]
+    Dispatch --&gt; Twin["DeviceFn&lt;br/&gt;digital twin actor"]
+    Twin &lt;--&gt;|"state I/O"| State[("RocksDB:&lt;br/&gt;rolling stats&lt;br/&gt;last seen&lt;br/&gt;battery curve")]
+    Twin --&gt;|alert| AlertOut[("Kinesis&lt;br/&gt;device.alerts")]
+    Twin --&gt;|command| CmdOut[("Kinesis&lt;br/&gt;device.commands")]
+    Twin -.-&gt;|"self-tick&lt;br/&gt;every 5 min"| Twin
     CmdOut --&gt; Devices
-    AlertOut --&gt; Ops[Operator dashboard&lt;br/&gt;+ pager]</code></pre>
+    AlertOut --&gt; Ops["Operator dashboard&lt;br/&gt;+ pager"]</code></pre>
 <p>Each <code>deviceId</code> is its own actor. The actor processes telemetry, runs anomaly checks, emits alerts and commands, and self-ticks to detect offline status.</p>
 <h2 id="message-types">Message types<a class="headerlink" href="#message-types" title="Permanent link">&para;</a></h2>
 <div class="language-protobuf highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1">// fleet.proto</span>
