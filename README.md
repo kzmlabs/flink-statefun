@@ -181,6 +181,12 @@ Licensed under the [Apache License 2.0](LICENSE). Originally derived from [Apach
 
 If you use StateFun Actors in research, please cite via the [`CITATION.cff`](CITATION.cff) file (GitHub's "Cite this repository" button).
 
+## Contributors
+
+This fork continues the codebase originally developed by 41+ contributors at [Apache Stateful Functions](https://github.com/apache/flink-statefun), including [Tzu-Li (Gordon) Tai](https://github.com/tzulitai), [Igal Shilman](https://github.com/igalshilman), [Seth Wiesman](https://github.com/sjwiesman), [Stephan Ewen](https://github.com/StephanEwen), [Till Rohrmann](https://github.com/tillrohrmann), [Martijn Visser](https://github.com/MartijnVisser), [Marta Paes Moreira](https://github.com/morsapaes), and many others — see the [full contributor graph](https://github.com/kzmlabs/flink-statefun/graphs/contributors) for the complete list.
+
+Active maintenance on Flink 2.x and Java 21 by [@oleksandr-kazimirov](https://github.com/oleksandr-kazimirov). Pull requests welcome — see [`CONTRIBUTING.md`](CONTRIBUTING.md).
+
 ## See also
 
 - 📝 **[We forked Apache Stateful Functions for Flink 2.x — here's why](https://kzmlabs.github.io/flink-statefun/articles/forking-statefun/)** — design rationale, what we changed, what stayed the same. Also on [dev.to](https://dev.to/okazimirov/we-forked-apache-stateful-functions-for-flink-2x-heres-why-18oj) and [Hashnode](https://kzmlabs.hashnode.dev/we-forked-apache-stateful-functions-for-flink-2-x-here-s-why).
