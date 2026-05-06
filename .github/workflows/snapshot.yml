@@ -24,15 +24,22 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
           cache: 'maven'
-          server-id: ossrh
-          server-username: OSSRH_USERNAME
-          server-password: OSSRH_PASSWORD
+          # server-id matches the pom's <distributionManagement><snapshotRepository><id>
+          # which is "central" (Sonatype migrated from OSSRH to central.sonatype.com).
+          # Mismatch causes 401 Unauthorized on deploy.
+          server-id: central
+          server-username: CENTRAL_USERNAME
+          server-password: CENTRAL_PASSWORD
 
       - name: Build
         run: mvn clean install -DskipTests -B
 
       - name: Deploy Snapshot
-        run: mvn deploy -DskipTests -B
+        # Exclude same modules as release.yml (assembly + e2e + coverage aggregators)
+        # to keep snapshot artifacts publishable to Maven Central.
+        run: |
+          mvn deploy -DskipTests -B \
+            -pl '!:statefun-flink-runner,!:statefun-docker,!:statefun-e2e-tests,!:statefun-e2e-tests-common,!:statefun-smoke-e2e-common,!:statefun-smoke-e2e-driver,!:statefun-smoke-e2e-embedded,!:statefun-smoke-e2e-multilang-base,!:statefun-smoke-e2e-multilang-harness,!:statefun-smoke-e2e-java,!:statefun-smoke-e2e-golang,!:statefun-smoke-e2e-js,!:statefun-e2e-k8s-native,!:statefun-coverage-report,!:statefun-e2e-coverage-report'
         env:
-          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-          OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+          CENTRAL_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          CENTRAL_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
