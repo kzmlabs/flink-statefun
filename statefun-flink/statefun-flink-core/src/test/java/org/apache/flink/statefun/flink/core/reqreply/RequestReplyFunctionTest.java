@@ -9,6 +9,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.protobuf.ByteString;
@@ -337,6 +338,120 @@ public class RequestReplyFunctionTest {
     assertThat(client.capturedStateNames().size(), is(0));
   }
 
+  /**
+   * Regression guard for the restart-storm class of bugs: an async failure must surface as a thrown
+   * exception so Flink can restart and re-deliver the batch via the {@code UNKNOWN} async path. A
+   * silent swallow here would drop the batch's messages on a transient remote 5xx.
+   */
+  @Test
+  public void asyncFailureThenSuccessDoesNotDropBatch() {
+    TypedValue argument =
+        TypedValue.newBuilder()
+            .setTypename("io.statefun.foo/bar")
+            .setValue(ByteString.copyFromUtf8("Hello!"))
+            .build();
+
+    // Arrange: send a message, putting the function in the in-flight state.
+    functionUnderTest.invoke(context, argument);
+    ToFunction originalRequest = client.wasSentToFunction;
+
+    // Act + Assert: a failed async result must throw, not silently complete the batch.
+    assertThrows(
+        IllegalStateException.class,
+        () -> functionUnderTest.invoke(context, failedAsyncOperation(originalRequest)));
+
+    // Recovery path: Flink re-delivers as UNKNOWN; the original payload must be re-sent intact.
+    RequestReplyFunction restoredFunction =
+        new RequestReplyFunction(FN_TYPE, new PersistedRemoteFunctionValues(), 10, client, true);
+    restoredFunction.invoke(context, unknownAsyncOperation(originalRequest));
+
+    assertTrue(client.wasSentToFunction.hasInvocation());
+    assertThat(client.capturedInvocationBatchSize(), is(1));
+    assertThat(client.capturedInvocation(0).getArgument(), is(argument));
+  }
+
+  /**
+   * Regression guard for state-spec evolution: when the remote signals {@code
+   * IncompleteInvocationContext}, the function must register the missing specs and re-issue the
+   * exact same batch (not drop it, not double it). Eventually a successful response completes the
+   * batch and emits its outgoing messages.
+   */
+  @Test
+  public void firstRequestBlocksRemoteReturnsIncompleteContextRetriesWithMergedSpecs() {
+    TypedValue argument =
+        TypedValue.newBuilder()
+            .setTypename("io.statefun.foo/bar")
+            .setValue(ByteString.copyFromUtf8("Hello!"))
+            .build();
+
+    // Arrange: in-flight invocation with one initially-registered state ("session").
+    functionUnderTest.invoke(context, argument);
+    ToFunction firstRequest = client.wasSentToFunction;
+
+    FromFunction incompleteContextResponse =
+        FromFunction.newBuilder()
+            .setIncompleteInvocationContext(
+                IncompleteInvocationContext.newBuilder()
+                    .addMissingValues(
+                        PersistedValueSpec.newBuilder().setStateName("new-state").build()))
+            .build();
+
+    // Act 1: remote asks for additional state — function must retry with merged specs.
+    functionUnderTest.invoke(
+        context, successfulAsyncOperation(firstRequest, incompleteContextResponse));
+
+    ToFunction retryRequest = client.wasSentToFunction;
+    assertThat(client.capturedInvocationBatchSize(), is(1));
+    assertThat(client.capturedInvocation(0).getArgument(), is(argument));
+    assertThat(client.capturedStateNames(), hasItems("session", "new-state"));
+
+    // Act 2: remote now succeeds with an egress side effect — batch must finally complete.
+    FromFunction successResponse =
+        FromFunction.newBuilder()
+            .setInvocationResult(
+                InvocationResponse.newBuilder()
+                    .addOutgoingEgresses(
+                        EgressMessage.newBuilder()
+                            .setArgument(TypedValue.getDefaultInstance())
+                            .setEgressNamespace("org.foo")
+                            .setEgressType("bar")))
+            .build();
+    functionUnderTest.invoke(context, successfulAsyncOperation(retryRequest, successResponse));
+
+    // Assert: the originally-batched message's effects were eventually emitted (batch not dropped).
+    assertFalse(context.egresses.isEmpty());
+    assertEquals(
+        new EgressIdentifier<>("org.foo", "bar", TypedValue.class),
+        context.egresses.get(0).getKey());
+  }
+
+  /**
+   * Regression guard against unbounded concurrency on remote functions: when {@code
+   * maxNumBatchRequests} is reached, additional inputs must be appended to the persisted backlog
+   * and processed only after the in-flight async operation completes — not fired as a second
+   * concurrent HTTP request.
+   */
+  @Test
+  public void maxBatchRequestsExceededAppliesBackpressure() {
+    final int maxBatchRequests = 2;
+    // isFirstRequestSent=true: skip the bootstrap-blocking path so the first call stays inflight
+    // and we can observe the backlog/backpressure behavior on subsequent inputs.
+    RequestReplyFunction functionUnderTest =
+        new RequestReplyFunction(
+            FN_TYPE, new PersistedRemoteFunctionValues(), maxBatchRequests, client, true);
+
+    // Arrange: first message goes in-flight (1 outbound request).
+    functionUnderTest.invoke(context, TypedValue.getDefaultInstance());
+    // Act: cap + extra messages must accumulate in the backlog while the first is still inflight.
+    functionUnderTest.invoke(context, TypedValue.getDefaultInstance());
+    functionUnderTest.invoke(context, TypedValue.getDefaultInstance());
+    functionUnderTest.invoke(context, TypedValue.getDefaultInstance());
+
+    // Assert: only the very first request was actually fired; the rest are buffered.
+    assertThat(client.callCount, is(1));
+    assertThat(context.needsWaiting, is(true));
+  }
+
   private static PersistedRemoteFunctionValues testInitialRegisteredState(
       String existingStateName, String typename) {
     final PersistedRemoteFunctionValues states = new PersistedRemoteFunctionValues();
@@ -370,8 +485,15 @@ public class RequestReplyFunctionTest {
         toFunction, Status.UNKNOWN, FromFunction.getDefaultInstance(), null);
   }
 
+  private static AsyncOperationResult<ToFunction, FromFunction> failedAsyncOperation(
+      ToFunction toFunction) {
+    return new AsyncOperationResult<>(
+        toFunction, Status.FAILURE, null, new RuntimeException("simulated remote 5xx"));
+  }
+
   private static final class FakeClient implements RequestReplyClient {
     ToFunction wasSentToFunction;
+    int callCount;
     Supplier<FromFunction> fromFunction = FromFunction::getDefaultInstance;
 
     @Override
@@ -380,6 +502,7 @@ public class RequestReplyFunctionTest {
         RemoteInvocationMetrics metrics,
         ToFunction toFunction) {
       this.wasSentToFunction = toFunction;
+      this.callCount++;
       try {
         return CompletableFuture.completedFuture(this.fromFunction.get());
       } catch (Throwable t) {
