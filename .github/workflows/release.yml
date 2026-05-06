@@ -144,6 +144,61 @@ jobs:
           subject-digest: ${{ steps.build.outputs.digest }}
           push-to-registry: true
 
+      # Install cosign so we can sign a release manifest as a GitHub Release asset.
+      # Real signing of JARs happens via maven-gpg-plugin (uploaded to Maven Central) and
+      # of container images via actions/attest-build-provenance above. OpenSSF Scorecard's
+      # Signed-Releases check ONLY scans GitHub Release assets for signature files, so we
+      # also publish a cosign-signed manifest here that binds the release tag to the docker
+      # digest. Bumps Scorecard Signed-Releases from -1 to ~10 without weakening the real
+      # supply-chain signing already in place.
+      - name: Install cosign
+        if: steps.release_type.outputs.type == 'full'
+        uses: sigstore/cosign-installer@v3
+
+      - name: Generate and sign release manifest
+        if: steps.release_type.outputs.type == 'full'
+        env:
+          VERSION: ${{ steps.release_type.outputs.version }}
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          cat > release-manifest.txt <<EOF
+          Release: v${VERSION}
+          Built:   $(date -u +%Y-%m-%dT%H:%M:%SZ)
+          Source commit: ${GITHUB_SHA}
+          Source ref:    ${GITHUB_REF}
+
+          Docker image (immutable digest):
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${DIGEST}
+
+          Docker tag (mutable):
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${VERSION}
+
+          Maven Central artifacts (groupId io.github.kzmlabs.flinkstatefun, version ${VERSION}):
+            statefun-sdk-java
+            statefun-sdk-embedded
+            statefun-sdk-protos
+            statefun-flink-distribution
+            statefun-flink-runner
+
+          Signature verification (this manifest):
+            cosign verify-blob \\
+              --bundle release-manifest.txt.sigstore.bundle \\
+              --certificate-identity-regexp 'https://github.com/kzmlabs/flink-statefun/.github/workflows/release.yml@refs/tags/v.*' \\
+              --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \\
+              release-manifest.txt
+
+          Container image attestation verification:
+            gh attestation verify oci://${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${VERSION} --owner kzmlabs
+
+          Maven Central JAR signature verification:
+            mvn dependency:copy -Dartifact=io.github.kzmlabs.flinkstatefun:statefun-sdk-java:${VERSION}:jar.asc
+            gpg --verify statefun-sdk-java-${VERSION}.jar.asc statefun-sdk-java-${VERSION}.jar
+          EOF
+
+          cosign sign-blob --yes \
+            --bundle release-manifest.txt.sigstore.bundle \
+            release-manifest.txt
+
       - name: Create GitHub Release
         if: steps.release_type.outputs.type == 'full'
         env:
@@ -170,7 +225,14 @@ jobs:
           docker pull ghcr.io/kzmlabs/flink-statefun:${VERSION}
           \`\`\`
 
+          ### Supply-chain signatures
+          Attached \`release-manifest.txt.sigstore.bundle\` is a cosign-signed (Sigstore keyless) bundle binding this tag to the docker digest. Verification commands are inside \`release-manifest.txt\`.
+          - Container image: signed via Sigstore keyless attestation, verifiable with \`gh attestation verify\`.
+          - Maven Central JARs: GPG-signed, \`.asc\` files alongside each JAR on Maven Central.
+
           ### Changes
           See [CHANGELOG](https://github.com/kzmlabs/flink-statefun/blob/release/CHANGELOG.md) for details.
           EOF
-          )"
+          )" \
+            release-manifest.txt \
+            release-manifest.txt.sigstore.bundle
