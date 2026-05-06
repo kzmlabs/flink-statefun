@@ -462,6 +462,13 @@
                             <exclude>**/*Proto*.class</exclude>
                             <exclude>**/*OuterClass*.class</exclude>
                             <exclude>org/apache/flink/statefun/sdk/shaded/**</exclude>
+                            <!--
+                              Vendored third-party fastutil hash structures (it/unimi/dsi/fastutil/**)
+                              are copy-pasted upstream code, not StateFun code we own.
+                              Keep them out of the coverage signal so the headline isn't dragged
+                              down by code we don't maintain.
+                            -->
+                            <exclude>it/unimi/dsi/fastutil/**</exclude>
                         </excludes>
                     </configuration>
                     <!--
