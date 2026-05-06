@@ -65,6 +65,10 @@
          <lastmod>2026-05-06</lastmod>
     </url>
     <url>
+         <loc>https://kzmlabs.github.io/flink-statefun/guides/kafka-egress-tuning/</loc>
+         <lastmod>2026-05-06</lastmod>
+    </url>
+    <url>
          <loc>https://kzmlabs.github.io/flink-statefun/guides/kafka-io/</loc>
          <lastmod>2026-05-06</lastmod>
     </url>

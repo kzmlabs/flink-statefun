@@ -1,0 +1,2368 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Practical tuning guide for StateFun Kafka egress when one job emits to many topics — calibrated producer config, parallelism scaling, egress sharding, and a diagnostic flow.">
+      
+      
+      
+        <link rel="canonical" href="https://kzmlabs.github.io/flink-statefun/guides/kafka-egress-tuning/">
+      
+      
+        <link rel="prev" href="../kafka-io/">
+      
+      
+        <link rel="next" href="../kinesis-io/">
+      
+      
+      <link rel="icon" href="../../assets/favicon-32.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.20">
+    
+    
+      
+        <title>Kafka egress tuning for high-fanout workloads - StateFun Actors by Kzmlabs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.e53b48f4.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/css/theme.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  
+  
+  
+  
+  
+
+  <!-- App icons (PWA + iOS) -->
+  <link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="../../assets/favicon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="../../assets/favicon-512.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="../../assets/apple-touch-icon.png">
+  <meta name="theme-color" content="#0a0e27">
+
+  <!-- OpenGraph -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Kafka egress tuning">
+  <meta property="og:description" content="Practical tuning guide for StateFun Kafka egress when one job emits to many topics — calibrated producer config, parallelism scaling, egress sharding, and a diagnostic flow.">
+  <meta property="og:image" content="https://kzmlabs.github.io/flink-statefun/assets/social-preview.png">
+  <meta property="og:image:width" content="1280">
+  <meta property="og:image:height" content="640">
+  <meta property="og:url" content="https://kzmlabs.github.io/flink-statefun/guides/kafka-egress-tuning/">
+  <meta property="og:site_name" content="StateFun Actors by Kzmlabs">
+  <meta property="og:locale" content="en_US">
+
+  <!-- Twitter card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Kafka egress tuning">
+  <meta name="twitter:description" content="Practical tuning guide for StateFun Kafka egress when one job emits to many topics — calibrated producer config, parallelism scaling, egress sharding, and a diagnostic flow.">
+  <meta name="twitter:image" content="https://kzmlabs.github.io/flink-statefun/assets/social-preview.png">
+
+  
+
+  
+
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#kafka-egress-tuning-for-high-fanout-workloads" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="StateFun Actors by Kzmlabs" class="md-header__button md-logo" aria-label="StateFun Actors by Kzmlabs" data-md-component="logo">
+      
+  <img src="../../assets/logo-horizontal.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            StateFun Actors by Kzmlabs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Kafka egress tuning for high-fanout workloads
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="custom"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/kzmlabs/flink-statefun" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    kzmlabs/flink-statefun
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+  
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../quickstart/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Getting started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../examples/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Examples
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../kafka-io/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Guides
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../architecture/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../articles/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Articles
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../upstream-vs-kzm/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Differences from Apache StateFun
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../release-process/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Release process
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+  
+
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="StateFun Actors by Kzmlabs" class="md-nav__button md-logo" aria-label="StateFun Actors by Kzmlabs" data-md-component="logo">
+      
+  <img src="../../assets/logo-horizontal.png" alt="logo">
+
+    </a>
+    StateFun Actors by Kzmlabs
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/kzmlabs/flink-statefun" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    kzmlabs/flink-statefun
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Getting started
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Getting started
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Quickstart
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Install
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../build/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Building from source
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../examples/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    Examples
+    
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Examples
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/fraud-detection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Real-time fraud detection
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/iot-fleet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    IoT fleet digital twins
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    Guides
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Guides
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../kafka-io/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Kafka I/O
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Kafka egress tuning
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Kafka egress tuning
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#example-workload" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example workload
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#foundational-checks-before-tuning" class="md-nav__link">
+    <span class="md-ellipsis">
+      Foundational checks before tuning
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Foundational checks before tuning">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#producer-record-key" class="md-nav__link">
+    <span class="md-ellipsis">
+      Producer record key
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#downstream-consumer-idempotence" class="md-nav__link">
+    <span class="md-ellipsis">
+      Downstream consumer idempotence
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#state-ttl" class="md-nav__link">
+    <span class="md-ellipsis">
+      State TTL
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rocksdb-checkpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      RocksDB checkpoints
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#calibrated-producer-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Calibrated producer configuration
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Calibrated producer configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#why-these-values-arent-the-same-as-single-topic-recommendations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Why these values aren't the same as single-topic recommendations
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#calibrated-ingress-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Calibrated ingress configuration
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parallelism-scaling" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parallelism scaling
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#egress-sharding-when-sender-thread-saturates" class="md-nav__link">
+    <span class="md-ellipsis">
+      Egress sharding (when Sender thread saturates)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Egress sharding (when Sender thread saturates)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#module-yaml-k-2-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Module YAML (K = 2 example)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Function code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-hash-by-topic-preserves-ordering" class="md-nav__link">
+    <span class="md-ellipsis">
+      Why hash-by-topic preserves ordering
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#anti-pattern-sharding-by-entity-id" class="md-nav__link">
+    <span class="md-ellipsis">
+      Anti-pattern — sharding by entity ID
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trade-off" class="md-nav__link">
+    <span class="md-ellipsis">
+      Trade-off
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#diagnostic-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      Diagnostic flow
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Diagnostic flow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#where-is-backpressure" class="md-nav__link">
+    <span class="md-ellipsis">
+      Where is backpressure?
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-does-the-function-operator-look-like" class="md-nav__link">
+    <span class="md-ellipsis">
+      What does the function operator look like?
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-does-the-producer-jmx-show" class="md-nav__link">
+    <span class="md-ellipsis">
+      What does the producer JMX show?
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-does-the-broker-show" class="md-nav__link">
+    <span class="md-ellipsis">
+      What does the broker show?
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#per-key-hotkey-check" class="md-nav__link">
+    <span class="md-ellipsis">
+      Per-key hotkey check
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommended-order-of-attack" class="md-nav__link">
+    <span class="md-ellipsis">
+      Recommended order of attack
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-not-to-do" class="md-nav__link">
+    <span class="md-ellipsis">
+      What not to do
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#should-i-collapse-my-egresses-into-one" class="md-nav__link">
+    <span class="md-ellipsis">
+      Should I collapse my egresses into one?
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#re-tuning-later" class="md-nav__link">
+    <span class="md-ellipsis">
+      Re-tuning later
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#see-also" class="md-nav__link">
+    <span class="md-ellipsis">
+      See also
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../kinesis-io/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Kinesis I/O
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../k8s-deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Kubernetes deployment
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../architecture/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    Architecture
+    
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Architecture
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/shading/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Shading layer
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/e2e-tests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    End-to-end tests
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../articles/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    Articles
+    
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Articles
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../articles/forking-statefun/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    We forked Apache Stateful Functions for Flink 2.x
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../upstream-vs-kzm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Differences from Apache StateFun
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../release-process/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Release process
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#example-workload" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example workload
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#foundational-checks-before-tuning" class="md-nav__link">
+    <span class="md-ellipsis">
+      Foundational checks before tuning
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Foundational checks before tuning">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#producer-record-key" class="md-nav__link">
+    <span class="md-ellipsis">
+      Producer record key
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#downstream-consumer-idempotence" class="md-nav__link">
+    <span class="md-ellipsis">
+      Downstream consumer idempotence
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#state-ttl" class="md-nav__link">
+    <span class="md-ellipsis">
+      State TTL
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rocksdb-checkpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      RocksDB checkpoints
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#calibrated-producer-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Calibrated producer configuration
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Calibrated producer configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#why-these-values-arent-the-same-as-single-topic-recommendations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Why these values aren't the same as single-topic recommendations
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#calibrated-ingress-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Calibrated ingress configuration
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parallelism-scaling" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parallelism scaling
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#egress-sharding-when-sender-thread-saturates" class="md-nav__link">
+    <span class="md-ellipsis">
+      Egress sharding (when Sender thread saturates)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Egress sharding (when Sender thread saturates)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#module-yaml-k-2-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Module YAML (K = 2 example)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Function code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-hash-by-topic-preserves-ordering" class="md-nav__link">
+    <span class="md-ellipsis">
+      Why hash-by-topic preserves ordering
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#anti-pattern-sharding-by-entity-id" class="md-nav__link">
+    <span class="md-ellipsis">
+      Anti-pattern — sharding by entity ID
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trade-off" class="md-nav__link">
+    <span class="md-ellipsis">
+      Trade-off
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#diagnostic-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      Diagnostic flow
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Diagnostic flow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#where-is-backpressure" class="md-nav__link">
+    <span class="md-ellipsis">
+      Where is backpressure?
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-does-the-function-operator-look-like" class="md-nav__link">
+    <span class="md-ellipsis">
+      What does the function operator look like?
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-does-the-producer-jmx-show" class="md-nav__link">
+    <span class="md-ellipsis">
+      What does the producer JMX show?
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-does-the-broker-show" class="md-nav__link">
+    <span class="md-ellipsis">
+      What does the broker show?
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#per-key-hotkey-check" class="md-nav__link">
+    <span class="md-ellipsis">
+      Per-key hotkey check
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommended-order-of-attack" class="md-nav__link">
+    <span class="md-ellipsis">
+      Recommended order of attack
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-not-to-do" class="md-nav__link">
+    <span class="md-ellipsis">
+      What not to do
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#should-i-collapse-my-egresses-into-one" class="md-nav__link">
+    <span class="md-ellipsis">
+      Should I collapse my egresses into one?
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#re-tuning-later" class="md-nav__link">
+    <span class="md-ellipsis">
+      Re-tuning later
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#see-also" class="md-nav__link">
+    <span class="md-ellipsis">
+      See also
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+  
+  
+  
+                  
+
+
+  
+    <a href="https://github.com/kzmlabs/flink-statefun/edit/release/docs/guides/kafka-egress-tuning.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+
+
+<h1 id="kafka-egress-tuning-for-high-fanout-workloads">Kafka egress tuning for high-fanout workloads<a class="headerlink" href="#kafka-egress-tuning-for-high-fanout-workloads" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>A concrete tuning runbook for the case where a StateFun job's Kafka egress fans out to many topics and the producer becomes the job's bottleneck. Written for the Sink V2 connector wiring shipped on this fork (Flink 2.x).</p>
+</blockquote>
+<p>This guide assumes you are using a <strong>single generic <code>io.statefun.kafka.v1/egress</code></strong> declaration with per-message topic routing via <code>KafkaProducerRecord.topic</code> — the natural pattern when you have many destination topics. If you have multiple egress declarations, see <a href="#should-i-collapse-my-egresses-into-one">"Should I collapse my egresses into one?"</a> below.</p>
+<h2 id="example-workload">Example workload<a class="headerlink" href="#example-workload" title="Permanent link">&para;</a></h2>
+<p>The numbers throughout this guide are derived from a representative high-fanout topology. Adjust to your case by recomputing the per-batch math (formula at the end).</p>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Function binding</td>
+<td>Per-entity instance (one function instance per business entity)</td>
+</tr>
+<tr>
+<td>Ingress topics</td>
+<td>20</td>
+</tr>
+<tr>
+<td>Egress topics</td>
+<td>20</td>
+</tr>
+<tr>
+<td>Partitions per topic</td>
+<td>12</td>
+</tr>
+<tr>
+<td>Job parallelism</td>
+<td>12</td>
+</tr>
+<tr>
+<td>Egress declaration</td>
+<td>Single <code>io.statefun.kafka.v1/egress</code> with per-message topic routing</td>
+</tr>
+<tr>
+<td>Delivery semantic</td>
+<td><code>at-least-once</code></td>
+</tr>
+<tr>
+<td>Symptom</td>
+<td>Egress is the job's main bottleneck → backpressure on <code>FunctionGroupOperator</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Math at a glance:</strong></p>
+<ul>
+<li>Ingress: <code>20 × 12 = 240</code> partitions consumed across 12 source subtasks → 20 partitions per subtask. Comfortable headroom.</li>
+<li>Egress: 12 Kafka producer instances total (one per subtask), each fanning out to up to <strong>240</strong> <code>(topic, partition)</code> batch slots simultaneously.</li>
+</ul>
+<h2 id="foundational-checks-before-tuning">Foundational checks before tuning<a class="headerlink" href="#foundational-checks-before-tuning" title="Permanent link">&para;</a></h2>
+<p>Tuning a system that's already incorrect just makes the bug faster. Verify these in order.</p>
+<h3 id="producer-record-key">Producer record key<a class="headerlink" href="#producer-record-key" title="Permanent link">&para;</a></h3>
+<p>In your function code, the <code>KafkaProducerRecord</code> proto must carry a <code>key</code> that is the natural ordering key of your domain (entity ID, account ID, payment ID, device ID, etc.):</p>
+<div class="language-java highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">KafkaProducerRecord</span><span class="w"> </span><span class="n">record</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">KafkaProducerRecord</span><span class="p">.</span><span class="na">newBuilder</span><span class="p">()</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="p">.</span><span class="na">setTopic</span><span class="p">(</span><span class="s">&quot;events.captured&quot;</span><span class="p">)</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="p">.</span><span class="na">setKey</span><span class="p">(</span><span class="n">entityId</span><span class="p">)</span><span class="w">                                   </span><span class="c1">// REQUIRED</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="p">.</span><span class="na">setValueBytes</span><span class="p">(</span><span class="n">eventPayload</span><span class="p">.</span><span class="na">toByteString</span><span class="p">())</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="p">.</span><span class="na">build</span><span class="p">();</span>
+</span></code></pre></div>
+<p>Without a stable key, events for the same entity can land in different partitions across redeploys or rebalances. The consumer then sees events out of causal order. <strong>No producer tuning fixes a missing or unstable key.</strong></p>
+<h3 id="downstream-consumer-idempotence">Downstream consumer idempotence<a class="headerlink" href="#downstream-consumer-idempotence" title="Permanent link">&para;</a></h3>
+<p><code>at-least-once</code> means duplicate records on retry. Consumers must dedupe.</p>
+<table>
+<thead>
+<tr>
+<th>Consumer type</th>
+<th>Idempotence key</th>
+<th>Risk if not idempotent</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Audit log / event store</td>
+<td><code>event_id</code> (UUID)</td>
+<td>Duplicate rows. Recoverable.</td>
+</tr>
+<tr>
+<td>Notifications</td>
+<td><code>event_id</code></td>
+<td>Duplicate user-visible messages.</td>
+</tr>
+<tr>
+<td><strong>Ledger / accounting</strong></td>
+<td><strong><code>event_id</code> + monotonic <code>seq_no</code></strong></td>
+<td><strong>Double-booking. Silent until reconciliation.</strong></td>
+</tr>
+<tr>
+<td>Fraud / scoring / analytics</td>
+<td><code>event_id</code></td>
+<td>Wasted compute; not a correctness bug.</td>
+</tr>
+<tr>
+<td>External webhooks</td>
+<td>depends on remote API</td>
+<td>Often the weakest link — dedup at your edge if needed.</td>
+</tr>
+</tbody>
+</table>
+<p>If a critical consumer is not idempotent, two options:</p>
+<ol>
+<li><strong>Make it idempotent at storage</strong> (<code>INSERT … ON CONFLICT DO NOTHING</code> keyed on <code>event_id</code>). Always preferable.</li>
+<li><strong>Declare a separate <code>exactly-once</code> egress</strong> for that one consumer's topic. Mix semantics in one job — high-volume events on the at-least-once egress, critical-correctness events on the EOS egress. Cost: 2PC overhead on the EOS path only.</li>
+</ol>
+<h3 id="state-ttl">State TTL<a class="headerlink" href="#state-ttl" title="Permanent link">&para;</a></h3>
+<p>Per-key state grows unbounded if not expired. Set TTL on terminal states:</p>
+<div class="language-java highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nd">@Persisted</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kd">private</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">PersistedValue</span><span class="o">&lt;</span><span class="n">EntityState</span><span class="o">&gt;</span><span class="w"> </span><span class="n">state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PersistedValue</span><span class="p">.</span><span class="na">of</span><span class="p">(</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="s">&quot;state&quot;</span><span class="p">,</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="n">EntityState</span><span class="p">.</span><span class="na">class</span><span class="p">,</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span><span class="n">Expiration</span><span class="p">.</span><span class="na">expireAfterWrite</span><span class="p">(</span><span class="n">Duration</span><span class="p">.</span><span class="na">ofDays</span><span class="p">(</span><span class="mi">90</span><span class="p">)));</span>
+</span></code></pre></div>
+<p>Unbounded state grows RocksDB → checkpoint duration grows linearly → looks identical to "egress is slow" in the Flink UI but is actually checkpoint-flush blocking. Verify before blaming the producer.</p>
+<h3 id="rocksdb-checkpoints">RocksDB checkpoints<a class="headerlink" href="#rocksdb-checkpoints" title="Permanent link">&para;</a></h3>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">state.backend.type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rocksdb</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="nt">state.backend.incremental</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;true&quot;</span>
+</span></code></pre></div>
+<p>Async snapshots are on by default. Incremental is the difference between checkpointing in seconds vs minutes at high state count.</p>
+<h2 id="calibrated-producer-configuration">Calibrated producer configuration<a class="headerlink" href="#calibrated-producer-configuration" title="Permanent link">&para;</a></h2>
+<p>For a single multi-topic egress fanning out to <strong>240</strong> <code>(topic, partition)</code> batch slots per producer:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">io.statefun.kafka.v1/egress</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="nt">spec</span><span class="p">:</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">app/all-out</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">  </span><span class="nt">address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kafka:9092</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">  </span><span class="nt">deliverySemantic</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> type</span><span class="p">:</span><span class="w"> </span><span class="nv">at-least-once</span><span class="w"> </span><span class="p p-Indicator">}</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">  </span><span class="nt">properties</span><span class="p">:</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">    </span><span class="c1"># === Memory ===</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">    </span><span class="c1"># Must hold up to 240 simultaneous open batches plus headroom.</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">    </span><span class="c1"># 128 MB / 240 ≈ 533 KB per batch worst-case → comfortable headroom.</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">buffer.memory</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;134217728&quot;</span><span class="w">               </span><span class="c1"># 128 MB</span>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="w">    </span><span class="c1"># === Batching ===</span>
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="w">    </span><span class="c1"># Calibrated DOWN from naive single-topic recommendation.</span>
+</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="w">    </span><span class="c1"># 128 KB × 240 batches = 30 MB worst-case → fits in 128 MB.</span>
+</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="w">    </span><span class="c1"># Larger batch.size with this fanout overflows buffer.memory.</span>
+</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">batch.size</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;131072&quot;</span><span class="w">                     </span><span class="c1"># 128 KB</span>
+</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>
+</span><span id="__span-3-18"><a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a><span class="w">    </span><span class="c1"># Lets per-(topic, partition) batches accumulate before send.</span>
+</span><span id="__span-3-19"><a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a><span class="w">    </span><span class="c1"># With 20 topics, individual batches fill slowly; linger.ms is doing</span>
+</span><span id="__span-3-20"><a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a><span class="w">    </span><span class="c1"># real work here. Cap: keep &lt; checkpoint.interval / 4 to avoid</span>
+</span><span id="__span-3-21"><a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a><span class="w">    </span><span class="c1"># flush-on-barrier stalls.</span>
+</span><span id="__span-3-22"><a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">linger.ms</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;30&quot;</span>
+</span><span id="__span-3-23"><a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a>
+</span><span id="__span-3-24"><a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a><span class="w">    </span><span class="c1"># === Compression ===</span>
+</span><span id="__span-3-25"><a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a><span class="w">    </span><span class="c1"># Big payoff with diverse topic payloads. lz4 is fastest with good</span>
+</span><span id="__span-3-26"><a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a><span class="w">    </span><span class="c1"># ratio; zstd is slightly better ratio at higher CPU.</span>
+</span><span id="__span-3-27"><a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">compression.type</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;lz4&quot;</span>
+</span><span id="__span-3-28"><a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a>
+</span><span id="__span-3-29"><a id="__codelineno-3-29" name="__codelineno-3-29" href="#__codelineno-3-29"></a><span class="w">    </span><span class="c1"># === Pipelining ===</span>
+</span><span id="__span-3-30"><a id="__codelineno-3-30" name="__codelineno-3-30" href="#__codelineno-3-30"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">max.in.flight.requests.per.connection</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;5&quot;</span>
+</span><span id="__span-3-31"><a id="__codelineno-3-31" name="__codelineno-3-31" href="#__codelineno-3-31"></a>
+</span><span id="__span-3-32"><a id="__codelineno-3-32" name="__codelineno-3-32" href="#__codelineno-3-32"></a><span class="w">    </span><span class="c1"># === Reliability ===</span>
+</span><span id="__span-3-33"><a id="__codelineno-3-33" name="__codelineno-3-33" href="#__codelineno-3-33"></a><span class="w">    </span><span class="c1"># idempotence + acks=all = no duplicates within a single producer epoch</span>
+</span><span id="__span-3-34"><a id="__codelineno-3-34" name="__codelineno-3-34" href="#__codelineno-3-34"></a><span class="w">    </span><span class="c1"># AND no data loss on broker leader failover.</span>
+</span><span id="__span-3-35"><a id="__codelineno-3-35" name="__codelineno-3-35" href="#__codelineno-3-35"></a><span class="w">    </span><span class="c1"># Note: at-least-once semantic still applies across checkpoint boundaries</span>
+</span><span id="__span-3-36"><a id="__codelineno-3-36" name="__codelineno-3-36" href="#__codelineno-3-36"></a><span class="w">    </span><span class="c1"># (a failed task replays from last checkpoint), so consumer dedup remains</span>
+</span><span id="__span-3-37"><a id="__codelineno-3-37" name="__codelineno-3-37" href="#__codelineno-3-37"></a><span class="w">    </span><span class="c1"># required. Idempotence handles producer-side retries only.</span>
+</span><span id="__span-3-38"><a id="__codelineno-3-38" name="__codelineno-3-38" href="#__codelineno-3-38"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">enable.idempotence</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;true&quot;</span>
+</span><span id="__span-3-39"><a id="__codelineno-3-39" name="__codelineno-3-39" href="#__codelineno-3-39"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">acks</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;all&quot;</span>
+</span><span id="__span-3-40"><a id="__codelineno-3-40" name="__codelineno-3-40" href="#__codelineno-3-40"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">retries</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;2147483647&quot;</span>
+</span><span id="__span-3-41"><a id="__codelineno-3-41" name="__codelineno-3-41" href="#__codelineno-3-41"></a>
+</span><span id="__span-3-42"><a id="__codelineno-3-42" name="__codelineno-3-42" href="#__codelineno-3-42"></a><span class="w">    </span><span class="c1"># === Headroom ===</span>
+</span><span id="__span-3-43"><a id="__codelineno-3-43" name="__codelineno-3-43" href="#__codelineno-3-43"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">max.request.size</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;4194304&quot;</span><span class="w">              </span><span class="c1"># 4 MB — handles bursty large records</span>
+</span><span id="__span-3-44"><a id="__codelineno-3-44" name="__codelineno-3-44" href="#__codelineno-3-44"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">request.timeout.ms</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;60000&quot;</span>
+</span><span id="__span-3-45"><a id="__codelineno-3-45" name="__codelineno-3-45" href="#__codelineno-3-45"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">delivery.timeout.ms</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;300000&quot;</span>
+</span></code></pre></div>
+<h3 id="why-these-values-arent-the-same-as-single-topic-recommendations">Why these values aren't the same as single-topic recommendations<a class="headerlink" href="#why-these-values-arent-the-same-as-single-topic-recommendations" title="Permanent link">&para;</a></h3>
+<p>The naive advice for a high-throughput Kafka producer is <code>batch.size = 256–512 KB</code> plus <code>buffer.memory = 64 MB</code>. <strong>That's wrong for fanout this wide:</strong></p>
+<ul>
+<li><code>batch.size</code> is a <strong>per-batch</strong> cap. With 240 open batches, naive <code>512 KB × 240 = 122 MB</code> worst-case — blows past <code>buffer.memory = 32–64 MB</code> defaults.</li>
+<li>The producer then blocks on <code>bufferpool-wait-time</code> during sends → mailbox stalls → backpressure.</li>
+<li>Solution: smaller <code>batch.size</code> (128 KB) × bigger <code>buffer.memory</code> (128 MB) → both fit, both effective.</li>
+<li><code>linger.ms</code> does most of the batching work for you when batches don't fill on size alone, which is most of the time across many topics.</li>
+</ul>
+<h3 id="calibrated-ingress-configuration">Calibrated ingress configuration<a class="headerlink" href="#calibrated-ingress-configuration" title="Permanent link">&para;</a></h3>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">io.statefun.kafka.v1/ingress</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nt">spec</span><span class="p">:</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">app/all-in</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">  </span><span class="nt">address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kafka:9092</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">  </span><span class="nt">consumerGroupId</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">app-group</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">  </span><span class="nt">startupPosition</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> type</span><span class="p">:</span><span class="w"> </span><span class="nv">groupOffsets</span><span class="w"> </span><span class="p p-Indicator">}</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">  </span><span class="nt">topics</span><span class="p">:</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">topic</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">  </span><span class="nt">properties</span><span class="p">:</span>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fetch.min.bytes</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;131072&quot;</span><span class="w">                </span><span class="c1"># 128 KB — fewer broker round-trips</span>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fetch.max.wait.ms</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;200&quot;</span><span class="w">                 </span><span class="c1"># let bytes accumulate up to 200 ms</span>
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">max.partition.fetch.bytes</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;1048576&quot;</span><span class="w">     </span><span class="c1"># 1 MB default, fine</span>
+</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">max.poll.records</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;2000&quot;</span><span class="w">                 </span><span class="c1"># bigger poll batches</span>
+</span></code></pre></div>
+<h2 id="parallelism-scaling">Parallelism scaling<a class="headerlink" href="#parallelism-scaling" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Parallelism</th>
+<th>Partitions/subtask (ingress)</th>
+<th>Producers</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>12 (example)</td>
+<td>20</td>
+<td>12</td>
+<td>Comfortable. Each producer is busy.</td>
+</tr>
+<tr>
+<td><strong>24</strong></td>
+<td>10</td>
+<td>24</td>
+<td><strong>Sweet spot.</strong> Doubles producer Sender threads.</td>
+</tr>
+<tr>
+<td>30</td>
+<td>8</td>
+<td>30</td>
+<td>Marginal gain over 24.</td>
+</tr>
+<tr>
+<td>60</td>
+<td>4</td>
+<td>60</td>
+<td>Diminishing returns; per-producer batches starve.</td>
+</tr>
+<tr>
+<td>240</td>
+<td>1</td>
+<td>240</td>
+<td>Don't. No rebalance slack; tiny batches everywhere.</td>
+</tr>
+</tbody>
+</table>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># FlinkDeployment CR / flink-conf.yaml</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="nt">parallelism.default</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;24&quot;</span>
+</span></code></pre></div>
+<p>At parallelism <code>P</code>, you have <code>P</code> Kafka producer instances total. Each producer has a single Sender thread that serializes, compresses, and dispatches all in-flight requests. Doubling <code>P</code> doubles the Sender-thread budget. The sweet spot is around 24–30 for a 20-topic fanout. Past that, batching efficiency falls faster than parallelism gains.</p>
+<h2 id="egress-sharding-when-sender-thread-saturates">Egress sharding (when Sender thread saturates)<a class="headerlink" href="#egress-sharding-when-sender-thread-saturates" title="Permanent link">&para;</a></h2>
+<p>If post-tuning and post-parallelism-scaling, the Kafka client JMX shows <code>record-send-rate</code> plateaued and TaskManager CPU on the producer Sender thread is saturated, the bottleneck is the <strong>single Sender thread per producer instance</strong>. Shard the egress into K parallel egresses, each with its own producer per subtask.</p>
+<h3 id="module-yaml-k-2-example">Module YAML (K = 2 example)<a class="headerlink" href="#module-yaml-k-2-example" title="Permanent link">&para;</a></h3>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">io.statefun.kafka.v1/egress</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="nt">spec</span><span class="p">:</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">  </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">app/all-out-0</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">  </span><span class="nt">address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kafka:9092</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">  </span><span class="nt">deliverySemantic</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> type</span><span class="p">:</span><span class="w"> </span><span class="nv">at-least-once</span><span class="w"> </span><span class="p p-Indicator">}</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">  </span><span class="nt">properties</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="w"> </span><span class="nv">... same calibrated tuning as above ...</span><span class="w"> </span><span class="p p-Indicator">]</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="nn">---</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">io.statefun.kafka.v1/egress</span>
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="nt">spec</span><span class="p">:</span>
+</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="w">  </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">app/all-out-1</span>
+</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="w">  </span><span class="nt">address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kafka:9092</span>
+</span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="w">  </span><span class="nt">deliverySemantic</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> type</span><span class="p">:</span><span class="w"> </span><span class="nv">at-least-once</span><span class="w"> </span><span class="p p-Indicator">}</span>
+</span><span id="__span-6-13"><a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a><span class="w">  </span><span class="nt">properties</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="w"> </span><span class="nv">... same ...</span><span class="w"> </span><span class="p p-Indicator">]</span>
+</span></code></pre></div>
+<h3 id="function-code">Function code<a class="headerlink" href="#function-code" title="Permanent link">&para;</a></h3>
+<div class="language-java highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kd">private</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">NUM_SHARDS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="kd">private</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">EgressIdentifier</span><span class="o">&lt;</span><span class="n">TypedValue</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">SHARDS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">List</span><span class="p">.</span><span class="na">of</span><span class="p">(</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">    </span><span class="n">EgressIdentifier</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">MyApp</span><span class="p">.</span><span class="na">class</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;all-out-0&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">TypedValue</span><span class="p">.</span><span class="na">class</span><span class="p">),</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">    </span><span class="n">EgressIdentifier</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">MyApp</span><span class="p">.</span><span class="na">class</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;all-out-1&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">TypedValue</span><span class="p">.</span><span class="na">class</span><span class="p">));</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="kd">private</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="n">EgressIdentifier</span><span class="o">&lt;</span><span class="n">TypedValue</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">shardFor</span><span class="p">(</span><span class="n">String</span><span class="w"> </span><span class="n">topic</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">shard</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Math</span><span class="p">.</span><span class="na">floorMod</span><span class="p">(</span><span class="n">topic</span><span class="p">.</span><span class="na">hashCode</span><span class="p">(),</span><span class="w"> </span><span class="n">NUM_SHARDS</span><span class="p">);</span>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">SHARDS</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="n">shard</span><span class="p">);</span>
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="p">}</span>
+</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>
+</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="c1">// At emit time:</span>
+</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="n">ctx</span><span class="p">.</span><span class="na">send</span><span class="p">(</span><span class="n">shardFor</span><span class="p">(</span><span class="s">&quot;events.captured&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">typedValueFor</span><span class="p">(</span><span class="n">record</span><span class="p">));</span>
+</span></code></pre></div>
+<h3 id="why-hash-by-topic-preserves-ordering">Why hash-by-topic preserves ordering<a class="headerlink" href="#why-hash-by-topic-preserves-ordering" title="Permanent link">&para;</a></h3>
+<p>The per-entity ordering invariant says: for entity X, events in topic T must reach the consumer in causal order.</p>
+<ul>
+<li>StateFun's <code>keyBy(entity_id)</code> ensures all events for X are processed in order on a single subtask.</li>
+<li>The function emits them in that order.</li>
+<li>All events targeting topic T (regardless of entity) always go to the same shard (deterministic <code>hash(T)</code>).</li>
+<li>That shard's producer writes to <code>(T, partition_for_X)</code> in arrival order.</li>
+<li>With <code>enable.idempotence=true</code>, retries preserve per-partition ordering.</li>
+</ul>
+<p>✅ Per-entity per-topic ordering preserved.</p>
+<h3 id="anti-pattern-sharding-by-entity-id">Anti-pattern — sharding by entity ID<a class="headerlink" href="#anti-pattern-sharding-by-entity-id" title="Permanent link">&para;</a></h3>
+<div class="language-java highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1">// WRONG: do not shard by entity ID</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="kt">int</span><span class="w"> </span><span class="n">shard</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Math</span><span class="p">.</span><span class="na">floorMod</span><span class="p">(</span><span class="n">entityId</span><span class="p">.</span><span class="na">hashCode</span><span class="p">(),</span><span class="w"> </span><span class="n">NUM_SHARDS</span><span class="p">);</span>
+</span></code></pre></div>
+<p>This splits events for the same entity across producers, complicating the ordering reasoning and giving up the "all events for entity X in topic T flow through the same producer instance" property. Use <code>hash(topic)</code> instead.</p>
+<h3 id="trade-off">Trade-off<a class="headerlink" href="#trade-off" title="Permanent link">&para;</a></h3>
+<p>K shards = K producers per subtask = K× Sender-thread budget. But each shard sees only ~1/K of the per-(topic, partition) flow, so batches fill K× more slowly → less batching efficiency. <strong>Sweet spot: K = 2–4.</strong></p>
+<p>Use this only after you've measured Sender-thread saturation. Producer tuning plus parallelism scaling resolve most cases on their own.</p>
+<h2 id="diagnostic-flow">Diagnostic flow<a class="headerlink" href="#diagnostic-flow" title="Permanent link">&para;</a></h2>
+<p>Step through this top-to-bottom under load.</p>
+<h3 id="where-is-backpressure">Where is backpressure?<a class="headerlink" href="#where-is-backpressure" title="Permanent link">&para;</a></h3>
+<p>In the Flink UI → Job → per-vertex <code>Backpressured (%)</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Backpressured vertex</th>
+<th>Bottleneck likely is</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Source</td>
+<td>Downstream — function or sink. Tune downstream, not source.</td>
+</tr>
+<tr>
+<td><code>FunctionGroupOperator</code></td>
+<td>Sink. Apply the levers in this guide.</td>
+</tr>
+<tr>
+<td>Sink writer</td>
+<td>Broker / Kafka cluster. Producer tuning won't fix.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="what-does-the-function-operator-look-like">What does the function operator look like?<a class="headerlink" href="#what-does-the-function-operator-look-like" title="Permanent link">&para;</a></h3>
+<p><code>FunctionGroupOperator</code> → <code>Busy (%)</code> per subtask:</p>
+<table>
+<thead>
+<tr>
+<th>Observation</th>
+<th>Bottleneck</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>All subtasks ~100% busy</td>
+<td>Function CPU (state, HTTP). Scale parallelism or remote-fn pods.</td>
+</tr>
+<tr>
+<td>One subtask ~100%, others idle</td>
+<td><strong>Data skew.</strong> Producer tuning won't fix.</td>
+</tr>
+<tr>
+<td>All subtasks ~50% busy, backpressured</td>
+<td>Mailbox-stalled on <code>producer.send()</code>. Producer-side bottleneck.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="what-does-the-producer-jmx-show">What does the producer JMX show?<a class="headerlink" href="#what-does-the-producer-jmx-show" title="Permanent link">&para;</a></h3>
+<p>Get the producer client JMX from the TaskManager:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>kafka.producer:type=producer-metrics,client-id=*
+</span></code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Reading</th>
+<th>Meaning</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>bufferpool-wait-time-total</code></td>
+<td>Rising</td>
+<td><code>buffer.memory</code> saturated</td>
+<td>Raise <code>buffer.memory</code> to 256 MB.</td>
+</tr>
+<tr>
+<td><code>record-send-rate</code></td>
+<td>Flat under increasing load</td>
+<td>Sender thread or broker capped</td>
+<td>If TM CPU high → egress sharding. If broker idle low → broker-side.</td>
+</tr>
+<tr>
+<td><code>compression-rate-avg</code></td>
+<td>Close to 1.0</td>
+<td>Batches too small to compress</td>
+<td>Raise <code>linger.ms</code>.</td>
+</tr>
+<tr>
+<td><code>request-latency-avg</code></td>
+<td>Rising over time</td>
+<td>Broker is slow</td>
+<td>Scale Kafka cluster. No client fix.</td>
+</tr>
+<tr>
+<td><code>record-error-rate</code></td>
+<td>&gt; 0</td>
+<td>Producer retries or drops</td>
+<td>Investigate logs.</td>
+</tr>
+<tr>
+<td><code>batch-size-avg</code></td>
+<td>&lt; 10 KB</td>
+<td>Underbatched</td>
+<td>Raise <code>linger.ms</code> and/or <code>batch.size</code>.</td>
+</tr>
+<tr>
+<td><code>batch-size-avg</code></td>
+<td>Approaching <code>batch.size</code> cap</td>
+<td>Well-batched</td>
+<td>Tuning is working.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="what-does-the-broker-show">What does the broker show?<a class="headerlink" href="#what-does-the-broker-show" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Reading</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>RequestHandlerAvgIdlePercent</code></td>
+<td>&lt; 30%</td>
+<td>Broker CPU-bound. Add brokers / partitions.</td>
+</tr>
+<tr>
+<td><code>NetworkProcessorAvgIdlePercent</code></td>
+<td>&lt; 30%</td>
+<td>Broker network-bound. Add brokers / NIC.</td>
+</tr>
+<tr>
+<td><code>BytesInPerSec</code> per topic</td>
+<td>Heavily skewed</td>
+<td>Topic-level hotspot. Repartition the hot topic.</td>
+</tr>
+<tr>
+<td><code>UnderReplicatedPartitions</code></td>
+<td>&gt; 0</td>
+<td>Replication lagging. Cluster health issue.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="per-key-hotkey-check">Per-key hotkey check<a class="headerlink" href="#per-key-hotkey-check" title="Permanent link">&para;</a></h3>
+<p>Run this against your event store over a representative window:</p>
+<div class="language-sql highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="k">SELECT</span><span class="w"> </span><span class="n">key_id</span><span class="p">,</span><span class="w"> </span><span class="k">COUNT</span><span class="p">(</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">event_count</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="k">FROM</span><span class="w"> </span><span class="n">events</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="k">WHERE</span><span class="w"> </span><span class="n">created_at</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">NOW</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nb">INTERVAL</span><span class="w"> </span><span class="mi">24</span><span class="w"> </span><span class="n">HOUR</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="k">GROUP</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">key_id</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">event_count</span><span class="w"> </span><span class="k">DESC</span>
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="k">LIMIT</span><span class="w"> </span><span class="mi">100</span><span class="p">;</span>
+</span></code></pre></div>
+<p>If the top 1% of keys receive &gt;50% of events, you have key-level skew. Fixes are in the data model, not Kafka:</p>
+<table>
+<thead>
+<tr>
+<th>Pattern</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Test / sandbox traffic to one entity</td>
+<td>Route to separate StateFun deployment or shard with synthetic suffix.</td>
+</tr>
+<tr>
+<td>Webhook retry storm on one ID</td>
+<td>Idempotency at ingress + rate-limit per <code>key_id</code>.</td>
+</tr>
+<tr>
+<td>Hierarchical aggregator with high child volume</td>
+<td>Bind function to <em>child ID</em>, not parent ID.</td>
+</tr>
+<tr>
+<td>Long-lived entity with sustained event flow</td>
+<td>Usually fine — instantaneous QPS still low.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="recommended-order-of-attack">Recommended order of attack<a class="headerlink" href="#recommended-order-of-attack" title="Permanent link">&para;</a></h2>
+<ol>
+<li><strong>Verify producer record <code>key</code></strong> is the entity ID. Foundational ordering correctness.</li>
+<li><strong>Verify downstream consumer idempotence</strong> on critical consumers (especially anything that writes a ledger). Foundational correctness.</li>
+<li><strong>Verify state TTL + incremental checkpoints</strong>. Eliminates a common false-positive.</li>
+<li><strong>Apply the calibrated producer tuning</strong>. YAML change only.</li>
+<li><strong>Bump parallelism <code>12 → 24</code></strong> (or proportional for your topology). Single config flip.</li>
+<li><strong>Re-measure</strong> backpressure + producer JMX. Most pipelines stop here.</li>
+<li><strong>If <code>bufferpool-wait-time-total</code> still rising</strong> → raise <code>buffer.memory</code> to 256 MB.</li>
+<li><strong>If <code>record-send-rate</code> plateaus with high TM CPU on Sender thread</strong> → egress sharding (K = 2).</li>
+<li><strong>If broker-side metrics show capacity issues</strong> → scale Kafka, not StateFun.</li>
+</ol>
+<h2 id="what-not-to-do">What not to do<a class="headerlink" href="#what-not-to-do" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Don't increase <code>batch.size</code> past 128 KB without raising <code>buffer.memory</code> proportionally — <code>batch.size × open_batch_slots</code> must fit in <code>buffer.memory</code>.</li>
+<li>Don't shard by entity ID — complicates ordering reasoning and gives up locality. Use <code>hash(topic)</code> if you shard.</li>
+<li>Don't switch to exactly-once "for safety" if at-least-once with idempotent consumers is acceptable — EOS roughly halves throughput and adds checkpoint-coupled commit latency.</li>
+<li>Don't call <code>withKafkaProducerPoolSize(N)</code> — silently no-op on this fork; the new <code>KafkaSink</code> (Sink V2) manages its transactional ID space internally.</li>
+<li>Don't enable unaligned checkpoints — <code>StatefulFunctionsConfigValidator</code> rejects them. StateFun's feedback-loop topology is incompatible.</li>
+<li>Don't go past parallelism 30× the partition-per-topic count — diminishing returns are real.</li>
+</ul>
+<h2 id="should-i-collapse-my-egresses-into-one">Should I collapse my egresses into one?<a class="headerlink" href="#should-i-collapse-my-egresses-into-one" title="Permanent link">&para;</a></h2>
+<p>If you have many separate <code>io.statefun.kafka.v1/egress</code> declarations, one per destination topic, <strong>collapse them into a single generic egress with per-message topic routing</strong>. Each separate declaration creates its own <code>KafkaSink</code> operator, its own producer per subtask, and its own batch buffers — at parallelism <code>P</code> with N declarations you run <code>N × P</code> Kafka producers, each seeing only 1/N of the traffic. Tiny batches, N× the network connections, N× the heap.</p>
+<p>The generic egress accepts a <code>KafkaProducerRecord</code> proto whose <code>topic</code> field is set per-message. One sink, one producer per subtask, all topics share the same batch window. The function emits with <code>topic</code>, <code>key</code>, and <code>value</code> at send time. This is the structural prerequisite for everything else in this guide.</p>
+<h2 id="re-tuning-later">Re-tuning later<a class="headerlink" href="#re-tuning-later" title="Permanent link">&para;</a></h2>
+<p>When QPS or topic count changes, re-derive <code>buffer.memory</code> and <code>batch.size</code> from:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>open_batch_slots_worst_case  =  topics × partitions_per_topic     (per producer instance)
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>batch.size × open_batch_slots_worst_case  ≤  buffer.memory × 0.7  (leave 30% headroom)
+</span></code></pre></div>
+<p>For the example topology: <code>240 × 128 KB = 30 MB ≤ 128 MB × 0.7 = 90 MB</code> ✅.</p>
+<p>If topic count doubles to 40, <code>batch.size = 128 KB × 480 = 60 MB</code> — still fits. If you also raise <code>batch.size</code> to 256 KB: <code>256 KB × 480 = 120 MB &gt; 90 MB</code> → <code>buffer.memory</code> must rise to 256 MB.</p>
+<p>Always verify under load with <code>bufferpool-wait-time-total</code> before declaring tuning done.</p>
+<h2 id="see-also">See also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../kafka-io/">Kafka I/O</a> — full ingress / egress configuration reference</li>
+<li><a href="../k8s-deployment/">Kubernetes deployment</a> — <code>FlinkDeployment</code> CR setup, parallelism config</li>
+<li><a href="../../upstream-vs-kzm/">Differences from Apache StateFun</a> — Source V2 / Sink V2 migration notes, savepoint compatibility</li>
+</ul>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+  
+
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/kzmlabs/flink-statefun" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+    
+    
+    
+    
+    <a href="https://central.sonatype.com/artifact/io.github.kzmlabs.flinkstatefun/statefun-bom" target="_blank" rel="noopener" title="Maven Central" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M2 10.96a.985.985 0 0 1-.37-1.37L3.13 7c.11-.2.28-.34.47-.42l7.83-4.4c.16-.12.36-.18.57-.18s.41.06.57.18l7.9 4.44c.19.1.35.26.44.46l1.45 2.52c.28.48.11 1.09-.36 1.36l-1 .58v4.96c0 .38-.21.71-.53.88l-7.9 4.44c-.16.12-.36.18-.57.18s-.41-.06-.57-.18l-7.9-4.44A.99.99 0 0 1 3 16.5v-5.54c-.3.17-.68.18-1 0m10-6.81v6.7l5.96-3.35zM5 15.91l6 3.38v-6.71L5 9.21zm14 0v-3.22l-5 2.9c-.33.18-.7.17-1 .01v3.69zm-5.15-2.55 6.28-3.63-.58-1.01-6.28 3.63z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.indexes", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate", "content.action.edit", "toc.follow"], "search": "../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.f55a23d4.min.js"></script>
+      
+        <script src="https://unpkg.com/mermaid@11/dist/mermaid.min.js"></script>
+      
+        <script src="../../assets/js/mermaid-init.js"></script>
+      
+    
+  </body>
+</html>
