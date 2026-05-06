@@ -1,0 +1,71 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+# Configuration reference: https://docs.coderabbit.ai/configure-coderabbit
+language: en
+early_access: false
+
+reviews:
+  profile: assertive
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - release
+      - master
+    # Skip auto-review on PRs from automated bumpers — their content is mechanical
+    # version-bump diffs that AI review adds little value to (and consumes free-tier quota).
+    ignore_title_keywords:
+      - "chore(deps):"
+      - "build(deps):"
+      - "Bump "
+  path_filters:
+    # Generated code — irrelevant to review
+    - "!**/generated/**"
+    - "!**/target/**"
+    - "!**/.flattened-pom.xml"
+    - "!**/*.pb.go"
+    # Vendored / shaded — not maintained here
+    - "!statefun-shaded/**/src/**"
+    # Frozen non-Java SDKs — see #160; not actively maintained
+    - "!statefun-sdk-go/**"
+    - "!statefun-sdk-js/**"
+    - "!statefun-sdk-python/**"
+  path_instructions:
+    - path: "statefun-flink/**/*.java"
+      instructions: |
+        Production runtime code on the Flink 2.x execution path. Pay extra attention to:
+        - Exactly-once semantics on state mutation
+        - Checkpoint / savepoint compatibility (TypeSerializerSnapshot evolution)
+        - Restart-recovery correctness
+        - Backpressure on async operations
+        - Thread-safety on shared state
+    - path: "statefun-flink-io-bundle/**/*.java"
+      instructions: |
+        Ingress / egress binders. Watch for: routing-key correctness (ARN vs short name
+        for Kinesis, topic routing for Kafka), serialization round-trips at boundary
+        sizes (empty, 1MiB Kinesis cap), graceful handling of malformed records.
+    - path: "**/src/test/**"
+      instructions: |
+        Match project test conventions (see CONTRIBUTING.md "Testing conventions"):
+        camelCase method names (no underscores, no @DisplayName), AssertJ + JUnit 5
+        Jupiter, AAA structure, real types over mocks where practical.
+    - path: ".github/workflows/**"
+      instructions: |
+        Verify principle of least privilege: every workflow declares an explicit
+        permissions block; job-level overrides only the writes it actually needs.
+
+chat:
+  auto_reply: true
+
+knowledge_base:
+  opt_out: false
+  learnings:
+    scope: auto
+  issues:
+    scope: auto
+  pull_requests:
+    scope: auto
