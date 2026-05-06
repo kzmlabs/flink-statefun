@@ -60,10 +60,15 @@
     </ciManagement>
 
     <distributionManagement>
+        <!-- Snapshots → GitHub Packages: zero per-namespace permission gates, uses the kzmlabs
+             org's existing GitHub auth (workflow GITHUB_TOKEN). Sonatype Central Portal blocks
+             snapshot publishing to io.github.kzmlabs.flinkstatefun with HTTP 403 absent a
+             namespace-level toggle that isn't currently exposed in the UI. -->
         <snapshotRepository>
-            <id>central</id>
-            <url>https://central.sonatype.com/repository/maven-snapshots/</url>
+            <id>github</id>
+            <url>https://maven.pkg.github.com/kzmlabs/flink-statefun</url>
         </snapshotRepository>
+        <!-- Stable releases continue to ship to Maven Central via Sonatype Central Portal. -->
         <repository>
             <id>central</id>
             <url>https://central.sonatype.com/</url>
