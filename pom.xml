@@ -79,7 +79,9 @@
         <module>statefun-sdk-embedded</module>
         <module>statefun-sdk-protos</module>
         <module>statefun-sdk-java</module>
-        <!-- Non-Java SDKs removed from reactor (empty pass-through modules) -->
+        <!-- Non-Java SDKs (statefun-sdk-{python,go,js}) are frozen — inherited from upstream
+             Apache Stateful Functions, not actively maintained on Flink 2.x. Each has a status
+             banner in its README. Re-introduction policy: see issue #160. -->
         <!-- Directories kept for reference: statefun-sdk-python, statefun-sdk-go, statefun-sdk-js -->
         <module>statefun-kafka-io</module>
         <module>statefun-kinesis-io</module>
