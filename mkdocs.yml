@@ -72,6 +72,7 @@ nav:
       - IoT fleet digital twins: examples/iot-fleet.md
   - Guides:
       - Kafka I/O: guides/kafka-io.md
+      - Kafka egress tuning: guides/kafka-egress-tuning.md
       - Kinesis I/O: guides/kinesis-io.md
       - Kubernetes deployment: guides/k8s-deployment.md
   - Architecture:
