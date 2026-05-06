@@ -5,16 +5,10 @@
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.kzmlabs.flinkstatefun/statefun-bom?label=Maven%20Central)](https://central.sonatype.com/artifact/io.github.kzmlabs.flinkstatefun/statefun-bom)
 [![GitHub Release](https://img.shields.io/github/v/release/kzmlabs/flink-statefun?label=GHCR)](https://github.com/kzmlabs/flink-statefun/pkgs/container/flink-statefun)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue)](LICENSE)
-[![CI](https://github.com/kzmlabs/flink-statefun/actions/workflows/ci.yml/badge.svg?branch=release)](https://github.com/kzmlabs/flink-statefun/actions/workflows/ci.yml?query=branch%3Arelease)
 [![K8s E2E](https://github.com/kzmlabs/flink-statefun/actions/workflows/e2e-test.yml/badge.svg?branch=release)](https://github.com/kzmlabs/flink-statefun/actions/workflows/e2e-test.yml?query=branch%3Arelease)
-[![CodeQL](https://github.com/kzmlabs/flink-statefun/actions/workflows/codeql.yml/badge.svg?branch=release)](https://github.com/kzmlabs/flink-statefun/actions/workflows/codeql.yml?query=branch%3Arelease)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/kzmlabs/flink-statefun/badge)](https://scorecard.dev/viewer/?uri=github.com/kzmlabs/flink-statefun)
-
-[![Stars](https://img.shields.io/github/stars/kzmlabs/flink-statefun?style=social)](https://github.com/kzmlabs/flink-statefun/stargazers)
-[![Forks](https://img.shields.io/github/forks/kzmlabs/flink-statefun?style=social)](https://github.com/kzmlabs/flink-statefun/network/members)
 [![Contributors](https://img.shields.io/github/contributors/kzmlabs/flink-statefun)](https://github.com/kzmlabs/flink-statefun/graphs/contributors)
 [![Last commit](https://img.shields.io/github/last-commit/kzmlabs/flink-statefun/release)](https://github.com/kzmlabs/flink-statefun/commits/release)
-[![Open issues](https://img.shields.io/github/issues/kzmlabs/flink-statefun)](https://github.com/kzmlabs/flink-statefun/issues)
 
 📖 **[Documentation](https://kzmlabs.github.io/flink-statefun/)** &nbsp;·&nbsp; ⚡ **[Quickstart](https://kzmlabs.github.io/flink-statefun/quickstart/)** &nbsp;·&nbsp; 📦 **[Maven Central](https://central.sonatype.com/namespace/io.github.kzmlabs.flinkstatefun)** &nbsp;·&nbsp; 🐳 **[GHCR](https://github.com/kzmlabs/flink-statefun/pkgs/container/flink-statefun)** &nbsp;·&nbsp; 🆚 **[vs Apache StateFun](https://kzmlabs.github.io/flink-statefun/upstream-vs-kzm/)** &nbsp;·&nbsp; 🌟 **[Awesome StateFun](https://github.com/kzmlabs/awesome-statefun)**
 
