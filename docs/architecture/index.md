@@ -14,11 +14,11 @@ flowchart LR
     KafkaIn[Kafka ingress]:::ingress --> Dispatch[Dispatcher operator]
     KinesisIn[Kinesis ingress]:::ingress --> Dispatch
     Dispatch -->|state-keyed message| Func[Function instance]
-    Func -->|HTTP POST /statefun| Remote[Remote endpoint]
+    Func -->|"HTTP POST /statefun"| Remote[Remote endpoint]
     Remote -->|response| Func
     Func -->|emit| KafkaOut[Kafka egress]:::egress
     Func -->|emit| KinesisOut[Kinesis egress]:::egress
-    Func <-->|state I/O| State[(RocksDB keyed state<br/>checkpointed to S3)]
+    Func <-->|"state I/O"| State[("RocksDB keyed state<br/>checkpointed to S3")]
 
     classDef ingress fill:#fef3c7,stroke:#f59e0b,color:#92400e
     classDef egress fill:#dbeafe,stroke:#2563eb,color:#1e3a8a

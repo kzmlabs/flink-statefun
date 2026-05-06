@@ -104,10 +104,10 @@ Removes containers + volumes. Re-running `docker compose up -d` starts a clean c
 sequenceDiagram
     autonumber
     participant You
-    participant K as Kafka<br/>(ingress)
-    participant SF as StateFun<br/>dispatcher
-    participant Fn as GreeterFn<br/>(remote)
-    participant E as Kafka<br/>(egress)
+    participant K as Kafka ingress
+    participant SF as StateFun dispatcher
+    participant Fn as GreeterFn (remote)
+    participant E as Kafka egress
 
     You->>K: produce key=alice, value={message}
     K->>SF: poll record
