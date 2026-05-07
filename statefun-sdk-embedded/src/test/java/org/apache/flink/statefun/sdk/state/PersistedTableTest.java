@@ -3,14 +3,9 @@
 
 package org.apache.flink.statefun.sdk.state;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.collection.IsEmptyIterable.emptyIterable;
-import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.util.ConcurrentModificationException;
@@ -40,14 +35,14 @@ public class PersistedTableTest {
 
   @Test
   public void getOnEmptyTableReturnsNull() {
-    assertThat(table.get("missing"), is(nullValue()));
+    assertThat(table.get("missing")).isNull();
   }
 
   @Test
   public void setThenGetRoundtrip() {
     table.set("key", 42);
 
-    assertThat(table.get("key"), is(42));
+    assertThat(table.get("key")).isEqualTo(42);
   }
 
   @Test
@@ -55,7 +50,7 @@ public class PersistedTableTest {
     table.set("key", 1);
     table.set("key", 2);
 
-    assertThat(table.get("key"), is(2));
+    assertThat(table.get("key")).isEqualTo(2);
   }
 
   /**
@@ -68,9 +63,9 @@ public class PersistedTableTest {
    */
   @Test
   public void nullKeyIsSilentlyAcceptedToday() {
-    assertDoesNotThrow(() -> table.set(null, 7));
-    assertThat(table.get(null), is(7));
-    assertThat(table.keys(), containsInAnyOrder((String) null));
+    assertThatCode(() -> table.set(null, 7)).doesNotThrowAnyException();
+    assertThat(table.get(null)).isEqualTo(7);
+    assertThat(table.keys()).containsExactly((String) null);
   }
 
   /**
@@ -82,19 +77,19 @@ public class PersistedTableTest {
   public void nullValueIsAcceptedAndReadBackAsNull() {
     table.set("key", null);
 
-    assertThat(table.get("key"), is(nullValue()));
-    assertThat(table.keys(), containsInAnyOrder("key"));
+    assertThat(table.get("key")).isNull();
+    assertThat(table.keys()).containsExactly("key");
   }
 
   @Test
   public void removeOfMissingKeyDoesNotThrowOrCorruptState() {
     table.set("present", 1);
 
-    assertDoesNotThrow(() -> table.remove("absent"));
+    assertThatCode(() -> table.remove("absent")).doesNotThrowAnyException();
 
-    assertThat(table.get("present"), is(1));
-    assertThat(table.get("absent"), is(nullValue()));
-    assertThat(table.keys(), containsInAnyOrder("present"));
+    assertThat(table.get("present")).isEqualTo(1);
+    assertThat(table.get("absent")).isNull();
+    assertThat(table.keys()).containsExactly("present");
   }
 
   @Test
@@ -102,8 +97,8 @@ public class PersistedTableTest {
     table.set("key", 99);
     table.remove("key");
 
-    assertThat(table.get("key"), is(nullValue()));
-    assertThat(table.keys(), is(emptyIterable()));
+    assertThat(table.get("key")).isNull();
+    assertThat(table.keys()).isEmpty();
   }
 
   @Test
@@ -114,10 +109,10 @@ public class PersistedTableTest {
 
     table.clear();
 
-    assertThat(table.entries(), is(emptyIterable()));
-    assertThat(table.keys(), is(emptyIterable()));
-    assertThat(table.values(), is(emptyIterable()));
-    assertThat(table.get("a"), is(nullValue()));
+    assertThat(table.entries()).isEmpty();
+    assertThat(table.keys()).isEmpty();
+    assertThat(table.values()).isEmpty();
+    assertThat(table.get("a")).isNull();
   }
 
   @Test
@@ -126,7 +121,7 @@ public class PersistedTableTest {
     table.clear();
     table.set("a", 2);
 
-    assertThat(table.get("a"), is(2));
+    assertThat(table.get("a")).isEqualTo(2);
   }
 
   /**
@@ -144,7 +139,7 @@ public class PersistedTableTest {
 
     table.set("c", 3);
 
-    assertThrows(ConcurrentModificationException.class, iterator::next);
+    assertThatThrownBy(iterator::next).isInstanceOf(ConcurrentModificationException.class);
   }
 
   @Test
@@ -157,7 +152,7 @@ public class PersistedTableTest {
 
     table.remove("b");
 
-    assertThrows(ConcurrentModificationException.class, iterator::next);
+    assertThatThrownBy(iterator::next).isInstanceOf(ConcurrentModificationException.class);
   }
 
   @Test
@@ -166,8 +161,7 @@ public class PersistedTableTest {
 
     table.set(largeKey, 123);
 
-    assertThat(table.get(largeKey), is(123));
-    assertThat(table.get(largeKey), is(notNullValue()));
+    assertThat(table.get(largeKey)).isEqualTo(123).isNotNull();
   }
 
   @Test
@@ -176,8 +170,8 @@ public class PersistedTableTest {
     table.set("b", 2);
     table.set("c", 3);
 
-    assertThat(table.keys(), containsInAnyOrder("a", "b", "c"));
-    assertThat(table.values(), containsInAnyOrder(1, 2, 3));
+    assertThat(table.keys()).containsExactlyInAnyOrder("a", "b", "c");
+    assertThat(table.values()).containsExactlyInAnyOrder(1, 2, 3);
   }
 
   /**

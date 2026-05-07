@@ -3,13 +3,8 @@
 
 package org.apache.flink.statefun.sdk.state;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.collection.IsEmptyIterable.emptyIterable;
-import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.util.ArrayList;
@@ -32,7 +27,7 @@ public class PersistedAppendingBufferTest {
   @Test
   public void viewOnInit() {
     PersistedAppendingBuffer<String> buffer = PersistedAppendingBuffer.of("test", String.class);
-    assertFalse(buffer.view().iterator().hasNext());
+    assertThat(buffer.view()).isEmpty();
   }
 
   @Test
@@ -40,7 +35,7 @@ public class PersistedAppendingBufferTest {
     PersistedAppendingBuffer<String> buffer = PersistedAppendingBuffer.of("test", String.class);
     buffer.append("element");
 
-    assertThat(buffer.view().iterator().next(), is("element"));
+    assertThat(buffer.view()).containsExactly("element");
   }
 
   @Test
@@ -48,7 +43,7 @@ public class PersistedAppendingBufferTest {
     PersistedAppendingBuffer<String> buffer = PersistedAppendingBuffer.of("test", String.class);
     buffer.appendAll(Arrays.asList("element-1", "element-2"));
 
-    assertThat(buffer.view(), contains("element-1", "element-2"));
+    assertThat(buffer.view()).containsExactly("element-1", "element-2");
   }
 
   @Test
@@ -57,7 +52,7 @@ public class PersistedAppendingBufferTest {
     buffer.append("element");
     buffer.appendAll(new ArrayList<>());
 
-    assertThat(buffer.view().iterator().next(), is("element"));
+    assertThat(buffer.view()).containsExactly("element");
   }
 
   @Test
@@ -66,7 +61,7 @@ public class PersistedAppendingBufferTest {
     buffer.append("element");
     buffer.replaceWith(Collections.singletonList("element-new"));
 
-    assertThat(buffer.view().iterator().next(), is("element-new"));
+    assertThat(buffer.view()).containsExactly("element-new");
   }
 
   @Test
@@ -75,7 +70,7 @@ public class PersistedAppendingBufferTest {
     buffer.append("element");
     buffer.replaceWith(new ArrayList<>());
 
-    assertFalse(buffer.view().iterator().hasNext());
+    assertThat(buffer.view()).isEmpty();
   }
 
   @Test
@@ -84,21 +79,16 @@ public class PersistedAppendingBufferTest {
     buffer.append("element");
     buffer.clear();
 
-    assertFalse(buffer.view().iterator().hasNext());
+    assertThat(buffer.view()).isEmpty();
   }
 
   @Test
   public void viewUnmodifiable() {
-    assertThrows(
-        UnsupportedOperationException.class,
-        () -> {
-          PersistedAppendingBuffer<String> buffer =
-              PersistedAppendingBuffer.of("test", String.class);
-          buffer.append("element");
+    PersistedAppendingBuffer<String> buffer = PersistedAppendingBuffer.of("test", String.class);
+    buffer.append("element");
 
-          Iterator<String> view = buffer.view().iterator();
-          view.remove();
-        });
+    Iterator<String> view = buffer.view().iterator();
+    assertThatThrownBy(view::remove).isInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test
@@ -108,7 +98,7 @@ public class PersistedAppendingBufferTest {
     buffer.append("second");
     buffer.append("third");
 
-    assertThat(buffer.view(), contains("first", "second", "third"));
+    assertThat(buffer.view()).containsExactly("first", "second", "third");
   }
 
   /**
@@ -143,14 +133,10 @@ public class PersistedAppendingBufferTest {
       buffer.append(i);
     }
 
-    int seen = 0;
-    int expected = 0;
-    for (Integer element : buffer.view()) {
-      assertEquals(expected, element.intValue(), "element out of order at index " + seen);
-      expected++;
-      seen++;
-    }
-    assertEquals(total, seen, "buffer dropped elements under heavy append");
+    List<Integer> drained = drain(buffer);
+    assertThat(drained).hasSize(total).isSorted();
+    assertThat(drained.get(0)).isEqualTo(0);
+    assertThat(drained.get(total - 1)).isEqualTo(total - 1);
   }
 
   @Test
@@ -160,7 +146,7 @@ public class PersistedAppendingBufferTest {
 
     buffer.clear();
 
-    assertThat(buffer.view(), is(emptyIterable()));
+    assertThat(buffer.view()).isEmpty();
   }
 
   @Test
@@ -170,7 +156,7 @@ public class PersistedAppendingBufferTest {
     buffer.clear();
     buffer.append("new");
 
-    assertThat(buffer.view(), contains("new"));
+    assertThat(buffer.view()).containsExactly("new");
   }
 
   @Test
@@ -181,8 +167,8 @@ public class PersistedAppendingBufferTest {
     List<String> firstPass = drain(buffer);
     List<String> secondPass = drain(buffer);
 
-    assertEquals(firstPass, secondPass);
-    assertThat(buffer.view(), contains("a", "b", "c"));
+    assertThat(firstPass).isEqualTo(secondPass);
+    assertThat(buffer.view()).containsExactly("a", "b", "c");
   }
 
   @Test
@@ -193,7 +179,7 @@ public class PersistedAppendingBufferTest {
     Iterator<String> iterator = buffer.view().iterator();
     iterator.next();
 
-    assertThrows(UnsupportedOperationException.class, iterator::remove);
+    assertThatThrownBy(iterator::remove).isInstanceOf(UnsupportedOperationException.class);
   }
 
   /**

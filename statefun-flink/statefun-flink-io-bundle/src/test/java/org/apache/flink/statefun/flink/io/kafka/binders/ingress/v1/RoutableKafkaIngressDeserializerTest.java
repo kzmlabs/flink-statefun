@@ -72,8 +72,6 @@ class RoutableKafkaIngressDeserializerTest {
         .hasMessageContaining("no routing config");
   }
 
-  // --- helpers ---------------------------------------------------------------------------------
-
   private static Map<String, RoutingConfig> routingMap(String key, RoutingConfig value) {
     final Map<String, RoutingConfig> map = new HashMap<>(1);
     map.put(key, value);
