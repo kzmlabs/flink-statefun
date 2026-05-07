@@ -4,7 +4,20 @@ All notable changes to **StateFun Actors by Kzmlabs** are documented in this fil
 
 > **Reading guide:** "KZM-x.y" releases are this fork's versions on Flink 2.x. Apache StateFun's last release was [3.4.0](https://github.com/apache/flink-statefun/releases/tag/release-3.4.0) (October 2024) on Flink 1.16. See [docs/upstream-vs-kzm.md](https://kzmlabs.github.io/flink-statefun/upstream-vs-kzm/) for the full migration matrix.
 
-## [3.4.0-KZM-3.0-RC1] - 2026-04-23
+## [3.4.0-KZM-3.1] - 2026-04-29
+
+Patch release on top of 3.4.0-KZM-3.0. Same Kinesis-restoration baseline as
+3.0; this entry exists for traceability so the changelog and Maven Central
+match.
+
+## [3.4.0-KZM-3.0] - 2026-04-29
+
+Stable promotion of `3.4.0-KZM-3.0-RC1` after the Kubernetes native E2E gate
+(both Kafka and Kinesis suites) ran green and Maven Central + GHCR publishing
+completed cleanly. No source changes vs RC1 — same Kinesis I/O restoration,
+same LocalStack-backed K8s E2E.
+
+## [3.4.0-KZM-3.0-RC1] - 2026-04-24
 
 ### Added — Kinesis ingress/egress end-to-end support
 
@@ -167,6 +180,8 @@ First stable release of the KZM-2.0 line, promoting RC7 after successful Maven C
 - Add Docker image publishing to GitHub Container Registry
 - Add release setup guide and release script
 
+[3.4.0-KZM-3.1]: https://github.com/kzmlabs/flink-statefun/releases/tag/v3.4.0-KZM-3.1
+[3.4.0-KZM-3.0]: https://github.com/kzmlabs/flink-statefun/releases/tag/v3.4.0-KZM-3.0
 [3.4.0-KZM-3.0-RC1]: https://github.com/kzmlabs/flink-statefun/releases/tag/v3.4.0-KZM-3.0-RC1
 [3.4.0-KZM-2.0]: https://github.com/kzmlabs/flink-statefun/releases/tag/v3.4.0-KZM-2.0
 [3.4.0-KZM-2.0-RC7]: https://github.com/kzmlabs/flink-statefun/releases/tag/v3.4.0-KZM-2.0-RC7
