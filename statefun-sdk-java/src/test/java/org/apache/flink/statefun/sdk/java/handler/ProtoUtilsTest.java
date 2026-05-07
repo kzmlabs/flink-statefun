@@ -9,6 +9,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 import java.time.Duration;
 import org.apache.flink.statefun.sdk.java.Address;
@@ -124,16 +125,16 @@ class ProtoUtilsTest {
   }
 
   @Test
-  void getTypedValueOnMessageWrapperUsesFastPath() {
-    // MessageWrapper carries an existing TypedValue — the fast path returns the same instance
-    // (no re-serialization), which the runtime depends on for hot-path performance.
+  void getTypedValueOnMessageWrapperReturnsTheSameCachedInstance() {
+    // MessageWrapper carries an existing TypedValue — the fast path returns the SAME instance
+    // (no re-serialization), which the runtime depends on for hot-path performance. Pin
+    // identity, not just equality, so a future "always rebuild" change is caught.
     Message message = MessageBuilder.forAddress(FN, "id").withValue("payload").build();
 
     TypedValue first = ProtoUtils.getTypedValue(message);
     TypedValue second = ProtoUtils.getTypedValue(message);
 
-    // Same byte content; behavior must be deterministic across calls.
-    assertEquals(first, second);
+    assertSame(first, second);
   }
 
   @Test
@@ -242,7 +243,7 @@ class ProtoUtilsTest {
     TypedValue first = ProtoUtils.getTypedValue(egress);
     TypedValue second = ProtoUtils.getTypedValue(egress);
 
-    assertEquals(first, second);
+    assertSame(first, second);
     assertEquals("io.statefun.types/string", first.getTypename());
   }
 }

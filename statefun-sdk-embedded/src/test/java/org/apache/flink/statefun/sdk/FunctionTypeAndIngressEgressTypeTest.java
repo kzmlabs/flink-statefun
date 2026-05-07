@@ -94,11 +94,12 @@ class FunctionTypeAndIngressEgressTypeTest {
   }
 
   @Test
-  void egressTypeToStringHasReadableFormButContainsTypeoNotedInComment() {
+  void egressTypeToStringPinsCurrentIngressTypeTypo() {
     // TODO: EgressType.toString() reports "IngressType(...)" due to a copy-paste typo
-    // inherited from upstream. Pin current behavior so a future fix is intentional.
-    // When fixed, this test should assert containsString("EgressType").
+    // inherited from upstream. Pinning the literal prefix here so a future fix is
+    // intentional — when corrected, flip to containsString("EgressType").
     EgressType e = new EgressType("io.test", "kafka");
+    assertThat(e.toString(), containsString("IngressType("));
     assertThat(e.toString(), containsString("io.test"));
     assertThat(e.toString(), containsString("kafka"));
   }

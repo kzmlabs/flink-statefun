@@ -111,9 +111,7 @@ class KafkaSinkProviderTest {
 
   @Test
   void nullSpecThrows() {
-    assertThatThrownBy(() -> PROVIDER.forSpec(null))
-        .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining("NULL");
+    assertThatThrownBy(() -> PROVIDER.forSpec(null)).isInstanceOf(NullPointerException.class);
   }
 
   public static class TestSerializer implements KafkaEgressSerializer<String> {

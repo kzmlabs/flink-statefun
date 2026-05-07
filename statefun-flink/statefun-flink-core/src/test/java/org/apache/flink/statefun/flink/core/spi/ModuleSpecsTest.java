@@ -26,6 +26,10 @@ class ModuleSpecsTest {
   void fromPathOnFileNotDirectoryThrows(@TempDir Path tmp) throws Exception {
     Path file = Files.createFile(tmp.resolve("a-file"));
 
+    // Production code at ModuleSpecs.discoverLoadableArtifacts:41 throws raw RuntimeException
+    // (not IllegalArgumentException) for the "not a directory" path. Match exactly — narrowing
+    // here would fail the test, and there is a separate latent issue in production worth tracking
+    // (the two failure paths use different exception types).
     assertThatThrownBy(() -> ModuleSpecs.fromPath(file.toString()))
         .isInstanceOf(RuntimeException.class)
         .hasMessageContaining("is not a directory");
@@ -36,7 +40,7 @@ class ModuleSpecsTest {
     ModuleSpecs specs = ModuleSpecs.fromPath(tmp.toString());
 
     assertThat(specs.modules()).isEmpty();
-    assertThat(specs.iterator().hasNext()).isFalse();
+    assertThat(specs).isEmpty();
   }
 
   @Test
@@ -69,11 +73,10 @@ class ModuleSpecsTest {
   }
 
   @Test
-  void fromCollectionPreservesOrderAndContent() throws Exception {
-    File f1 = File.createTempFile("statefun-test", ".jar");
-    f1.deleteOnExit();
+  void fromCollectionPreservesOrderAndContent(@TempDir Path tmp) throws Exception {
+    Path f1 = Files.createFile(tmp.resolve("statefun-test.jar"));
     ModuleSpecs.ModuleSpec spec =
-        moduleSpecBuilder().withJarFile(f1).build();
+        ModuleSpecs.ModuleSpec.builder().withJarFile(f1.toFile()).build();
 
     ModuleSpecs specs = ModuleSpecs.fromCollection(spec);
 
@@ -82,30 +85,29 @@ class ModuleSpecsTest {
 
   @Test
   void moduleSpecBuilderRejectsNullJarFile() {
-    assertThatThrownBy(() -> moduleSpecBuilder().withJarFile(null))
+    assertThatThrownBy(() -> ModuleSpecs.ModuleSpec.builder().withJarFile(null))
         .isInstanceOf(NullPointerException.class);
   }
 
   @Test
   void moduleSpecBuilderRejectsNullYamlFile() {
-    assertThatThrownBy(() -> moduleSpecBuilder().withYamlModuleFile(null))
+    assertThatThrownBy(() -> ModuleSpecs.ModuleSpec.builder().withYamlModuleFile(null))
         .isInstanceOf(NullPointerException.class);
   }
 
   @Test
   void moduleSpecBuilderRejectsNullUri() {
-    assertThatThrownBy(() -> moduleSpecBuilder().withUri(null))
+    assertThatThrownBy(() -> ModuleSpecs.ModuleSpec.builder().withUri(null))
         .isInstanceOf(NullPointerException.class);
   }
 
   @Test
-  void moduleSpecArtifactUrisAreSortedAndUnmodifiable() throws Exception {
-    File f2 = File.createTempFile("statefun-z", ".jar");
-    File f1 = File.createTempFile("statefun-a", ".jar");
-    f1.deleteOnExit();
-    f2.deleteOnExit();
+  void moduleSpecArtifactUrisAreSortedAndUnmodifiable(@TempDir Path tmp) throws Exception {
+    Path f2 = Files.createFile(tmp.resolve("statefun-z.jar"));
+    Path f1 = Files.createFile(tmp.resolve("statefun-a.jar"));
     // Add in reverse order; the TreeSet inside the builder should produce a sorted list.
-    ModuleSpecs.ModuleSpec spec = moduleSpecBuilder().withJarFile(f2).withJarFile(f1).build();
+    ModuleSpecs.ModuleSpec spec =
+        ModuleSpecs.ModuleSpec.builder().withJarFile(f2.toFile()).withJarFile(f1.toFile()).build();
 
     assertThat(spec.artifactUris())
         .hasSize(2)
@@ -113,16 +115,5 @@ class ModuleSpecsTest {
     // Unmodifiable
     assertThatThrownBy(() -> spec.artifactUris().clear())
         .isInstanceOf(UnsupportedOperationException.class);
-  }
-
-  // Bridge to the package-private builder.
-  private static ModuleSpecs.ModuleSpec.Builder moduleSpecBuilder() {
-    try {
-      java.lang.reflect.Method m = ModuleSpecs.ModuleSpec.class.getDeclaredMethod("builder");
-      m.setAccessible(true);
-      return (ModuleSpecs.ModuleSpec.Builder) m.invoke(null);
-    } catch (ReflectiveOperationException e) {
-      throw new RuntimeException(e);
-    }
   }
 }

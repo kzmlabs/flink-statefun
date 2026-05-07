@@ -47,6 +47,8 @@ class AwsCredentialsJsonDeserializerTest {
 
     assertThat(creds.isProfile()).isTrue();
     assertThat(creds.asProfile().name()).isEqualTo("default");
+    // Pin: when profilePath is omitted, the deserializer must NOT inject a default path.
+    assertThat(creds.asProfile().path()).isEmpty();
   }
 
   @Test

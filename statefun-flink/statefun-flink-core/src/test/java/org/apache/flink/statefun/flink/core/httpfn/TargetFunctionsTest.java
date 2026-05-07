@@ -50,6 +50,21 @@ class TargetFunctionsTest {
   }
 
   @Test
+  void nestedWildcardPatternIsRejected() {
+    // Module.yaml authors sometimes try `<namespace>/*/*` thinking it nests; pin rejection.
+    assertThatThrownBy(() -> TargetFunctions.fromPatternString("counter/*/*"))
+        .isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
+  void commaSeparatedPatternIsRejected() {
+    // Module.yaml authors sometimes try comma-lists ("ns/a, ns/b") expecting both to bind;
+    // pin rejection so the contract surfaces clearly instead of silently dropping bindings.
+    assertThatThrownBy(() -> TargetFunctions.fromPatternString("counter/a, counter/b"))
+        .isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
   void partialWildcardInNameIsRejected() {
     assertThatThrownBy(() -> TargetFunctions.fromPatternString("counter/inc*"))
         .isInstanceOf(IllegalArgumentException.class)

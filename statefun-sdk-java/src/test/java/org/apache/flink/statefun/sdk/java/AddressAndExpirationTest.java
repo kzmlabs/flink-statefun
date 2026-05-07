@@ -92,6 +92,15 @@ class AddressAndExpirationTest {
   void expirationConstructionRejectsNullDuration() {
     assertThrows(NullPointerException.class, () -> Expiration.expireAfterWriting(null));
     assertThrows(NullPointerException.class, () -> Expiration.expireAfterCall(null));
+    assertThrows(
+        NullPointerException.class,
+        () -> Expiration.expireAfter(null, Expiration.Mode.AFTER_WRITE));
+  }
+
+  @Test
+  void expirationConstructionRejectsNullMode() {
+    assertThrows(
+        NullPointerException.class, () -> Expiration.expireAfter(Duration.ofSeconds(1), null));
   }
 
   @Test

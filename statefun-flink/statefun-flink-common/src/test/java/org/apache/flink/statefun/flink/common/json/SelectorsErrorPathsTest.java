@@ -74,7 +74,7 @@ class SelectorsErrorPathsTest {
   void optionalLongAtOnMissingKeyReturnsEmpty() {
     ObjectNode node = mapper.createObjectNode();
 
-    assertThat(Selectors.optionalLongAt(node, FOO).isEmpty()).isTrue();
+    assertThat(Selectors.optionalLongAt(node, FOO)).isEmpty();
   }
 
   @Test
@@ -90,7 +90,7 @@ class SelectorsErrorPathsTest {
   void optionalIntegerAtOnMissingKeyReturnsEmpty() {
     ObjectNode node = mapper.createObjectNode();
 
-    assertThat(Selectors.optionalIntegerAt(node, FOO).isEmpty()).isTrue();
+    assertThat(Selectors.optionalIntegerAt(node, FOO)).isEmpty();
   }
 
   @Test
@@ -136,7 +136,7 @@ class SelectorsErrorPathsTest {
   void optionalDurationAtOnMissingKeyReturnsEmpty() {
     ObjectNode node = mapper.createObjectNode();
 
-    assertThat(Selectors.optionalDurationAt(node, FOO).isEmpty()).isTrue();
+    assertThat(Selectors.optionalDurationAt(node, FOO)).isEmpty();
   }
 
   @Test
@@ -163,7 +163,7 @@ class SelectorsErrorPathsTest {
 
     Iterable<? extends JsonNode> result = Selectors.listAt(node, FOO);
 
-    assertThat(result.iterator().hasNext()).isFalse();
+    assertThat(result).isEmpty();
   }
 
   @Test

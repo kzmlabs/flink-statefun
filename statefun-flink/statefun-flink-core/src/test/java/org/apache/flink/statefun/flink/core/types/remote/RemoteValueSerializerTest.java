@@ -110,11 +110,13 @@ class RemoteValueSerializerTest {
   }
 
   @Test
-  void duplicateProducesEqualButIndependentSerializer() {
+  void duplicateProducesEqualSerializer() {
+    // Flink's TypeSerializer contract allows duplicate() to return the same instance for
+    // serializers without mutable state; only equality is guaranteed. Don't over-constrain.
     RemoteValueSerializer serializer = new RemoteValueSerializer(TYPE);
     TypeSerializer<byte[]> dup = serializer.duplicate();
 
-    assertThat(dup).isNotSameAs(serializer).isEqualTo(serializer);
+    assertThat(dup).isEqualTo(serializer);
   }
 
   @Test

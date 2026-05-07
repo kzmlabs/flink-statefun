@@ -62,6 +62,7 @@ class AwsRegionJsonDeserializerTest {
     assertThat(region.isCustomEndpoint()).isTrue();
     assertThat(region.asCustomEndpoint().serviceEndpoint())
         .isEqualTo("https://kinesis.example.com");
+    assertThat(region.asCustomEndpoint().regionId()).isEqualTo("eu-west-3");
   }
 
   @Test

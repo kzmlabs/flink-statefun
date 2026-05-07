@@ -65,6 +65,7 @@ class ClassLoaderSafeRequestReplyClientTest {
     CapturingClient delegate = new CapturingClient();
     ClassLoaderSafeRequestReplyClient client = new ClassLoaderSafeRequestReplyClient(delegate);
 
+    ClassLoader original = Thread.currentThread().getContextClassLoader();
     Thread.currentThread().setContextClassLoader(customLoader);
     try {
       client.call(null, null, ToFunction.getDefaultInstance());
@@ -73,7 +74,8 @@ class ClassLoaderSafeRequestReplyClientTest {
       // Restored to whatever was set before the call (here: customLoader, not the original).
       assertThat(Thread.currentThread().getContextClassLoader()).isEqualTo(customLoader);
     } finally {
-      Thread.currentThread().setContextClassLoader(customLoader.getParent());
+      // Restore the EXACT pre-test TCCL so we don't leak state into later tests on this thread.
+      Thread.currentThread().setContextClassLoader(original);
       customLoader.close();
     }
   }
