@@ -12,12 +12,18 @@ import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.node.Obje
 import org.apache.flink.statefun.flink.core.reqreply.ClassLoaderSafeRequestReplyClient;
 import org.apache.flink.statefun.flink.core.reqreply.RequestReplyClient;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class DefaultHttpRequestReplyClientFactoryTest {
 
   private final DefaultHttpRequestReplyClientFactory factory =
       DefaultHttpRequestReplyClientFactory.INSTANCE;
+
+  @BeforeEach
+  void resetSingleton() {
+    factory.cleanup();
+  }
 
   @AfterEach
   void cleanup() {
@@ -32,11 +38,13 @@ class DefaultHttpRequestReplyClientFactoryTest {
     assertThat(client).isNotNull();
   }
 
+  /**
+   * The factory wraps with {@link ClassLoaderSafeRequestReplyClient} when the calling thread's
+   * context classloader differs from the factory's own — the runtime scenario where user-provided
+   * modules drive transport creation through a different classloader.
+   */
   @Test
   void createsClassLoaderSafeWrapperWhenContextClassLoaderDiffersFromFactoryClassLoader() {
-    // The factory wraps with ClassLoaderSafeRequestReplyClient when the calling thread's
-    // context CL doesn't match the factory's own CL — this is the runtime scenario where
-    // user-provided modules drive transport creation through a different classloader.
     ClassLoader original = Thread.currentThread().getContextClassLoader();
     ClassLoader different = new ClassLoader(null) {};
     Thread.currentThread().setContextClassLoader(different);
