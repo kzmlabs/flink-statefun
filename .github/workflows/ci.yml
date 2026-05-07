@@ -49,22 +49,7 @@ jobs:
         run: |
           REPORT=statefun-coverage-report/target/site/jacoco-aggregate/jacoco.xml
           [ -s "$REPORT" ] || { echo "No coverage report to summarize"; exit 0; }
-          python3 - <<'PY'
-          import xml.etree.ElementTree as ET, os
-          root = ET.parse('statefun-coverage-report/target/site/jacoco-aggregate/jacoco.xml').getroot()
-          # Top-level <counter> elements are the project totals.
-          counters = [c for c in root if c.tag == 'counter']
-          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as f:
-              f.write('## Coverage report (aggregate)\n\n')
-              f.write('| Metric | Covered | Total | % |\n')
-              f.write('|---|---:|---:|---:|\n')
-              for c in counters:
-                  t, m, cv = c.get('type').title(), int(c.get('missed')), int(c.get('covered'))
-                  total = m + cv
-                  pct = 100 * cv / total if total else 0.0
-                  f.write(f'| {t} | {cv:,} | {total:,} | **{pct:.1f}%** |\n')
-              f.write('\nFull HTML report attached as artifact `coverage-report-html` (drill-down by module / package / class / line).\n')
-          PY
+          python3 .github/scripts/coverage_summary.py unit "$REPORT"
 
       # Upload the full HTML report as a downloadable artifact. No external service required —
       # anyone with read access to the repo can grab the ZIP from the Actions run page.
@@ -105,22 +90,7 @@ jobs:
         run: |
           REPORT=statefun-e2e-coverage-report/target/site/jacoco-e2e-aggregate/jacoco.xml
           [ -s "$REPORT" ] || { echo "No E2E coverage report to summarize"; exit 0; }
-          python3 - <<'PY'
-          import xml.etree.ElementTree as ET, os
-          root = ET.parse('statefun-e2e-coverage-report/target/site/jacoco-e2e-aggregate/jacoco.xml').getroot()
-          counters = [c for c in root if c.tag == 'counter']
-          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as f:
-              f.write('## E2E coverage report (in-process embedded)\n\n')
-              f.write('Source: `statefun-smoke-e2e-embedded` running StateFun in-process via `statefun-flink-harness`.\n\n')
-              f.write('| Metric | Covered | Total | % |\n')
-              f.write('|---|---:|---:|---:|\n')
-              for c in counters:
-                  t, m, cv = c.get('type').title(), int(c.get('missed')), int(c.get('covered'))
-                  total = m + cv
-                  pct = 100 * cv / total if total else 0.0
-                  f.write(f'| {t} | {cv:,} | {total:,} | **{pct:.1f}%** |\n')
-              f.write('\nFull HTML report attached as artifact `coverage-report-e2e-html`.\n')
-          PY
+          python3 .github/scripts/coverage_summary.py e2e "$REPORT"
 
       - name: Upload E2E coverage HTML report
         if: always()
@@ -141,68 +111,12 @@ jobs:
           disable_search: true
           use_oidc: true
 
-      # ---- Merged total (line-union of unit + e2e) ----
-      # Each Codecov flag is uploaded separately, so the per-flag tables above only show
-      # one half each. The union number below matches what Codecov computes as the project
-      # total: a line is "covered" if it is hit by either flag.
+      # Merged total (line-union of unit + e2e) — single SonarQube-style headline number.
+      # See .github/scripts/coverage_summary.py for the union semantics.
       - name: Combined coverage (line-union) summary in run UI
         if: always()
         run: |
           UNIT=statefun-coverage-report/target/site/jacoco-aggregate/jacoco.xml
           E2E=statefun-e2e-coverage-report/target/site/jacoco-e2e-aggregate/jacoco.xml
           [ -s "$UNIT" ] && [ -s "$E2E" ] || { echo "Need both reports for union summary"; exit 0; }
-          python3 - <<'PY'
-          import xml.etree.ElementTree as ET, os
-
-          def read_lines(path):
-              # (package, sourcefile, line_nr) -> (mi, ci, mb, cb)
-              out = {}
-              for pkg in ET.parse(path).getroot().iter('package'):
-                  pname = pkg.get('name', '')
-                  for sf in pkg.findall('sourcefile'):
-                      sname = sf.get('name', '')
-                      for ln in sf.findall('line'):
-                          key = (pname, sname, ln.get('nr'))
-                          out[key] = (
-                              int(ln.get('mi', 0)),
-                              int(ln.get('ci', 0)),
-                              int(ln.get('mb', 0)),
-                              int(ln.get('cb', 0)),
-                          )
-              return out
-
-          unit = read_lines('statefun-coverage-report/target/site/jacoco-aggregate/jacoco.xml')
-          e2e = read_lines('statefun-e2e-coverage-report/target/site/jacoco-e2e-aggregate/jacoco.xml')
-
-          total_lines = covered_lines = 0
-          total_branches = covered_branches = 0
-          total_instr = covered_instr = 0
-          for key in set(unit) | set(e2e):
-              u = unit.get(key, (0, 0, 0, 0))
-              e = e2e.get(key, (0, 0, 0, 0))
-              # Per-line union: covered if either flag covered any instruction on this line.
-              line_covered = (u[1] + e[1]) > 0
-              total_lines += 1
-              if line_covered:
-                  covered_lines += 1
-              # Instructions: take max coverage per line (under-counts when the two reports
-              # cover different instructions on the same line, but matches Codecov's view).
-              total_instr += max(u[0] + u[1], e[0] + e[1])
-              covered_instr += max(u[1], e[1])
-              total_branches += max(u[2] + u[3], e[2] + e[3])
-              covered_branches += max(u[3], e[3])
-
-          def pct(c, t):
-              return f'{100 * c / t:.1f}%' if t else 'n/a'
-
-          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as f:
-              f.write('## Combined coverage (line-union of unit + e2e)\n\n')
-              f.write('Matches the merged total Codecov shows on the project dashboard ')
-              f.write('([app.codecov.io](https://app.codecov.io/gh/kzmlabs/flink-statefun)). ')
-              f.write('A line counts as covered if it is hit by either flag.\n\n')
-              f.write('| Metric | Covered | Total | % |\n')
-              f.write('|---|---:|---:|---:|\n')
-              f.write(f'| Line | {covered_lines:,} | {total_lines:,} | **{pct(covered_lines, total_lines)}** |\n')
-              f.write(f'| Instruction | {covered_instr:,} | {total_instr:,} | **{pct(covered_instr, total_instr)}** |\n')
-              f.write(f'| Branch | {covered_branches:,} | {total_branches:,} | **{pct(covered_branches, total_branches)}** |\n')
-          PY
+          python3 .github/scripts/coverage_summary.py union "$UNIT" "$E2E"
