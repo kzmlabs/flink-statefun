@@ -195,8 +195,6 @@ class RoutableKinesisIngressDeserializerTest {
     assertThat(eventResult2.getPayloadBytes().toByteArray()).isEqualTo(eventPayloadSecond);
   }
 
-  // --- helpers ---------------------------------------------------------------------------------
-
   private static RoutingConfig routingConfig(String valueType, TargetFunctionType... targets) {
     final RoutingConfig.Builder builder = RoutingConfig.newBuilder().setTypeUrl(valueType);
     for (TargetFunctionType target : targets) {
