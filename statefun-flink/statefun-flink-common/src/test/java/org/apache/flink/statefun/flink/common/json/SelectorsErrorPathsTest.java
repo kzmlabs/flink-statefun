@@ -18,8 +18,6 @@ class SelectorsErrorPathsTest {
   private static final JsonPointer FOO = JsonPointer.valueOf("/foo");
   private final ObjectMapper mapper = new ObjectMapper();
 
-  // -------- textAt --------
-
   @Test
   void textAtOnNonStringThrowsWrongType() {
     ObjectNode node = mapper.createObjectNode();
@@ -43,8 +41,6 @@ class SelectorsErrorPathsTest {
     assertThatThrownBy(() -> Selectors.optionalTextAt(node, FOO))
         .isInstanceOf(WrongTypeException.class);
   }
-
-  // -------- integerAt / longAt --------
 
   @Test
   void integerAtOnTextThrowsWrongType() {
@@ -116,8 +112,6 @@ class SelectorsErrorPathsTest {
         .isInstanceOf(WrongTypeException.class);
   }
 
-  // -------- durationAt --------
-
   @Test
   void durationAtOnNonStringThrowsWrongType() {
     ObjectNode node = mapper.createObjectNode();
@@ -162,8 +156,6 @@ class SelectorsErrorPathsTest {
     assertThatThrownBy(() -> Selectors.optionalDurationAt(node, FOO))
         .isInstanceOf(WrongTypeException.class);
   }
-
-  // -------- listAt / textListAt / propertiesAt --------
 
   @Test
   void listAtOnMissingKeyReturnsEmptyIterable() {
@@ -229,8 +221,6 @@ class SelectorsErrorPathsTest {
         .isInstanceOf(WrongTypeException.class)
         .hasMessageContaining("k");
   }
-
-  // -------- optionalObjectAt --------
 
   @Test
   void optionalObjectAtOnMissingKeyReturnsEmpty() {

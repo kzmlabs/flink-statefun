@@ -15,8 +15,6 @@ import org.junit.jupiter.api.Test;
 
 class AddressAndTypeNameTest {
 
-  // ------- Address ---------
-
   @Test
   void addressEqualsBasedOnTypeAndId() {
     Address a = new Address(new FunctionType("ns", "fn"), "id-1");
@@ -53,8 +51,6 @@ class AddressAndTypeNameTest {
     assertThat(a, is(not(equalTo(null))));
     assertThat((Object) a, is(not(equalTo((Object) "string"))));
   }
-
-  // ------- TypeName ---------
 
   @Test
   void typeNameParseFromAcceptsSlashSeparatedString() {
@@ -96,8 +92,6 @@ class AddressAndTypeNameTest {
   void typeNameToStringHasReadableForm() {
     assertThat(new TypeName("ns", "fn").toString(), containsString("ns"));
   }
-
-  // ------- FunctionTypeNamespaceMatcher ---------
 
   @Test
   void namespaceMatcherMatchesSameNamespaceAndRejectsOthers() {

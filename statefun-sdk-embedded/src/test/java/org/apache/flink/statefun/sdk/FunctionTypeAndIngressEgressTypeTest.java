@@ -14,8 +14,6 @@ import org.junit.jupiter.api.Test;
 
 class FunctionTypeAndIngressEgressTypeTest {
 
-  // ------- FunctionType ---------
-
   @Test
   void functionTypeAccessorsAndEquality() {
     FunctionType a = new FunctionType("ns", "fn");
@@ -49,8 +47,6 @@ class FunctionTypeAndIngressEgressTypeTest {
     assertThat((Object) ft, is(not(equalTo((Object) "string"))));
   }
 
-  // ------- IngressType ---------
-
   @Test
   void ingressTypeAccessorsAndEquality() {
     IngressType a = new IngressType("io.test", "kafka");
@@ -77,8 +73,6 @@ class FunctionTypeAndIngressEgressTypeTest {
     assertThat(i, is(not(equalTo(null))));
     assertThat((Object) i, is(not(equalTo((Object) "string"))));
   }
-
-  // ------- EgressType ---------
 
   @Test
   void egressTypeAccessorsAndEquality() {

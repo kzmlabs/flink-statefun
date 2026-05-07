@@ -14,8 +14,6 @@ import org.junit.jupiter.api.Test;
 
 class IdentifiersTest {
 
-  // ----- EgressIdentifier -----
-
   @Test
   void egressIdentifierAccessorsAndEquality() {
     EgressIdentifier<String> a = new EgressIdentifier<>("ns", "name", String.class);
@@ -58,8 +56,6 @@ class IdentifiersTest {
     assertThat(id, is(not(equalTo(null))));
     assertThat((Object) id, is(not(equalTo((Object) "string"))));
   }
-
-  // ----- IngressIdentifier -----
 
   @Test
   void ingressIdentifierAccessorsAndEquality() {

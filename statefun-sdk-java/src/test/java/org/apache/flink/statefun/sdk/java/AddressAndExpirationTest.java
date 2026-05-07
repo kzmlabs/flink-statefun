@@ -15,8 +15,6 @@ import org.junit.jupiter.api.Test;
 
 class AddressAndExpirationTest {
 
-  // ----- Address -----
-
   @Test
   void addressAccessorsAndEquality() {
     TypeName fn = TypeName.typeNameOf("ns", "fn");
@@ -53,8 +51,6 @@ class AddressAndExpirationTest {
     assertThat(a, is(not(equalTo(null))));
     assertThat((Object) a, is(not(equalTo((Object) "string"))));
   }
-
-  // ----- Expiration -----
 
   @Test
   void expireAfterWritingProducesAfterWriteMode() {
