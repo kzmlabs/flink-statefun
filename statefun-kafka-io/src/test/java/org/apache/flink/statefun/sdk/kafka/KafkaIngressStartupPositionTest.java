@@ -2,14 +2,8 @@
 // Copyright 2026 Kzmlabs
 package org.apache.flink.statefun.sdk.kafka;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -24,27 +18,27 @@ class KafkaIngressStartupPositionTest {
   void groupOffsetsExposesGroupOffsetsPredicateOnly() {
     KafkaIngressStartupPosition pos = KafkaIngressStartupPosition.fromGroupOffsets();
 
-    assertTrue(pos.isGroupOffsets());
-    assertFalse(pos.isEarliest());
-    assertFalse(pos.isLatest());
-    assertFalse(pos.isSpecificOffsets());
-    assertFalse(pos.isDate());
+    assertThat(pos.isGroupOffsets()).isTrue();
+    assertThat(pos.isEarliest()).isFalse();
+    assertThat(pos.isLatest()).isFalse();
+    assertThat(pos.isSpecificOffsets()).isFalse();
+    assertThat(pos.isDate()).isFalse();
   }
 
   @Test
   void earliestExposesEarliestPredicateOnly() {
     KafkaIngressStartupPosition pos = KafkaIngressStartupPosition.fromEarliest();
 
-    assertTrue(pos.isEarliest());
-    assertFalse(pos.isGroupOffsets());
+    assertThat(pos.isEarliest()).isTrue();
+    assertThat(pos.isGroupOffsets()).isFalse();
   }
 
   @Test
   void latestExposesLatestPredicateOnly() {
     KafkaIngressStartupPosition pos = KafkaIngressStartupPosition.fromLatest();
 
-    assertTrue(pos.isLatest());
-    assertFalse(pos.isEarliest());
+    assertThat(pos.isLatest()).isTrue();
+    assertThat(pos.isEarliest()).isFalse();
   }
 
   @Test
@@ -55,21 +49,21 @@ class KafkaIngressStartupPositionTest {
 
     KafkaIngressStartupPosition pos = KafkaIngressStartupPosition.fromSpecificOffsets(offsets);
 
-    assertTrue(pos.isSpecificOffsets());
-    assertThat(pos.asSpecificOffsets().specificOffsets(), is(equalTo(offsets)));
+    assertThat(pos.isSpecificOffsets()).isTrue();
+    assertThat(pos.asSpecificOffsets().specificOffsets()).isEqualTo(offsets);
   }
 
   @Test
   void specificOffsetsRejectsNullMap() {
-    assertThrows(
-        IllegalArgumentException.class, () -> KafkaIngressStartupPosition.fromSpecificOffsets(null));
+    assertThatThrownBy(() -> KafkaIngressStartupPosition.fromSpecificOffsets(null))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
   void specificOffsetsRejectsEmptyMap() {
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> KafkaIngressStartupPosition.fromSpecificOffsets(Collections.emptyMap()));
+    assertThatThrownBy(
+            () -> KafkaIngressStartupPosition.fromSpecificOffsets(Collections.emptyMap()))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
@@ -78,8 +72,8 @@ class KafkaIngressStartupPositionTest {
 
     KafkaIngressStartupPosition pos = KafkaIngressStartupPosition.fromDate(date);
 
-    assertTrue(pos.isDate());
-    assertEquals(date.toInstant().toEpochMilli(), pos.asDate().epochMilli());
+    assertThat(pos.isDate()).isTrue();
+    assertThat(pos.asDate().epochMilli()).isEqualTo(date.toInstant().toEpochMilli());
   }
 
   @Test
@@ -87,14 +81,14 @@ class KafkaIngressStartupPositionTest {
     KafkaIngressStartupPosition date =
         KafkaIngressStartupPosition.fromDate(ZonedDateTime.now(ZoneOffset.UTC));
 
-    assertThrows(IllegalStateException.class, date::asSpecificOffsets);
+    assertThatThrownBy(date::asSpecificOffsets).isInstanceOf(IllegalStateException.class);
   }
 
   @Test
   void asDateOnGroupOffsetsThrows() {
     KafkaIngressStartupPosition pos = KafkaIngressStartupPosition.fromGroupOffsets();
 
-    assertThrows(IllegalStateException.class, pos::asDate);
+    assertThatThrownBy(pos::asDate).isInstanceOf(IllegalStateException.class);
   }
 
   @Test
@@ -102,9 +96,7 @@ class KafkaIngressStartupPositionTest {
     KafkaIngressStartupPosition a = KafkaIngressStartupPosition.fromGroupOffsets();
     KafkaIngressStartupPosition b = KafkaIngressStartupPosition.fromGroupOffsets();
 
-    assertEquals(a, b);
-    assertEquals(a.hashCode(), b.hashCode());
-    assertThat((Object) a, is(not(equalTo((Object) "string"))));
+    assertThat(a).isEqualTo(b).hasSameHashCodeAs(b).isNotEqualTo("string");
   }
 
   @Test
@@ -112,8 +104,7 @@ class KafkaIngressStartupPositionTest {
     KafkaIngressStartupPosition a = KafkaIngressStartupPosition.fromEarliest();
     KafkaIngressStartupPosition b = KafkaIngressStartupPosition.fromEarliest();
 
-    assertEquals(a, b);
-    assertEquals(a.hashCode(), b.hashCode());
+    assertThat(a).isEqualTo(b).hasSameHashCodeAs(b);
   }
 
   @Test
@@ -121,8 +112,7 @@ class KafkaIngressStartupPositionTest {
     KafkaIngressStartupPosition a = KafkaIngressStartupPosition.fromLatest();
     KafkaIngressStartupPosition b = KafkaIngressStartupPosition.fromLatest();
 
-    assertEquals(a, b);
-    assertEquals(a.hashCode(), b.hashCode());
+    assertThat(a).isEqualTo(b).hasSameHashCodeAs(b);
   }
 
   @Test
@@ -138,9 +128,7 @@ class KafkaIngressStartupPositionTest {
     KafkaIngressStartupPosition b = KafkaIngressStartupPosition.fromSpecificOffsets(map2);
     KafkaIngressStartupPosition c = KafkaIngressStartupPosition.fromSpecificOffsets(different);
 
-    assertEquals(a, b);
-    assertEquals(a.hashCode(), b.hashCode());
-    assertThat(a, is(not(equalTo(c))));
+    assertThat(a).isEqualTo(b).hasSameHashCodeAs(b).isNotEqualTo(c);
   }
 
   @Test
@@ -152,8 +140,6 @@ class KafkaIngressStartupPositionTest {
     KafkaIngressStartupPosition b = KafkaIngressStartupPosition.fromDate(t1);
     KafkaIngressStartupPosition c = KafkaIngressStartupPosition.fromDate(t2);
 
-    assertEquals(a, b);
-    assertEquals(a.hashCode(), b.hashCode());
-    assertThat(a, is(not(equalTo(c))));
+    assertThat(a).isEqualTo(b).hasSameHashCodeAs(b).isNotEqualTo(c);
   }
 }

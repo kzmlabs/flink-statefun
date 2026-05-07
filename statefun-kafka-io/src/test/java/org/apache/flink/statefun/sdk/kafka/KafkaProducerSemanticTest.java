@@ -2,12 +2,8 @@
 // Copyright 2026 Kzmlabs
 package org.apache.flink.statefun.sdk.kafka;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
@@ -18,48 +14,48 @@ class KafkaProducerSemanticTest {
   void atLeastOncePredicates() {
     KafkaProducerSemantic s = KafkaProducerSemantic.atLeastOnce();
 
-    assertTrue(s.isAtLeastOnceSemantic());
-    assertFalse(s.isExactlyOnceSemantic());
-    assertFalse(s.isNoSemantic());
-    assertThat(s.asAtLeastOnceSemantic(), is(s));
+    assertThat(s.isAtLeastOnceSemantic()).isTrue();
+    assertThat(s.isExactlyOnceSemantic()).isFalse();
+    assertThat(s.isNoSemantic()).isFalse();
+    assertThat(s.asAtLeastOnceSemantic()).isSameAs(s);
   }
 
   @Test
   void noSemanticPredicates() {
     KafkaProducerSemantic s = KafkaProducerSemantic.none();
 
-    assertTrue(s.isNoSemantic());
-    assertFalse(s.isAtLeastOnceSemantic());
-    assertFalse(s.isExactlyOnceSemantic());
-    assertThat(s.asNoSemantic(), is(s));
+    assertThat(s.isNoSemantic()).isTrue();
+    assertThat(s.isAtLeastOnceSemantic()).isFalse();
+    assertThat(s.isExactlyOnceSemantic()).isFalse();
+    assertThat(s.asNoSemantic()).isSameAs(s);
   }
 
   @Test
   void exactlyOncePredicates() {
     KafkaProducerSemantic s = KafkaProducerSemantic.exactlyOnce(Duration.ofMinutes(5));
 
-    assertTrue(s.isExactlyOnceSemantic());
-    assertFalse(s.isAtLeastOnceSemantic());
-    assertFalse(s.isNoSemantic());
-    assertEquals(Duration.ofMinutes(5), s.asExactlyOnceSemantic().transactionTimeout());
+    assertThat(s.isExactlyOnceSemantic()).isTrue();
+    assertThat(s.isAtLeastOnceSemantic()).isFalse();
+    assertThat(s.isNoSemantic()).isFalse();
+    assertThat(s.asExactlyOnceSemantic().transactionTimeout()).isEqualTo(Duration.ofMinutes(5));
   }
 
   @Test
   void exactlyOnceRejectsZeroTimeout() {
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> KafkaProducerSemantic.exactlyOnce(Duration.ZERO));
+    assertThatThrownBy(() -> KafkaProducerSemantic.exactlyOnce(Duration.ZERO))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
   void exactlyOnceRejectsNullTimeout() {
-    assertThrows(NullPointerException.class, () -> KafkaProducerSemantic.exactlyOnce(null));
+    assertThatThrownBy(() -> KafkaProducerSemantic.exactlyOnce(null))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
   void asExactlyOnceOnAtLeastOnceClassCastFails() {
     KafkaProducerSemantic s = KafkaProducerSemantic.atLeastOnce();
     // The contract is "caller checks predicate first" — pin the cast failure mode.
-    assertThrows(ClassCastException.class, s::asExactlyOnceSemantic);
+    assertThatThrownBy(s::asExactlyOnceSemantic).isInstanceOf(ClassCastException.class);
   }
 }
