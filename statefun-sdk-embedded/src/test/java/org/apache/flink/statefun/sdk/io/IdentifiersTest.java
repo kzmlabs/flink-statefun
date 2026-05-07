@@ -2,13 +2,8 @@
 // Copyright 2026 Kzmlabs
 package org.apache.flink.statefun.sdk.io;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.Test;
 
@@ -22,39 +17,37 @@ class IdentifiersTest {
     EgressIdentifier<Integer> differentType =
         new EgressIdentifier<>("ns", "name", Integer.class);
 
-    assertThat(a.namespace(), equalTo("ns"));
-    assertThat(a.name(), equalTo("name"));
-    assertEquals(String.class, a.consumedType());
-    assertEquals(a, b);
-    assertEquals(a.hashCode(), b.hashCode());
-    assertThat(a, is(not(equalTo(differentName))));
-    assertThat(a, is(not(equalTo(differentType))));
+    assertThat(a.namespace()).isEqualTo("ns");
+    assertThat(a.name()).isEqualTo("name");
+    assertThat(a.consumedType()).isEqualTo(String.class);
+    assertThat(a)
+        .isEqualTo(b)
+        .hasSameHashCodeAs(b)
+        .isNotEqualTo(differentName)
+        .isNotEqualTo(differentType);
   }
 
   @Test
   void egressIdentifierToStringContainsAllFields() {
     EgressIdentifier<String> id = new EgressIdentifier<>("ns", "name", String.class);
 
-    assertThat(id.toString(), containsString("ns"));
-    assertThat(id.toString(), containsString("name"));
-    assertThat(id.toString(), containsString("String"));
+    assertThat(id.toString()).contains("ns", "name", "String");
   }
 
   @Test
   void egressIdentifierRejectsNullArguments() {
-    assertThrows(
-        NullPointerException.class, () -> new EgressIdentifier<>(null, "n", String.class));
-    assertThrows(
-        NullPointerException.class, () -> new EgressIdentifier<>("ns", null, String.class));
-    assertThrows(NullPointerException.class, () -> new EgressIdentifier<>("ns", "n", null));
+    assertThatThrownBy(() -> new EgressIdentifier<>(null, "n", String.class))
+        .isInstanceOf(NullPointerException.class);
+    assertThatThrownBy(() -> new EgressIdentifier<>("ns", null, String.class))
+        .isInstanceOf(NullPointerException.class);
+    assertThatThrownBy(() -> new EgressIdentifier<>("ns", "n", null))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
   void egressIdentifierEqualsToSelfAndNotNullOrUnrelated() {
     EgressIdentifier<String> id = new EgressIdentifier<>("ns", "name", String.class);
-    assertEquals(id, id);
-    assertThat(id, is(not(equalTo(null))));
-    assertThat((Object) id, is(not(equalTo((Object) "string"))));
+    assertThat(id).isEqualTo(id).isNotNull().isNotEqualTo("string");
   }
 
   @Test
@@ -66,38 +59,36 @@ class IdentifiersTest {
     IngressIdentifier<Integer> differentType =
         new IngressIdentifier<>(Integer.class, "ns", "name");
 
-    assertThat(a.namespace(), equalTo("ns"));
-    assertThat(a.name(), equalTo("name"));
-    assertEquals(String.class, a.producedType());
-    assertEquals(a, b);
-    assertEquals(a.hashCode(), b.hashCode());
-    assertThat(a, is(not(equalTo(differentName))));
-    assertThat(a, is(not(equalTo(differentType))));
+    assertThat(a.namespace()).isEqualTo("ns");
+    assertThat(a.name()).isEqualTo("name");
+    assertThat(a.producedType()).isEqualTo(String.class);
+    assertThat(a)
+        .isEqualTo(b)
+        .hasSameHashCodeAs(b)
+        .isNotEqualTo(differentName)
+        .isNotEqualTo(differentType);
   }
 
   @Test
   void ingressIdentifierToStringContainsAllFields() {
     IngressIdentifier<String> id = new IngressIdentifier<>(String.class, "ns", "name");
 
-    assertThat(id.toString(), containsString("ns"));
-    assertThat(id.toString(), containsString("name"));
+    assertThat(id.toString()).contains("ns", "name");
   }
 
   @Test
   void ingressIdentifierRejectsNullArguments() {
-    assertThrows(
-        NullPointerException.class, () -> new IngressIdentifier<>(null, "ns", "n"));
-    assertThrows(
-        NullPointerException.class, () -> new IngressIdentifier<>(String.class, null, "n"));
-    assertThrows(
-        NullPointerException.class, () -> new IngressIdentifier<>(String.class, "ns", null));
+    assertThatThrownBy(() -> new IngressIdentifier<>(null, "ns", "n"))
+        .isInstanceOf(NullPointerException.class);
+    assertThatThrownBy(() -> new IngressIdentifier<>(String.class, null, "n"))
+        .isInstanceOf(NullPointerException.class);
+    assertThatThrownBy(() -> new IngressIdentifier<>(String.class, "ns", null))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
   void ingressIdentifierEqualsToSelfAndNotNullOrUnrelated() {
     IngressIdentifier<String> id = new IngressIdentifier<>(String.class, "ns", "name");
-    assertEquals(id, id);
-    assertThat(id, is(not(equalTo(null))));
-    assertThat((Object) id, is(not(equalTo((Object) "string"))));
+    assertThat(id).isEqualTo(id).isNotNull().isNotEqualTo("string");
   }
 }

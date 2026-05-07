@@ -2,13 +2,8 @@
 // Copyright 2026 Kzmlabs
 package org.apache.flink.statefun.sdk.java;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
@@ -22,50 +17,44 @@ class AddressAndExpirationTest {
     Address b = new Address(fn, "id-1");
     Address differentId = new Address(fn, "id-2");
 
-    assertThat(a.type(), is(equalTo(fn)));
-    assertEquals("id-1", a.id());
-    assertEquals(a, b);
-    assertEquals(a.hashCode(), b.hashCode());
-    assertThat(a, is(not(equalTo(differentId))));
+    assertThat(a.type()).isEqualTo(fn);
+    assertThat(a.id()).isEqualTo("id-1");
+    assertThat(a).isEqualTo(b).hasSameHashCodeAs(b).isNotEqualTo(differentId);
   }
 
   @Test
   void addressRejectsNullArguments() {
-    assertThrows(NullPointerException.class, () -> new Address(null, "id"));
-    assertThrows(
-        NullPointerException.class, () -> new Address(TypeName.typeNameOf("ns", "fn"), null));
+    assertThatThrownBy(() -> new Address(null, "id")).isInstanceOf(NullPointerException.class);
+    assertThatThrownBy(() -> new Address(TypeName.typeNameOf("ns", "fn"), null))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
   void addressToStringContainsAllThreeFields() {
     Address a = new Address(TypeName.typeNameOf("ns", "fn"), "id-1");
-    assertThat(a.toString(), containsString("ns"));
-    assertThat(a.toString(), containsString("fn"));
-    assertThat(a.toString(), containsString("id-1"));
+    assertThat(a.toString()).contains("ns", "fn", "id-1");
   }
 
   @Test
   void addressEqualsToSelfAndNotNullOrUnrelated() {
     Address a = new Address(TypeName.typeNameOf("ns", "fn"), "id-1");
-    assertEquals(a, a);
-    assertThat(a, is(not(equalTo(null))));
-    assertThat((Object) a, is(not(equalTo((Object) "string"))));
+    assertThat(a).isEqualTo(a).isNotNull().isNotEqualTo("string");
   }
 
   @Test
   void expireAfterWritingProducesAfterWriteMode() {
     Expiration exp = Expiration.expireAfterWriting(Duration.ofMinutes(5));
 
-    assertEquals(Expiration.Mode.AFTER_WRITE, exp.mode());
-    assertEquals(Duration.ofMinutes(5), exp.duration());
+    assertThat(exp.mode()).isEqualTo(Expiration.Mode.AFTER_WRITE);
+    assertThat(exp.duration()).isEqualTo(Duration.ofMinutes(5));
   }
 
   @Test
   void expireAfterCallProducesAfterCallMode() {
     Expiration exp = Expiration.expireAfterCall(Duration.ofSeconds(30));
 
-    assertEquals(Expiration.Mode.AFTER_CALL, exp.mode());
-    assertEquals(Duration.ofSeconds(30), exp.duration());
+    assertThat(exp.mode()).isEqualTo(Expiration.Mode.AFTER_CALL);
+    assertThat(exp.duration()).isEqualTo(Duration.ofSeconds(30));
   }
 
   @Test
@@ -75,38 +64,38 @@ class AddressAndExpirationTest {
         Expiration.expireAfter(Duration.ofSeconds(1), Expiration.Mode.AFTER_WRITE);
     Expiration call = Expiration.expireAfter(Duration.ofSeconds(1), Expiration.Mode.AFTER_CALL);
 
-    assertEquals(Expiration.Mode.NONE, none.mode());
-    assertEquals(Expiration.Mode.AFTER_WRITE, write.mode());
-    assertEquals(Expiration.Mode.AFTER_CALL, call.mode());
+    assertThat(none.mode()).isEqualTo(Expiration.Mode.NONE);
+    assertThat(write.mode()).isEqualTo(Expiration.Mode.AFTER_WRITE);
+    assertThat(call.mode()).isEqualTo(Expiration.Mode.AFTER_CALL);
   }
 
   @Test
   void noneFactoryReturnsZeroDurationNoneMode() {
     Expiration none = Expiration.none();
 
-    assertEquals(Expiration.Mode.NONE, none.mode());
-    assertEquals(Duration.ZERO, none.duration());
+    assertThat(none.mode()).isEqualTo(Expiration.Mode.NONE);
+    assertThat(none.duration()).isEqualTo(Duration.ZERO);
   }
 
   @Test
   void expirationConstructionRejectsNullDuration() {
-    assertThrows(NullPointerException.class, () -> Expiration.expireAfterWriting(null));
-    assertThrows(NullPointerException.class, () -> Expiration.expireAfterCall(null));
-    assertThrows(
-        NullPointerException.class,
-        () -> Expiration.expireAfter(null, Expiration.Mode.AFTER_WRITE));
+    assertThatThrownBy(() -> Expiration.expireAfterWriting(null))
+        .isInstanceOf(NullPointerException.class);
+    assertThatThrownBy(() -> Expiration.expireAfterCall(null))
+        .isInstanceOf(NullPointerException.class);
+    assertThatThrownBy(() -> Expiration.expireAfter(null, Expiration.Mode.AFTER_WRITE))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
   void expirationConstructionRejectsNullMode() {
-    assertThrows(
-        NullPointerException.class, () -> Expiration.expireAfter(Duration.ofSeconds(1), null));
+    assertThatThrownBy(() -> Expiration.expireAfter(Duration.ofSeconds(1), null))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
   void expirationToStringHasReadableFormWithModeAndDuration() {
     Expiration exp = Expiration.expireAfterWriting(Duration.ofSeconds(30));
-    assertThat(exp.toString(), containsString("AFTER_WRITE"));
-    assertThat(exp.toString(), containsString("PT30S"));
+    assertThat(exp.toString()).contains("AFTER_WRITE", "PT30S");
   }
 }

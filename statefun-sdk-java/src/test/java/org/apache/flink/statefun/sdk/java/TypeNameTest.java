@@ -2,13 +2,8 @@
 // Copyright 2026 Kzmlabs
 package org.apache.flink.statefun.sdk.java;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.Test;
 
@@ -18,9 +13,9 @@ class TypeNameTest {
   void typeNameOfSplitsAndStores() {
     TypeName tn = TypeName.typeNameOf("io.test", "fn");
 
-    assertEquals("io.test", tn.namespace());
-    assertEquals("fn", tn.name());
-    assertEquals("io.test/fn", tn.asTypeNameString());
+    assertThat(tn.namespace()).isEqualTo("io.test");
+    assertThat(tn.name()).isEqualTo("fn");
+    assertThat(tn.asTypeNameString()).isEqualTo("io.test/fn");
   }
 
   @Test
@@ -28,25 +23,30 @@ class TypeNameTest {
     // Pin: typeNameOf strips a single trailing "/" from the namespace before validating.
     TypeName tn = TypeName.typeNameOf("io.test/", "fn");
 
-    assertEquals("io.test", tn.namespace());
+    assertThat(tn.namespace()).isEqualTo("io.test");
   }
 
   @Test
   void typeNameOfRejectsEmptyNamespace() {
-    assertThrows(IllegalArgumentException.class, () -> TypeName.typeNameOf("", "fn"));
+    assertThatThrownBy(() -> TypeName.typeNameOf("", "fn"))
+        .isInstanceOf(IllegalArgumentException.class);
     // Pin: empty after trailing-slash strip also fails ("/" → "" → empty).
-    assertThrows(IllegalArgumentException.class, () -> TypeName.typeNameOf("/", "fn"));
+    assertThatThrownBy(() -> TypeName.typeNameOf("/", "fn"))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
   void typeNameOfRejectsEmptyName() {
-    assertThrows(IllegalArgumentException.class, () -> TypeName.typeNameOf("io.test", ""));
+    assertThatThrownBy(() -> TypeName.typeNameOf("io.test", ""))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
   void typeNameOfRejectsNullArguments() {
-    assertThrows(NullPointerException.class, () -> TypeName.typeNameOf(null, "fn"));
-    assertThrows(NullPointerException.class, () -> TypeName.typeNameOf("ns", null));
+    assertThatThrownBy(() -> TypeName.typeNameOf(null, "fn"))
+        .isInstanceOf(NullPointerException.class);
+    assertThatThrownBy(() -> TypeName.typeNameOf("ns", null))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
@@ -54,29 +54,33 @@ class TypeNameTest {
     TypeName tn = TypeName.typeNameFromString("io.test/sub/fn");
 
     // The implementation splits at the LAST slash — namespace can contain slashes.
-    assertEquals("io.test/sub", tn.namespace());
-    assertEquals("fn", tn.name());
+    assertThat(tn.namespace()).isEqualTo("io.test/sub");
+    assertThat(tn.name()).isEqualTo("fn");
   }
 
   @Test
   void typeNameFromStringRejectsMissingSlash() {
-    assertThrows(IllegalArgumentException.class, () -> TypeName.typeNameFromString("noslash"));
+    assertThatThrownBy(() -> TypeName.typeNameFromString("noslash"))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
   void typeNameFromStringRejectsLeadingSlash() {
     // "/foo" -> last slash at pos 0 -> namespace would be empty; reject.
-    assertThrows(IllegalArgumentException.class, () -> TypeName.typeNameFromString("/foo"));
+    assertThatThrownBy(() -> TypeName.typeNameFromString("/foo"))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
   void typeNameFromStringRejectsTrailingSlash() {
-    assertThrows(IllegalArgumentException.class, () -> TypeName.typeNameFromString("ns/"));
+    assertThatThrownBy(() -> TypeName.typeNameFromString("ns/"))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
   void typeNameFromStringRejectsNullInput() {
-    assertThrows(NullPointerException.class, () -> TypeName.typeNameFromString(null));
+    assertThatThrownBy(() -> TypeName.typeNameFromString(null))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
@@ -85,22 +89,17 @@ class TypeNameTest {
     TypeName b = TypeName.typeNameOf("ns", "fn");
     TypeName different = TypeName.typeNameOf("ns", "other");
 
-    assertEquals(a, b);
-    assertEquals(a.hashCode(), b.hashCode());
-    assertThat(a, is(not(equalTo(different))));
+    assertThat(a).isEqualTo(b).hasSameHashCodeAs(b).isNotEqualTo(different);
   }
 
   @Test
   void equalsToSelfAndNotNullOrUnrelated() {
     TypeName a = TypeName.typeNameOf("ns", "fn");
-    assertEquals(a, a);
-    assertThat(a, is(not(equalTo(null))));
-    assertThat((Object) a, is(not(equalTo((Object) "string"))));
+    assertThat(a).isEqualTo(a).isNotNull().isNotEqualTo("string");
   }
 
   @Test
   void toStringIsReadable() {
-    assertThat(TypeName.typeNameOf("ns", "fn").toString(), containsString("ns"));
-    assertThat(TypeName.typeNameOf("ns", "fn").toString(), containsString("fn"));
+    assertThat(TypeName.typeNameOf("ns", "fn").toString()).contains("ns", "fn");
   }
 }

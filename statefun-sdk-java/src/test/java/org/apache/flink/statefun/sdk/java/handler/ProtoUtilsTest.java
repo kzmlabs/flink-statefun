@@ -2,14 +2,7 @@
 // Copyright 2026 Kzmlabs
 package org.apache.flink.statefun.sdk.java.handler;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Duration;
 import org.apache.flink.statefun.sdk.java.Address;
@@ -37,9 +30,9 @@ class ProtoUtilsTest {
     org.apache.flink.statefun.sdk.reqreply.generated.Address proto =
         ProtoUtils.protoAddressFromSdk(addr);
 
-    assertEquals("ns", proto.getNamespace());
-    assertEquals("name", proto.getType());
-    assertEquals("id-1", proto.getId());
+    assertThat(proto.getNamespace()).isEqualTo("ns");
+    assertThat(proto.getType()).isEqualTo("name");
+    assertThat(proto.getId()).isEqualTo("id-1");
   }
 
   @Test
@@ -53,7 +46,7 @@ class ProtoUtilsTest {
 
     Address sdk = ProtoUtils.sdkAddressFromProto(proto);
 
-    assertThat(sdk, is(equalTo(new Address(FN, "id-1"))));
+    assertThat(sdk).isEqualTo(new Address(FN, "id-1"));
   }
 
   @Test
@@ -62,12 +55,12 @@ class ProtoUtilsTest {
     org.apache.flink.statefun.sdk.reqreply.generated.Address empty =
         org.apache.flink.statefun.sdk.reqreply.generated.Address.newBuilder().build();
 
-    assertThat(ProtoUtils.sdkAddressFromProto(empty), nullValue());
+    assertThat(ProtoUtils.sdkAddressFromProto(empty)).isNull();
   }
 
   @Test
   void sdkAddressFromProtoTreatsNullAsNull() {
-    assertThat(ProtoUtils.sdkAddressFromProto(null), nullValue());
+    assertThat(ProtoUtils.sdkAddressFromProto(null)).isNull();
   }
 
   @Test
@@ -84,9 +77,9 @@ class ProtoUtilsTest {
 
     Address sdk = ProtoUtils.sdkAddressFromProto(proto);
 
-    assertThat(sdk, notNullValue());
-    assertEquals("instance-1", sdk.id());
-    assertThat(sdk.type(), is(equalTo(TypeName.typeNameOf("io.test", "fn"))));
+    assertThat(sdk).isNotNull();
+    assertThat(sdk.id()).isEqualTo("instance-1");
+    assertThat(sdk.type()).isEqualTo(TypeName.typeNameOf("io.test", "fn"));
   }
 
   @Test
@@ -96,8 +89,8 @@ class ProtoUtilsTest {
     PersistedValueSpec.Builder builder = ProtoUtils.protoFromValueSpec(spec);
     PersistedValueSpec proto = builder.build();
 
-    assertEquals("counter", proto.getStateName());
-    assertFalse(proto.hasExpirationSpec());
+    assertThat(proto.getStateName()).isEqualTo("counter");
+    assertThat(proto.hasExpirationSpec()).isFalse();
   }
 
   @Test
@@ -107,9 +100,9 @@ class ProtoUtilsTest {
 
     PersistedValueSpec proto = ProtoUtils.protoFromValueSpec(spec).build();
 
-    assertEquals(ExpireMode.AFTER_INVOKE, proto.getExpirationSpec().getMode());
-    assertEquals(
-        Duration.ofMinutes(5).toMillis(), proto.getExpirationSpec().getExpireAfterMillis());
+    assertThat(proto.getExpirationSpec().getMode()).isEqualTo(ExpireMode.AFTER_INVOKE);
+    assertThat(proto.getExpirationSpec().getExpireAfterMillis())
+        .isEqualTo(Duration.ofMinutes(5).toMillis());
   }
 
   @Test
@@ -119,9 +112,9 @@ class ProtoUtilsTest {
 
     PersistedValueSpec proto = ProtoUtils.protoFromValueSpec(spec).build();
 
-    assertEquals(ExpireMode.AFTER_WRITE, proto.getExpirationSpec().getMode());
-    assertEquals(
-        Duration.ofSeconds(30).toMillis(), proto.getExpirationSpec().getExpireAfterMillis());
+    assertThat(proto.getExpirationSpec().getMode()).isEqualTo(ExpireMode.AFTER_WRITE);
+    assertThat(proto.getExpirationSpec().getExpireAfterMillis())
+        .isEqualTo(Duration.ofSeconds(30).toMillis());
   }
 
   @Test
@@ -134,7 +127,7 @@ class ProtoUtilsTest {
     TypedValue first = ProtoUtils.getTypedValue(message);
     TypedValue second = ProtoUtils.getTypedValue(message);
 
-    assertSame(first, second);
+    assertThat(first).isSameAs(second);
   }
 
   @Test
@@ -232,8 +225,8 @@ class ProtoUtilsTest {
 
     TypedValue typedValue = ProtoUtils.getTypedValue(custom);
 
-    assertEquals("io.custom/binary", typedValue.getTypename());
-    assertThat(typedValue.getValue().toByteArray(), is(equalTo(payload)));
+    assertThat(typedValue.getTypename()).isEqualTo("io.custom/binary");
+    assertThat(typedValue.getValue().toByteArray()).containsExactly(payload);
   }
 
   @Test
@@ -243,7 +236,7 @@ class ProtoUtilsTest {
     TypedValue first = ProtoUtils.getTypedValue(egress);
     TypedValue second = ProtoUtils.getTypedValue(egress);
 
-    assertSame(first, second);
-    assertEquals("io.statefun.types/string", first.getTypename());
+    assertThat(first).isSameAs(second);
+    assertThat(first.getTypename()).isEqualTo("io.statefun.types/string");
   }
 }

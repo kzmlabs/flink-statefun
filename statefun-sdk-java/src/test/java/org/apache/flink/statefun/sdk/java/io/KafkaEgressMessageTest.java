@@ -2,9 +2,8 @@
 // Copyright 2026 Kzmlabs
 package org.apache.flink.statefun.sdk.java.io;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.apache.flink.statefun.sdk.egress.generated.KafkaProducerRecord;
 import org.apache.flink.statefun.sdk.java.TypeName;
@@ -16,12 +15,12 @@ import org.apache.flink.statefun.sdk.java.types.Types;
 import org.apache.flink.statefun.sdk.shaded.com.google.protobuf.InvalidProtocolBufferException;
 import org.junit.jupiter.api.Test;
 
-public class KafkaEgressMessageTest {
+class KafkaEgressMessageTest {
 
   private static final TypeName EGRESS_ID = TypeName.typeNameOf("io.test", "kafka-egress");
 
   @Test
-  public void utf8RoundtripCarriesTopicAndUtf8Value() throws InvalidProtocolBufferException {
+  void utf8RoundtripCarriesTopicAndUtf8Value() throws InvalidProtocolBufferException {
     EgressMessage message =
         KafkaEgressMessage.forEgress(EGRESS_ID)
             .withTopic("orders")
@@ -29,14 +28,14 @@ public class KafkaEgressMessageTest {
             .build();
 
     KafkaProducerRecord record = unpack(message);
-    assertThat(message.targetEgressId(), is(EGRESS_ID));
-    assertThat(record.getTopic(), is("orders"));
-    assertThat(record.getValueBytes().toStringUtf8(), is("hello"));
-    assertThat(record.getKey(), is(""));
+    assertThat(message.targetEgressId()).isEqualTo(EGRESS_ID);
+    assertThat(record.getTopic()).isEqualTo("orders");
+    assertThat(record.getValueBytes().toStringUtf8()).isEqualTo("hello");
+    assertThat(record.getKey()).isEmpty();
   }
 
   @Test
-  public void byteValueAndUtf8KeyAreCarriedThrough() throws InvalidProtocolBufferException {
+  void byteValueAndUtf8KeyAreCarriedThrough() throws InvalidProtocolBufferException {
     byte[] valueBytes = new byte[] {1, 2, 3, 4, 5};
     EgressMessage message =
         KafkaEgressMessage.forEgress(EGRESS_ID)
@@ -46,12 +45,12 @@ public class KafkaEgressMessageTest {
             .build();
 
     KafkaProducerRecord record = unpack(message);
-    assertThat(record.getKey(), is("partition-key"));
-    assertThat(record.getValueBytes().toByteArray(), is(valueBytes));
+    assertThat(record.getKey()).isEqualTo("partition-key");
+    assertThat(record.getValueBytes().toByteArray()).containsExactly(valueBytes);
   }
 
   @Test
-  public void byteKeyAndSliceTopicWork() throws InvalidProtocolBufferException {
+  void byteKeyAndSliceTopicWork() throws InvalidProtocolBufferException {
     byte[] keyBytes = new byte[] {(byte) 'a', (byte) 'b', (byte) 'c'};
     Slice topicSlice = Slices.copyFromUtf8("dlq");
     EgressMessage message =
@@ -62,12 +61,12 @@ public class KafkaEgressMessageTest {
             .build();
 
     KafkaProducerRecord record = unpack(message);
-    assertThat(record.getTopic(), is("dlq"));
-    assertThat(record.getKeyBytes().toByteArray(), is(keyBytes));
+    assertThat(record.getTopic()).isEqualTo("dlq");
+    assertThat(record.getKeyBytes().toByteArray()).containsExactly(keyBytes);
   }
 
   @Test
-  public void sliceKeyAndSliceValueAreCopied() throws InvalidProtocolBufferException {
+  void sliceKeyAndSliceValueAreCopied() throws InvalidProtocolBufferException {
     Slice keySlice = Slices.copyFromUtf8("k1");
     Slice valueSlice = Slices.copyOf(new byte[] {10, 20, 30});
     EgressMessage message =
@@ -78,12 +77,12 @@ public class KafkaEgressMessageTest {
             .build();
 
     KafkaProducerRecord record = unpack(message);
-    assertThat(record.getKey(), is("k1"));
-    assertThat(record.getValueBytes().toByteArray(), is(new byte[] {10, 20, 30}));
+    assertThat(record.getKey()).isEqualTo("k1");
+    assertThat(record.getValueBytes().toByteArray()).containsExactly(10, 20, 30);
   }
 
   @Test
-  public void typedKeyAndValueGoThroughTypeSerializer() throws InvalidProtocolBufferException {
+  void typedKeyAndValueGoThroughTypeSerializer() throws InvalidProtocolBufferException {
     EgressMessage message =
         KafkaEgressMessage.forEgress(EGRESS_ID)
             .withTopic("typed")
@@ -95,29 +94,28 @@ public class KafkaEgressMessageTest {
     // String/integer types use proto-encoded slices (length-prefixed) — round-trip through the
     // serializer instead of comparing raw bytes.
     String decodedKey =
-        Types.stringType().typeSerializer().deserialize(Slices.wrap(record.getKeyBytes().toByteArray()));
+        Types.stringType()
+            .typeSerializer()
+            .deserialize(Slices.wrap(record.getKeyBytes().toByteArray()));
     Integer decodedValue =
         Types.integerType()
             .typeSerializer()
             .deserialize(Slices.wrap(record.getValueBytes().toByteArray()));
-    assertThat(decodedKey, is("key-payload"));
-    assertThat(decodedValue, is(42));
+    assertThat(decodedKey).isEqualTo("key-payload");
+    assertThat(decodedValue).isEqualTo(42);
   }
 
   @Test
-  public void byteValueOverloadIsCoveredByValueOverload() throws InvalidProtocolBufferException {
+  void byteValueOverloadIsCoveredByValueOverload() throws InvalidProtocolBufferException {
     EgressMessage message =
-        KafkaEgressMessage.forEgress(EGRESS_ID)
-            .withTopic("t")
-            .withValue(new byte[] {7, 8, 9})
-            .build();
+        KafkaEgressMessage.forEgress(EGRESS_ID).withTopic("t").withValue(new byte[] {7, 8, 9}).build();
 
     KafkaProducerRecord record = unpack(message);
-    assertThat(record.getValueBytes().toByteArray(), is(new byte[] {7, 8, 9}));
+    assertThat(record.getValueBytes().toByteArray()).containsExactly(7, 8, 9);
   }
 
   @Test
-  public void egressMessageWrapsTypedValueWithKafkaProducerRecordTypename() {
+  void egressMessageWrapsTypedValueWithKafkaProducerRecordTypename() {
     EgressMessage message =
         KafkaEgressMessage.forEgress(EGRESS_ID)
             .withTopic("orders")
@@ -125,77 +123,78 @@ public class KafkaEgressMessageTest {
             .build();
 
     EgressMessageWrapper wrapper = (EgressMessageWrapper) message;
-    String typename = wrapper.typedValue().getTypename();
-    assertThat(
-        typename,
-        is("type.googleapis.com/io.statefun.sdk.egress.KafkaProducerRecord"));
+    assertThat(wrapper.typedValue().getTypename())
+        .isEqualTo("type.googleapis.com/io.statefun.sdk.egress.KafkaProducerRecord");
   }
 
   @Test
-  public void buildWithoutTopicThrows() {
+  void buildWithoutTopicThrows() {
     KafkaEgressMessage.Builder builder =
         KafkaEgressMessage.forEgress(EGRESS_ID).withUtf8Value("v");
-    assertThrows(IllegalStateException.class, builder::build);
+    assertThatThrownBy(builder::build).isInstanceOf(IllegalStateException.class);
   }
 
   @Test
-  public void buildWithoutValueThrows() {
+  void buildWithoutValueThrows() {
     KafkaEgressMessage.Builder builder =
         KafkaEgressMessage.forEgress(EGRESS_ID).withTopic("t");
-    assertThrows(IllegalStateException.class, builder::build);
+    assertThatThrownBy(builder::build).isInstanceOf(IllegalStateException.class);
   }
 
   @Test
-  public void forEgressRejectsNullEgressId() {
-    assertThrows(NullPointerException.class, () -> KafkaEgressMessage.forEgress(null));
+  void forEgressRejectsNullEgressId() {
+    assertThatThrownBy(() -> KafkaEgressMessage.forEgress(null))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
-  public void nullUtf8KeyIsRejected() {
+  void nullUtf8KeyIsRejected() {
     KafkaEgressMessage.Builder builder = KafkaEgressMessage.forEgress(EGRESS_ID);
-    assertThrows(NullPointerException.class, () -> builder.withUtf8Key(null));
+    assertThatThrownBy(() -> builder.withUtf8Key(null)).isInstanceOf(NullPointerException.class);
   }
 
   @Test
-  public void nullByteKeyIsRejected() {
+  void nullByteKeyIsRejected() {
     KafkaEgressMessage.Builder builder = KafkaEgressMessage.forEgress(EGRESS_ID);
-    assertThrows(NullPointerException.class, () -> builder.withKey((byte[]) null));
+    assertThatThrownBy(() -> builder.withKey((byte[]) null))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
-  public void nullSliceKeyIsRejected() {
+  void nullSliceKeyIsRejected() {
     KafkaEgressMessage.Builder builder = KafkaEgressMessage.forEgress(EGRESS_ID);
-    assertThrows(NullPointerException.class, () -> builder.withKey((Slice) null));
+    assertThatThrownBy(() -> builder.withKey((Slice) null))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
-  public void nullUtf8ValueIsRejected() {
+  void nullUtf8ValueIsRejected() {
     KafkaEgressMessage.Builder builder = KafkaEgressMessage.forEgress(EGRESS_ID);
-    assertThrows(NullPointerException.class, () -> builder.withUtf8Value(null));
+    assertThatThrownBy(() -> builder.withUtf8Value(null))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
-  public void nullByteValueIsRejected() {
+  void nullByteValueIsRejected() {
     KafkaEgressMessage.Builder builder = KafkaEgressMessage.forEgress(EGRESS_ID);
-    assertThrows(NullPointerException.class, () -> builder.withValue((byte[]) null));
+    assertThatThrownBy(() -> builder.withValue((byte[]) null))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
-  public void nullSliceValueIsRejected() {
+  void nullSliceValueIsRejected() {
     KafkaEgressMessage.Builder builder = KafkaEgressMessage.forEgress(EGRESS_ID);
-    assertThrows(NullPointerException.class, () -> builder.withValue((Slice) null));
+    assertThatThrownBy(() -> builder.withValue((Slice) null))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
-  public void buildIsValidWithoutKey() throws InvalidProtocolBufferException {
+  void buildIsValidWithoutKey() throws InvalidProtocolBufferException {
     EgressMessage message =
-        KafkaEgressMessage.forEgress(EGRESS_ID)
-            .withTopic("k-less")
-            .withUtf8Value("v")
-            .build();
+        KafkaEgressMessage.forEgress(EGRESS_ID).withTopic("k-less").withUtf8Value("v").build();
 
     KafkaProducerRecord record = unpack(message);
-    assertThat(record.getKey(), is(""));
+    assertThat(record.getKey()).isEmpty();
   }
 
   private static KafkaProducerRecord unpack(EgressMessage message)

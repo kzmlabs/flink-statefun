@@ -2,14 +2,8 @@
 // Copyright 2026 Kzmlabs
 package org.apache.flink.statefun.sdk;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.Test;
 
@@ -22,59 +16,54 @@ class AddressAndTypeNameTest {
     Address differentId = new Address(new FunctionType("ns", "fn"), "id-2");
     Address differentType = new Address(new FunctionType("ns", "other"), "id-1");
 
-    assertEquals(a, b);
-    assertEquals(a.hashCode(), b.hashCode());
-    assertThat(a, is(not(equalTo(differentId))));
-    assertThat(a, is(not(equalTo(differentType))));
+    assertThat(a).isEqualTo(b).hasSameHashCodeAs(b).isNotEqualTo(differentId).isNotEqualTo(differentType);
   }
 
   @Test
   void addressToStringContainsAllThreeFields() {
     Address a = new Address(new FunctionType("ns", "fn"), "id-1");
 
-    assertThat(a.toString(), containsString("ns"));
-    assertThat(a.toString(), containsString("fn"));
-    assertThat(a.toString(), containsString("id-1"));
+    assertThat(a.toString()).contains("ns", "fn", "id-1");
   }
 
   @Test
   void addressRejectsNullTypeOrId() {
-    assertThrows(NullPointerException.class, () -> new Address(null, "id"));
-    assertThrows(
-        NullPointerException.class, () -> new Address(new FunctionType("ns", "fn"), null));
+    assertThatThrownBy(() -> new Address(null, "id")).isInstanceOf(NullPointerException.class);
+    assertThatThrownBy(() -> new Address(new FunctionType("ns", "fn"), null))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
   void addressEqualsToSelfAndNotNullOrUnrelated() {
     Address a = new Address(new FunctionType("ns", "fn"), "id-1");
-    assertEquals(a, a);
-    assertThat(a, is(not(equalTo(null))));
-    assertThat((Object) a, is(not(equalTo((Object) "string"))));
+    assertThat(a).isEqualTo(a).isNotNull().isNotEqualTo("string");
   }
 
   @Test
   void typeNameParseFromAcceptsSlashSeparatedString() {
     TypeName tn = TypeName.parseFrom("ns/fn");
 
-    assertThat(tn.namespace(), equalTo("ns"));
-    assertThat(tn.name(), equalTo("fn"));
-    assertThat(tn.canonicalTypenameString(), equalTo("ns/fn"));
+    assertThat(tn.namespace()).isEqualTo("ns");
+    assertThat(tn.name()).isEqualTo("fn");
+    assertThat(tn.canonicalTypenameString()).isEqualTo("ns/fn");
   }
 
   @Test
   void typeNameParseFromRejectsMissingSlash() {
-    assertThrows(IllegalArgumentException.class, () -> TypeName.parseFrom("nofn"));
+    assertThatThrownBy(() -> TypeName.parseFrom("nofn"))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
   void typeNameParseFromRejectsTooManySlashes() {
-    assertThrows(IllegalArgumentException.class, () -> TypeName.parseFrom("a/b/c"));
+    assertThatThrownBy(() -> TypeName.parseFrom("a/b/c"))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
   void typeNameRejectsNullArguments() {
-    assertThrows(NullPointerException.class, () -> new TypeName(null, "n"));
-    assertThrows(NullPointerException.class, () -> new TypeName("ns", null));
+    assertThatThrownBy(() -> new TypeName(null, "n")).isInstanceOf(NullPointerException.class);
+    assertThatThrownBy(() -> new TypeName("ns", null)).isInstanceOf(NullPointerException.class);
   }
 
   @Test
@@ -83,22 +72,20 @@ class AddressAndTypeNameTest {
     TypeName b = new TypeName("ns", "fn");
     TypeName different = new TypeName("ns", "other");
 
-    assertEquals(a, b);
-    assertEquals(a.hashCode(), b.hashCode());
-    assertThat(a, is(not(equalTo(different))));
+    assertThat(a).isEqualTo(b).hasSameHashCodeAs(b).isNotEqualTo(different);
   }
 
   @Test
   void typeNameToStringHasReadableForm() {
-    assertThat(new TypeName("ns", "fn").toString(), containsString("ns"));
+    assertThat(new TypeName("ns", "fn").toString()).contains("ns");
   }
 
   @Test
   void namespaceMatcherMatchesSameNamespaceAndRejectsOthers() {
     FunctionTypeNamespaceMatcher matcher = FunctionTypeNamespaceMatcher.targetNamespace("counter");
 
-    assertTrue(matcher.matches(new FunctionType("counter", "any")));
-    assertEquals(false, matcher.matches(new FunctionType("other", "any")));
+    assertThat(matcher.matches(new FunctionType("counter", "any"))).isTrue();
+    assertThat(matcher.matches(new FunctionType("other", "any"))).isFalse();
   }
 
   @Test
@@ -107,28 +94,24 @@ class AddressAndTypeNameTest {
     FunctionTypeNamespaceMatcher b = FunctionTypeNamespaceMatcher.targetNamespace("counter");
     FunctionTypeNamespaceMatcher c = FunctionTypeNamespaceMatcher.targetNamespace("other");
 
-    assertEquals(a, b);
-    assertEquals(a.hashCode(), b.hashCode());
-    assertThat(a, is(not(equalTo(c))));
+    assertThat(a).isEqualTo(b).hasSameHashCodeAs(b).isNotEqualTo(c);
   }
 
   @Test
   void namespaceMatcherEqualsToSelfAndNotNullOrUnrelated() {
     FunctionTypeNamespaceMatcher a = FunctionTypeNamespaceMatcher.targetNamespace("x");
-    assertEquals(a, a);
-    assertThat(a, is(not(equalTo(null))));
-    assertThat((Object) a, is(not(equalTo((Object) "string"))));
+    assertThat(a).isEqualTo(a).isNotNull().isNotEqualTo("string");
   }
 
   @Test
   void namespaceMatcherToStringContainsTarget() {
-    assertThat(
-        FunctionTypeNamespaceMatcher.targetNamespace("counter").toString(),
-        containsString("counter"));
+    assertThat(FunctionTypeNamespaceMatcher.targetNamespace("counter").toString())
+        .contains("counter");
   }
 
   @Test
   void namespaceMatcherRejectsNullNamespace() {
-    assertThrows(NullPointerException.class, () -> FunctionTypeNamespaceMatcher.targetNamespace(null));
+    assertThatThrownBy(() -> FunctionTypeNamespaceMatcher.targetNamespace(null))
+        .isInstanceOf(NullPointerException.class);
   }
 }

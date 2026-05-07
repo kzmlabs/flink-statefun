@@ -2,13 +2,8 @@
 // Copyright 2026 Kzmlabs
 package org.apache.flink.statefun.sdk;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.Test;
 
@@ -20,31 +15,28 @@ class FunctionTypeAndIngressEgressTypeTest {
     FunctionType b = new FunctionType("ns", "fn");
     FunctionType different = new FunctionType("ns", "other");
 
-    assertThat(a.namespace(), equalTo("ns"));
-    assertThat(a.name(), equalTo("fn"));
-    assertEquals(a, b);
-    assertEquals(a.hashCode(), b.hashCode());
-    assertThat(a, is(not(equalTo(different))));
+    assertThat(a.namespace()).isEqualTo("ns");
+    assertThat(a.name()).isEqualTo("fn");
+    assertThat(a).isEqualTo(b).hasSameHashCodeAs(b).isNotEqualTo(different);
   }
 
   @Test
   void functionTypeRejectsNullNamespaceOrName() {
-    assertThrows(NullPointerException.class, () -> new FunctionType(null, "fn"));
-    assertThrows(NullPointerException.class, () -> new FunctionType("ns", null));
+    assertThatThrownBy(() -> new FunctionType(null, "fn"))
+        .isInstanceOf(NullPointerException.class);
+    assertThatThrownBy(() -> new FunctionType("ns", null))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
   void functionTypeToStringContainsBothFields() {
-    assertThat(new FunctionType("ns", "fn").toString(), containsString("ns"));
-    assertThat(new FunctionType("ns", "fn").toString(), containsString("fn"));
+    assertThat(new FunctionType("ns", "fn").toString()).contains("ns", "fn");
   }
 
   @Test
   void functionTypeEqualsToSelfAndNotNullOrUnrelated() {
     FunctionType ft = new FunctionType("ns", "fn");
-    assertEquals(ft, ft);
-    assertThat(ft, is(not(equalTo(null))));
-    assertThat((Object) ft, is(not(equalTo((Object) "string"))));
+    assertThat(ft).isEqualTo(ft).isNotNull().isNotEqualTo("string");
   }
 
   @Test
@@ -53,25 +45,23 @@ class FunctionTypeAndIngressEgressTypeTest {
     IngressType b = new IngressType("io.test", "kafka");
     IngressType different = new IngressType("io.test", "kinesis");
 
-    assertThat(a.namespace(), equalTo("io.test"));
-    assertThat(a.type(), equalTo("kafka"));
-    assertEquals(a, b);
-    assertEquals(a.hashCode(), b.hashCode());
-    assertThat(a, is(not(equalTo(different))));
+    assertThat(a.namespace()).isEqualTo("io.test");
+    assertThat(a.type()).isEqualTo("kafka");
+    assertThat(a).isEqualTo(b).hasSameHashCodeAs(b).isNotEqualTo(different);
   }
 
   @Test
   void ingressTypeRejectsNullNamespaceOrType() {
-    assertThrows(NullPointerException.class, () -> new IngressType(null, "kafka"));
-    assertThrows(NullPointerException.class, () -> new IngressType("io.test", null));
+    assertThatThrownBy(() -> new IngressType(null, "kafka"))
+        .isInstanceOf(NullPointerException.class);
+    assertThatThrownBy(() -> new IngressType("io.test", null))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
   void ingressTypeEqualsToSelfAndNotNullOrUnrelated() {
     IngressType i = new IngressType("io.test", "kafka");
-    assertEquals(i, i);
-    assertThat(i, is(not(equalTo(null))));
-    assertThat((Object) i, is(not(equalTo((Object) "string"))));
+    assertThat(i).isEqualTo(i).isNotNull().isNotEqualTo("string");
   }
 
   @Test
@@ -80,27 +70,25 @@ class FunctionTypeAndIngressEgressTypeTest {
     EgressType b = new EgressType("io.test", "kafka");
     EgressType different = new EgressType("io.test", "kinesis");
 
-    assertThat(a.namespace(), equalTo("io.test"));
-    assertThat(a.type(), equalTo("kafka"));
-    assertEquals(a, b);
-    assertEquals(a.hashCode(), b.hashCode());
-    assertThat(a, is(not(equalTo(different))));
+    assertThat(a.namespace()).isEqualTo("io.test");
+    assertThat(a.type()).isEqualTo("kafka");
+    assertThat(a).isEqualTo(b).hasSameHashCodeAs(b).isNotEqualTo(different);
   }
 
   @Test
   void egressTypeRejectsNullNamespaceOrType() {
-    assertThrows(NullPointerException.class, () -> new EgressType(null, "kafka"));
-    assertThrows(NullPointerException.class, () -> new EgressType("io.test", null));
+    assertThatThrownBy(() -> new EgressType(null, "kafka"))
+        .isInstanceOf(NullPointerException.class);
+    assertThatThrownBy(() -> new EgressType("io.test", null))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
   void egressTypeToStringPinsCurrentIngressTypeTypo() {
     // TODO: EgressType.toString() reports "IngressType(...)" due to a copy-paste typo
     // inherited from upstream. Pinning the literal prefix here so a future fix is
-    // intentional — when corrected, flip to containsString("EgressType").
+    // intentional — when corrected, flip to .contains("EgressType").
     EgressType e = new EgressType("io.test", "kafka");
-    assertThat(e.toString(), containsString("IngressType("));
-    assertThat(e.toString(), containsString("io.test"));
-    assertThat(e.toString(), containsString("kafka"));
+    assertThat(e.toString()).contains("IngressType(", "io.test", "kafka");
   }
 }
