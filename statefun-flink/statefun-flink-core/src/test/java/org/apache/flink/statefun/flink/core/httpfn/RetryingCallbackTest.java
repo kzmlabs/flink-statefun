@@ -49,6 +49,7 @@ class RetryingCallbackTest {
   @AfterEach
   void tearDown() throws IOException {
     server.shutdown();
+    OkHttpUtils.closeSilently(client);
   }
 
   @Test

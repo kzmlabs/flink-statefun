@@ -139,7 +139,7 @@ class StatefulFunctionDataStreamBuilderTest {
   private static StatefulFunctionBuilder newRemoteBuilder(FunctionType type) throws Exception {
     // Default connect timeout is large enough that we must explicitly bound the request
     // duration above it; otherwise the builder rejects the spec.
-    return RequestReplyFunctionBuilder.requestReplyFunctionBuilder(type, new URI("http://localhost:1234/"))
+    return StatefulFunctionBuilder.requestReplyFunctionBuilder(type, new URI("http://localhost:1234/"))
         .withMaxNumBatchRequests(10)
         .withConnectTimeout(Duration.ofSeconds(2))
         .withMaxRequestDuration(Duration.ofSeconds(30));

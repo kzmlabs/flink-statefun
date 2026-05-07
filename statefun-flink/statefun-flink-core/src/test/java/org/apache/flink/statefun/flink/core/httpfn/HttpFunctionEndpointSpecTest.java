@@ -103,14 +103,18 @@ class HttpFunctionEndpointSpecTest {
         .isEqualTo(TransportClientConstants.ASYNC_CLIENT_FACTORY_TYPE);
   }
 
+  /**
+   * A comma-list pattern in {@code functions} must fail deserialization so misuse surfaces at
+   * config-load instead of silently dropping bindings.
+   */
   @Test
   void invalidFunctionsPatternFailsAtDeserialization() {
-    // Pin: a comma-list pattern in `functions` is rejected by the deserializer so misuse fails
-    // loud rather than silently dropping bindings (real-world bug class).
     String json =
         "{\"functions\": \"counter/a, counter/b\",\"urlPathTemplate\":\"http://upstream\"}";
 
-    assertThatThrownBy(() -> readSpec(json)).isNotNull();
+    assertThatThrownBy(() -> readSpec(json))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Must be of format <namespace>/<name>");
   }
 
   @Test
