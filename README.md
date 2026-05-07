@@ -6,6 +6,7 @@
 [![GitHub Release](https://img.shields.io/github/v/release/kzmlabs/flink-statefun?label=GHCR)](https://github.com/kzmlabs/flink-statefun/pkgs/container/flink-statefun)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue)](LICENSE)
 [![K8s E2E](https://github.com/kzmlabs/flink-statefun/actions/workflows/e2e-test.yml/badge.svg?branch=release)](https://github.com/kzmlabs/flink-statefun/actions/workflows/e2e-test.yml?query=branch%3Arelease)
+[![Coverage](https://codecov.io/gh/kzmlabs/flink-statefun/branch/release/graph/badge.svg)](https://app.codecov.io/gh/kzmlabs/flink-statefun/tree/release)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/kzmlabs/flink-statefun/badge)](https://scorecard.dev/viewer/?uri=github.com/kzmlabs/flink-statefun)
 [![Contributors](https://img.shields.io/github/contributors/kzmlabs/flink-statefun)](https://github.com/kzmlabs/flink-statefun/graphs/contributors)
 [![Last commit](https://img.shields.io/github/last-commit/kzmlabs/flink-statefun/release)](https://github.com/kzmlabs/flink-statefun/commits/release)
