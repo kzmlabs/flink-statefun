@@ -4,11 +4,17 @@
 
 This guide documents the release process for publishing to Maven Central and GitHub Container Registry (GHCR).
 
-## Current Release: 3.4.0-KZM-3.0-RC1
+## Current Release: 3.4.0-KZM-3.1
 
 - **Maven Central**: Published
-- **Docker Image**: `ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.0-RC1`
-- **GitHub Release**: https://github.com/kzmlabs/flink-statefun/releases
+- **Docker Image**: `ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.1` (and `:latest`)
+- **GitHub Release**: https://github.com/kzmlabs/flink-statefun/releases/tag/v3.4.0-KZM-3.1
+
+Lineage:
+- **3.4.0-KZM-2.0** (2026-04-23) — stable; Kinesis broken (SDK-only, no runtime)
+- **3.4.0-KZM-3.0-RC1** (2026-04-24) — Kinesis runtime restored on Flink 2.x
+- **3.4.0-KZM-3.0** (2026-04-29) — stable promotion of RC1
+- **3.4.0-KZM-3.1** (2026-04-29, current) — patch on top of 3.0
 
 ---
 
@@ -20,14 +26,14 @@ Triggered automatically when pushing a tag starting with `v`:
 
 ```bash
 # Update version
-mvn versions:set -DnewVersion=3.4.0-KZM-3.0-RC2 -DgenerateBackupPoms=false
+mvn versions:set -DnewVersion=3.4.0-KZM-3.2 -DgenerateBackupPoms=false
 
 # Commit and tag
 git add -A
-git commit -m "Release 3.4.0-KZM-3.0-RC2"
+git commit -m "Release 3.4.0-KZM-3.2"
 git push origin release
-git tag v3.4.0-KZM-3.0-RC2
-git push origin v3.4.0-KZM-3.0-RC2
+git tag v3.4.0-KZM-3.2
+git push origin v3.4.0-KZM-3.2
 ```
 
 This runs `.github/workflows/release.yml` which:
@@ -43,11 +49,11 @@ but skips Maven Central deploy and GitHub Release creation.
 
 ```bash
 # Tag for Docker-only release
-git tag docker-3.4.0-KZM-3.0-RC1-test1
-git push origin docker-3.4.0-KZM-3.0-RC1-test1
+git tag docker-3.4.0-KZM-3.1-test1
+git push origin docker-3.4.0-KZM-3.1-test1
 ```
 
-This pushes the image as `ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.0-RC1-test1`.
+This pushes the image as `ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.1-test1`.
 
 There is also a `docker-release.yml` workflow with `workflow_dispatch` for manual triggers via the GitHub Actions UI.
 
@@ -168,12 +174,16 @@ Make package public: https://github.com/orgs/kzmlabs/packages/container/flink-st
 
 ## Version History
 
-| Version | Status | Notes |
-|---------|--------|-------|
-| RC20 | ✅ Published | Fixed all Maven Central validation issues |
-| RC19 | ❌ Failed | Missing javadoc for statefun-flink-distribution |
-| RC18 | ❌ Failed | Missing `<name>` in all modules |
-| RC17 | ❌ Failed | Missing javadoc for statefun-sdk-protos |
+| Version | Date | Status | Notes |
+|---------|------|--------|-------|
+| 3.4.0-KZM-3.1 | 2026-04-29 | ✅ Published | Patch on top of 3.0 (current) |
+| 3.4.0-KZM-3.0 | 2026-04-29 | ✅ Published | Stable promotion of 3.0-RC1 |
+| 3.4.0-KZM-3.0-RC1 | 2026-04-24 | ✅ Published | Kinesis runtime restored on Flink 2.x |
+| 3.4.0-KZM-2.0 | 2026-04-23 | ✅ Published | Stable; Kinesis broken (SDK-only, no runtime) |
+| RC20 | (early) | ✅ Published | Fixed all Maven Central validation issues |
+| RC19 | (early) | ❌ Failed | Missing javadoc for statefun-flink-distribution |
+| RC18 | (early) | ❌ Failed | Missing `<name>` in all modules |
+| RC17 | (early) | ❌ Failed | Missing javadoc for statefun-sdk-protos |
 
 ---
 
@@ -195,6 +205,6 @@ mvn clean install -Prelease -DskipTests -Dgpg.skip=true
 # Check workflow status
 gh run list --repo kzmlabs/flink-statefun
 
-# Pull Docker image
-docker pull ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.0-RC1
+# Pull Docker image (latest stable)
+docker pull ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.1
 ```
