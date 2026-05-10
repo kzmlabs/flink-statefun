@@ -9,6 +9,11 @@ version: 2
 
 updates:
   # Pinned GitHub Actions across all workflows.
+  #
+  # Grouping reduces noise for patch/minor bumps — they land as one weekly
+  # PR. Major bumps each get their own PR (Dependabot's default once the
+  # group's update-types excludes major) so the workflow API changes that
+  # often come with vN -> vN+1 can be reviewed one upgrade at a time.
   - package-ecosystem: github-actions
     directory: /
     schedule:
@@ -17,6 +22,9 @@ updates:
       actions:
         patterns:
           - "*"
+        update-types:
+          - "minor"
+          - "patch"
 
   # Maven dependency graph (root pom + all modules).
   - package-ecosystem: maven
