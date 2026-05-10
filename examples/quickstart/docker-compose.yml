@@ -51,7 +51,9 @@ services:
     build:
       context: ./greeter
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:8080/statefun || exit 1"]
+      # GET (not HEAD/--spider) — GreeterServer's lightweight handler responds with 200/OK to GET,
+      # but HEAD trips the server's "send response body" path with a stream-closed warning.
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:8080/statefun"]
       interval: 5s
       timeout: 5s
       retries: 10
