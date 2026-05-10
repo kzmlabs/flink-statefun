@@ -118,8 +118,19 @@ services:
         condition: service_completed_successfully
       greeter:
         condition: service_healthy
-    entrypoint: ["/bin/bash", "-c"]
+    # `flink run` builds the job graph on the CLIENT side, so the runner's
+    # Main.main() executes here — module.yaml must be mounted and the
+    # remote module URL must point at it. JM/TM mounts alone are not enough.
+    volumes:
+      - ./module.yaml:/opt/statefun/module.yaml:ro
+    environment:
+      FLINK_PROPERTIES: |
+        statefun.remote.module-name: file:///opt/statefun/module.yaml
+        classloader.parent-first-patterns.additional: org.apache.flink.statefun;org.apache.kafka;com.google.protobuf
+        classloader.resolve-order: parent-first
     command:
+      - bash
+      - -c
       - >
         /opt/flink/bin/flink run -d
         -m jobmanager:8081
