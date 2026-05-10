@@ -73,7 +73,7 @@ docker exec quickstart-kafka \
 
 Expected output:
 
-```
+```json
 {"greeting":"Hello, Alice!"}
 ```
 

@@ -27,11 +27,13 @@ echo 'alice:{"name":"Alice"}' | docker exec -i "${KAFKA_CONTAINER}" \
 echo "==> Polling ${CONSUME_TOPIC} for '${EXPECTED}' (up to ${TIMEOUT_SECONDS}s)"
 deadline=$(( $(date +%s) + TIMEOUT_SECONDS ))
 while [ "$(date +%s)" -lt "${deadline}" ]; do
+  # --max-messages bounded high (not 1) so the grep still finds the expected
+  # output even if other records land on the topic; --timeout-ms caps the wait.
   output=$(docker exec "${KAFKA_CONTAINER}" \
     /opt/kafka/bin/kafka-console-consumer.sh \
     --bootstrap-server kafka:9092 \
     --topic "${CONSUME_TOPIC}" \
-    --from-beginning --max-messages 1 --timeout-ms 5000 2>/dev/null || true)
+    --from-beginning --max-messages 100 --timeout-ms 5000 2>/dev/null || true)
   if printf '%s' "${output}" | grep -F -q "${EXPECTED}"; then
     echo "==> Received: ${output}"
     echo "PASS: round-trip completed."

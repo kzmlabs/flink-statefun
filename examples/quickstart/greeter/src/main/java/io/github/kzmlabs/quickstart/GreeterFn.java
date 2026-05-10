@@ -41,7 +41,7 @@ public final class GreeterFn implements StatefulFunction {
     String input = message.as(JSON_STRING_TYPE);
     Matcher m = NAME_PATTERN.matcher(input);
     String name = m.find() ? m.group(1) : input;
-    String greeting = "{\"greeting\":\"Hello, " + name + "!\"}";
+    String greeting = "{\"greeting\":\"Hello, " + jsonEscape(name) + "!\"}";
 
     context.send(
         KafkaEgressMessage.forEgress(EGRESS_ID)
@@ -51,5 +51,37 @@ public final class GreeterFn implements StatefulFunction {
             .build());
 
     return context.done();
+  }
+
+  /** Minimal JSON string escape so the emitted greeting stays valid for names with quotes/backslashes. */
+  private static String jsonEscape(String s) {
+    StringBuilder sb = new StringBuilder(s.length() + 8);
+    for (int i = 0; i < s.length(); i++) {
+      char c = s.charAt(i);
+      switch (c) {
+        case '"':
+          sb.append("\\\"");
+          break;
+        case '\\':
+          sb.append("\\\\");
+          break;
+        case '\n':
+          sb.append("\\n");
+          break;
+        case '\r':
+          sb.append("\\r");
+          break;
+        case '\t':
+          sb.append("\\t");
+          break;
+        default:
+          if (c < 0x20) {
+            sb.append(String.format("\\u%04x", (int) c));
+          } else {
+            sb.append(c);
+          }
+      }
+    }
+    return sb.toString();
   }
 }
