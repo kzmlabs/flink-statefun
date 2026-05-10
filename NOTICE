@@ -1,3 +1,12 @@
+StateFun Actors by Kzmlabs
+Copyright 2026 Kzmlabs
+
+This product is a modified continuation of Apache Flink Stateful Functions
+(flink-statefun) targeting Apache Flink 2.x and Java 21. Modifications are
+made available under the Apache License, Version 2.0.
+
+Original work:
+
 Apache Flink Stateful Functions (flink-statefun)
 Copyright 2014-2025 The Apache Software Foundation
 
