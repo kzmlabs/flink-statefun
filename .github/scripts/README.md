@@ -9,6 +9,7 @@ readable and the script can be tested locally without the workflow harness.
 | Script | Used by | Purpose |
 |---|---|---|
 | `coverage_summary.py` | `ci.yml` | Render JaCoCo coverage tables (unit / e2e / union) into the GitHub Actions job summary. |
+| `quickstart-smoke.sh` | `quickstart-smoke.yml` | Produce `alice:{"name":"Alice"}` to `greeter.commands` and assert `Hello, Alice!` lands on `greeter.results` within 60 s. |
 
 ## Local testing
 

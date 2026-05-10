@@ -5,15 +5,14 @@ description: Run a StateFun Actors job on Apache Flink locally in five minutes �
 
 # Quickstart
 
-> Five minutes from `git clone` to a verified round-trip message. Copy-pasteable, idempotent, no AWS credentials required.
+> Five minutes from `git clone` to a verified round-trip message. Copy-pasteable, all containers pulled from public registries plus one tiny local build.
 
 ## Before you start
 
 You'll need:
 
 - **Docker** (`docker compose` v2)
-- **`curl`** (any modern version)
-- ~3 GB free disk space and ~2 GB RAM available to Docker
+- ~3 GB free disk space and ~4 GB RAM available to Docker
 
 That's it. No JDK, no Maven, no Kubernetes.
 
@@ -27,76 +26,66 @@ cd flink-statefun
 ## 2. Start the local stack
 
 ```bash
-cd dev
-docker compose up -d
+cd examples/quickstart
+docker compose up -d --wait --build
 ```
 
-This brings up four containers:
+`--wait` blocks until every healthcheck passes; `--build` builds the local greeter image on first run (~1–2 min cold, cached afterwards). This brings up six containers:
 
 | Container | Role |
 |---|---|
-| `statefun-jobmanager` | Flink 2.2 JobManager running the StateFun runtime |
-| `statefun-taskmanager` | Flink 2.2 TaskManager (workers) |
-| `statefun-kafka` | Kafka KRaft mode, single broker |
-| `statefun-remote-function` | HTTP endpoint exposing a sample `GreeterFn` |
+| `quickstart-kafka` | Kafka 3.9 in KRaft mode, single broker (no ZooKeeper) |
+| `quickstart-kafka-init` | One-shot: creates the `greeter.commands` and `greeter.results` topics, then exits |
+| `quickstart-greeter` | Sample StateFun remote function over HTTP (`/statefun`) |
+| `quickstart-jobmanager` | Flink 2.2 JobManager + StateFun runtime, exposes the Web UI on `localhost:8081` |
+| `quickstart-taskmanager` | Flink 2.2 TaskManager (one slot, parallelism 1) |
+| `quickstart-job-submit` | One-shot: submits the StateFun job to the JobManager, then exits |
 
-Wait ~30 s for the cluster to settle, then verify:
+Verify everything is up:
 
 ```bash
 docker compose ps
 ```
 
-Every container should be `Up (healthy)`.
+`kafka`, `greeter`, `jobmanager`, and `taskmanager` should be `Up (healthy)`. `kafka-init` and `job-submit` are one-shots — they appear as `Exited (0)`.
 
-## 3. Create the ingress topic
-
-```bash
-docker exec statefun-kafka kafka-topics --bootstrap-server localhost:9092 \
-  --create --topic dev.events.test-ingress \
-  --partitions 1 --replication-factor 1
-```
-
-## 4. Send a message
+## 3. Send a message
 
 ```bash
-echo 'alice:{"message": "Hello!"}' | docker exec -i statefun-kafka \
-  kafka-console-producer --broker-list localhost:9092 \
-  --topic dev.events.test-ingress \
+echo 'alice:{"name":"Alice"}' | docker exec -i quickstart-kafka \
+  /opt/kafka/bin/kafka-console-producer.sh \
+  --bootstrap-server kafka:9092 \
+  --topic greeter.commands \
   --property "parse.key=true" --property "key.separator=:"
 ```
 
-Format: `<key>:<JSON value>`. The key (`alice`) is the function instance id; the value is the message payload.
+Format: `<key>:<JSON value>`. The key (`alice`) becomes the function instance id; the value is parsed by the function.
 
-## 5. Watch the function react
+## 4. Read the response
 
-=== "Tail the function logs"
+```bash
+docker exec quickstart-kafka \
+  /opt/kafka/bin/kafka-console-consumer.sh \
+  --bootstrap-server kafka:9092 \
+  --topic greeter.results \
+  --from-beginning --max-messages 1
+```
 
-    ```bash
-    docker logs -f statefun-remote-function
-    ```
+Expected output:
 
-    You should see a line like:
+```json
+{"greeting":"Hello, Alice!"}
+```
 
-    ```
-    [GreeterFn] alice → "Hello, alice!"
-    ```
+The Flink Web UI on [http://localhost:8081](http://localhost:8081) shows the running `statefun-quickstart` job — checkpoint counters tick up every 10 seconds.
 
-=== "Read from the egress topic"
-
-    ```bash
-    docker exec statefun-kafka kafka-console-consumer \
-      --bootstrap-server localhost:9092 \
-      --topic dev.events.test-egress \
-      --from-beginning --max-messages 1
-    ```
-
-## 6. Tear down
+## 5. Tear down
 
 ```bash
 docker compose down -v
 ```
 
-Removes containers + volumes. Re-running `docker compose up -d` starts a clean cluster.
+Removes containers + volumes. Re-running `docker compose up -d --wait` starts a clean cluster.
 
 ## What just happened
 
@@ -109,16 +98,39 @@ sequenceDiagram
     participant Fn as GreeterFn (remote)
     participant E as Kafka egress
 
-    You->>K: produce key=alice, value={message}
+    You->>K: produce key=alice, value={"name":"Alice"}
     K->>SF: poll record
-    SF->>SF: route by namespace/name/id
+    SF->>SF: route by namespace/name/id → greeter/fn/alice
     SF->>Fn: HTTP POST /statefun (Address + state + message)
     Fn->>SF: response (egress message + state delta)
-    SF->>E: emit "Hello, alice!"
+    SF->>E: emit {"greeting":"Hello, Alice!"}
     SF->>SF: checkpoint state
 ```
 
 The runtime owns state, routing, exactly-once delivery, and checkpointing. Your function is just `Context + Message → response`.
+
+## Troubleshooting
+
+??? failure "`docker compose up` hangs on `--wait`"
+
+    Check which container is unhealthy:
+
+    ```bash
+    docker compose ps
+    docker compose logs jobmanager
+    docker compose logs taskmanager
+    docker compose logs greeter
+    ```
+
+    Most common causes: Docker has less than 4 GB RAM available, or host ports `8081` / `9094` are already in use.
+
+??? failure "`pull access denied` on the GHCR image"
+
+    The image is public. If you see this, your local Docker is logged into a different GHCR account that lacks access. Run `docker logout ghcr.io` and try again, or pin to a different tag with `docker pull ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.1` to verify connectivity.
+
+??? failure "Step 4 returns no output / consumer hangs"
+
+    Either the job hasn't submitted yet (check `docker compose logs job-submit` for the submission line), the greeter container isn't healthy (check `docker compose logs greeter`), or the producer failed silently (re-run step 3 and watch for errors). The Flink Web UI on `localhost:8081` will show whether the job is `RUNNING`.
 
 ## Next steps
 
