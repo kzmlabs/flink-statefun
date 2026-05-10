@@ -630,36 +630,27 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-create-the-ingress-topic" class="md-nav__link">
+  <a href="#3-send-a-message" class="md-nav__link">
     <span class="md-ellipsis">
-      3. Create the ingress topic
+      3. Send a message
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-send-a-message" class="md-nav__link">
+  <a href="#4-read-the-response" class="md-nav__link">
     <span class="md-ellipsis">
-      4. Send a message
+      4. Read the response
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-watch-the-function-react" class="md-nav__link">
+  <a href="#5-tear-down" class="md-nav__link">
     <span class="md-ellipsis">
-      5. Watch the function react
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-tear-down" class="md-nav__link">
-    <span class="md-ellipsis">
-      6. Tear down
+      5. Tear down
     </span>
   </a>
   
@@ -669,6 +660,15 @@
   <a href="#what-just-happened" class="md-nav__link">
     <span class="md-ellipsis">
       What just happened
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      Troubleshooting
     </span>
   </a>
   
@@ -1315,36 +1315,27 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-create-the-ingress-topic" class="md-nav__link">
+  <a href="#3-send-a-message" class="md-nav__link">
     <span class="md-ellipsis">
-      3. Create the ingress topic
+      3. Send a message
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-send-a-message" class="md-nav__link">
+  <a href="#4-read-the-response" class="md-nav__link">
     <span class="md-ellipsis">
-      4. Send a message
+      4. Read the response
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-watch-the-function-react" class="md-nav__link">
+  <a href="#5-tear-down" class="md-nav__link">
     <span class="md-ellipsis">
-      5. Watch the function react
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-tear-down" class="md-nav__link">
-    <span class="md-ellipsis">
-      6. Tear down
+      5. Tear down
     </span>
   </a>
   
@@ -1354,6 +1345,15 @@
   <a href="#what-just-happened" class="md-nav__link">
     <span class="md-ellipsis">
       What just happened
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      Troubleshooting
     </span>
   </a>
   
@@ -1397,14 +1397,13 @@
 
 <h1 id="quickstart">Quickstart<a class="headerlink" href="#quickstart" title="Permanent link">&para;</a></h1>
 <blockquote>
-<p>Five minutes from <code>git clone</code> to a verified round-trip message. Copy-pasteable, idempotent, no AWS credentials required.</p>
+<p>Five minutes from <code>git clone</code> to a verified round-trip message. Copy-pasteable, all containers pulled from public registries plus one tiny local build.</p>
 </blockquote>
 <h2 id="before-you-start">Before you start<a class="headerlink" href="#before-you-start" title="Permanent link">&para;</a></h2>
 <p>You'll need:</p>
 <ul>
 <li><strong>Docker</strong> (<code>docker compose</code> v2)</li>
-<li><strong><code>curl</code></strong> (any modern version)</li>
-<li>~3 GB free disk space and ~2 GB RAM available to Docker</li>
+<li>~3 GB free disk space and ~4 GB RAM available to Docker</li>
 </ul>
 <p>That's it. No JDK, no Maven, no Kubernetes.</p>
 <h2 id="1-pull-the-repository">1. Pull the repository<a class="headerlink" href="#1-pull-the-repository" title="Permanent link">&para;</a></h2>
@@ -1412,10 +1411,10 @@
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nb">cd</span><span class="w"> </span>flink-statefun
 </span></code></pre></div>
 <h2 id="2-start-the-local-stack">2. Start the local stack<a class="headerlink" href="#2-start-the-local-stack" title="Permanent link">&para;</a></h2>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nb">cd</span><span class="w"> </span>dev
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nb">cd</span><span class="w"> </span>examples/quickstart
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d<span class="w"> </span>--wait<span class="w"> </span>--build
 </span></code></pre></div>
-<p>This brings up four containers:</p>
+<p><code>--wait</code> blocks until every healthcheck passes; <code>--build</code> builds the local greeter image on first run (~1–2 min cold, cached afterwards). This brings up six containers:</p>
 <table>
 <thead>
 <tr>
@@ -1425,62 +1424,58 @@
 </thead>
 <tbody>
 <tr>
-<td><code>statefun-jobmanager</code></td>
-<td>Flink 2.2 JobManager running the StateFun runtime</td>
+<td><code>quickstart-kafka</code></td>
+<td>Kafka 3.9 in KRaft mode, single broker (no ZooKeeper)</td>
 </tr>
 <tr>
-<td><code>statefun-taskmanager</code></td>
-<td>Flink 2.2 TaskManager (workers)</td>
+<td><code>quickstart-kafka-init</code></td>
+<td>One-shot: creates the <code>greeter.commands</code> and <code>greeter.results</code> topics, then exits</td>
 </tr>
 <tr>
-<td><code>statefun-kafka</code></td>
-<td>Kafka KRaft mode, single broker</td>
+<td><code>quickstart-greeter</code></td>
+<td>Sample StateFun remote function over HTTP (<code>/statefun</code>)</td>
 </tr>
 <tr>
-<td><code>statefun-remote-function</code></td>
-<td>HTTP endpoint exposing a sample <code>GreeterFn</code></td>
+<td><code>quickstart-jobmanager</code></td>
+<td>Flink 2.2 JobManager + StateFun runtime, exposes the Web UI on <code>localhost:8081</code></td>
+</tr>
+<tr>
+<td><code>quickstart-taskmanager</code></td>
+<td>Flink 2.2 TaskManager (one slot, parallelism 1)</td>
+</tr>
+<tr>
+<td><code>quickstart-job-submit</code></td>
+<td>One-shot: submits the StateFun job to the JobManager, then exits</td>
 </tr>
 </tbody>
 </table>
-<p>Wait ~30 s for the cluster to settle, then verify:</p>
+<p>Verify everything is up:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>docker<span class="w"> </span>compose<span class="w"> </span>ps
 </span></code></pre></div>
-<p>Every container should be <code>Up (healthy)</code>.</p>
-<h2 id="3-create-the-ingress-topic">3. Create the ingress topic<a class="headerlink" href="#3-create-the-ingress-topic" title="Permanent link">&para;</a></h2>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>statefun-kafka<span class="w"> </span>kafka-topics<span class="w"> </span>--bootstrap-server<span class="w"> </span>localhost:9092<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span>--create<span class="w"> </span>--topic<span class="w"> </span>dev.events.test-ingress<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span>--partitions<span class="w"> </span><span class="m">1</span><span class="w"> </span>--replication-factor<span class="w"> </span><span class="m">1</span>
+<p><code>kafka</code>, <code>greeter</code>, <code>jobmanager</code>, and <code>taskmanager</code> should be <code>Up (healthy)</code>. <code>kafka-init</code> and <code>job-submit</code> are one-shots — they appear as <code>Exited (0)</code>.</p>
+<h2 id="3-send-a-message">3. Send a message<a class="headerlink" href="#3-send-a-message" title="Permanent link">&para;</a></h2>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nb">echo</span><span class="w"> </span><span class="s1">&#39;alice:{&quot;name&quot;:&quot;Alice&quot;}&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-i<span class="w"> </span>quickstart-kafka<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span>/opt/kafka/bin/kafka-console-producer.sh<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span>--bootstrap-server<span class="w"> </span>kafka:9092<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">  </span>--topic<span class="w"> </span>greeter.commands<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">  </span>--property<span class="w"> </span><span class="s2">&quot;parse.key=true&quot;</span><span class="w"> </span>--property<span class="w"> </span><span class="s2">&quot;key.separator=:&quot;</span>
 </span></code></pre></div>
-<h2 id="4-send-a-message">4. Send a message<a class="headerlink" href="#4-send-a-message" title="Permanent link">&para;</a></h2>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nb">echo</span><span class="w"> </span><span class="s1">&#39;alice:{&quot;message&quot;: &quot;Hello!&quot;}&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-i<span class="w"> </span>statefun-kafka<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span>kafka-console-producer<span class="w"> </span>--broker-list<span class="w"> </span>localhost:9092<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span>--topic<span class="w"> </span>dev.events.test-ingress<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">  </span>--property<span class="w"> </span><span class="s2">&quot;parse.key=true&quot;</span><span class="w"> </span>--property<span class="w"> </span><span class="s2">&quot;key.separator=:&quot;</span>
+<p>Format: <code>&lt;key&gt;:&lt;JSON value&gt;</code>. The key (<code>alice</code>) becomes the function instance id; the value is parsed by the function.</p>
+<h2 id="4-read-the-response">4. Read the response<a class="headerlink" href="#4-read-the-response" title="Permanent link">&para;</a></h2>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>quickstart-kafka<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span>/opt/kafka/bin/kafka-console-consumer.sh<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span>--bootstrap-server<span class="w"> </span>kafka:9092<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">  </span>--topic<span class="w"> </span>greeter.results<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">  </span>--from-beginning<span class="w"> </span>--max-messages<span class="w"> </span><span class="m">1</span>
 </span></code></pre></div>
-<p>Format: <code>&lt;key&gt;:&lt;JSON value&gt;</code>. The key (<code>alice</code>) is the function instance id; the value is the message payload.</p>
-<h2 id="5-watch-the-function-react">5. Watch the function react<a class="headerlink" href="#5-watch-the-function-react" title="Permanent link">&para;</a></h2>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Tail the function logs</label><label for="__tabbed_1_2">Read from the egress topic</label></div>
-<div class="tabbed-content">
-<div class="tabbed-block">
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>docker<span class="w"> </span>logs<span class="w"> </span>-f<span class="w"> </span>statefun-remote-function
+<p>Expected output:</p>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="p">{</span><span class="nt">&quot;greeting&quot;</span><span class="p">:</span><span class="s2">&quot;Hello, Alice!&quot;</span><span class="p">}</span>
 </span></code></pre></div>
-<p>You should see a line like:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>[GreeterFn] alice → &quot;Hello, alice!&quot;
+<p>The Flink Web UI on <a href="http://localhost:8081">http://localhost:8081</a> shows the running <code>statefun-quickstart</code> job — checkpoint counters tick up every 10 seconds.</p>
+<h2 id="5-tear-down">5. Tear down<a class="headerlink" href="#5-tear-down" title="Permanent link">&para;</a></h2>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>docker<span class="w"> </span>compose<span class="w"> </span>down<span class="w"> </span>-v
 </span></code></pre></div>
-</div>
-<div class="tabbed-block">
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>statefun-kafka<span class="w"> </span>kafka-console-consumer<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">  </span>--bootstrap-server<span class="w"> </span>localhost:9092<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">  </span>--topic<span class="w"> </span>dev.events.test-egress<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">  </span>--from-beginning<span class="w"> </span>--max-messages<span class="w"> </span><span class="m">1</span>
-</span></code></pre></div>
-</div>
-</div>
-</div>
-<h2 id="6-tear-down">6. Tear down<a class="headerlink" href="#6-tear-down" title="Permanent link">&para;</a></h2>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>docker<span class="w"> </span>compose<span class="w"> </span>down<span class="w"> </span>-v
-</span></code></pre></div>
-<p>Removes containers + volumes. Re-running <code>docker compose up -d</code> starts a clean cluster.</p>
+<p>Removes containers + volumes. Re-running <code>docker compose up -d --wait</code> starts a clean cluster.</p>
 <h2 id="what-just-happened">What just happened<a class="headerlink" href="#what-just-happened" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>sequenceDiagram
     autonumber
@@ -1490,14 +1485,33 @@
     participant Fn as GreeterFn (remote)
     participant E as Kafka egress
 
-    You-&gt;&gt;K: produce key=alice, value={message}
+    You-&gt;&gt;K: produce key=alice, value={"name":"Alice"}
     K-&gt;&gt;SF: poll record
-    SF-&gt;&gt;SF: route by namespace/name/id
+    SF-&gt;&gt;SF: route by namespace/name/id → greeter/fn/alice
     SF-&gt;&gt;Fn: HTTP POST /statefun (Address + state + message)
     Fn-&gt;&gt;SF: response (egress message + state delta)
-    SF-&gt;&gt;E: emit "Hello, alice!"
+    SF-&gt;&gt;E: emit {"greeting":"Hello, Alice!"}
     SF-&gt;&gt;SF: checkpoint state</code></pre>
 <p>The runtime owns state, routing, exactly-once delivery, and checkpointing. Your function is just <code>Context + Message → response</code>.</p>
+<h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
+<details class="failure">
+<summary><code>docker compose up</code> hangs on <code>--wait</code></summary>
+<p>Check which container is unhealthy:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>docker<span class="w"> </span>compose<span class="w"> </span>ps
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>docker<span class="w"> </span>compose<span class="w"> </span>logs<span class="w"> </span>jobmanager
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>docker<span class="w"> </span>compose<span class="w"> </span>logs<span class="w"> </span>taskmanager
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>docker<span class="w"> </span>compose<span class="w"> </span>logs<span class="w"> </span>greeter
+</span></code></pre></div>
+<p>Most common causes: Docker has less than 4 GB RAM available, or host ports <code>8081</code> / <code>9094</code> are already in use.</p>
+</details>
+<details class="failure">
+<summary><code>pull access denied</code> on the GHCR image</summary>
+<p>The image is public. If you see this, your local Docker is logged into a different GHCR account that lacks access. Run <code>docker logout ghcr.io</code> and try again, or pin to a different tag with <code>docker pull ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.1</code> to verify connectivity.</p>
+</details>
+<details class="failure">
+<summary>Step 4 returns no output / consumer hangs</summary>
+<p>Either the job hasn't submitted yet (check <code>docker compose logs job-submit</code> for the submission line), the greeter container isn't healthy (check <code>docker compose logs greeter</code>), or the producer failed silently (re-run step 3 and watch for errors). The Flink Web UI on <code>localhost:8081</code> will show whether the job is <code>RUNNING</code>.</p>
+</details>
 <h2 id="next-steps">Next steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
 <div class="grid cards">
 <ul>
