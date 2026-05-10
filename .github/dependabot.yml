@@ -1,0 +1,45 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Dependabot config — keeps SHA-pinned GitHub Actions and Maven deps
+# current. The actions in .github/workflows/ are pinned to commit hashes
+# (per OpenSSF Scorecard supply-chain hardening). Dependabot watches for
+# new tag releases and opens PRs that bump the SHA in step with the tag.
+
+version: 2
+
+updates:
+  # Pinned GitHub Actions across all workflows.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns:
+          - "*"
+
+  # Maven dependency graph (root pom + all modules).
+  - package-ecosystem: maven
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+
+  # Docs site requirements (MkDocs Material + plugins).
+  - package-ecosystem: pip
+    directory: /docs
+    schedule:
+      interval: weekly
+
+  # Go SDK module graph. SDK is otherwise out-of-scope for active work,
+  # but security/CVE bumps still apply.
+  - package-ecosystem: gomod
+    directory: /statefun-sdk-go/v3
+    schedule:
+      interval: weekly
+
+  # Base image digest for the published statefun-docker image.
+  - package-ecosystem: docker
+    directory: /statefun-docker/src/main/docker
+    schedule:
+      interval: weekly
