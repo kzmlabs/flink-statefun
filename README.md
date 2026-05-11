@@ -17,7 +17,7 @@
 
 ## What is this?
 
-You write a function keyed by a logical id. The runtime gives it per-key durable state, routes messages to it, replays on failure, and connects it to Kafka and Kinesis. Actor programming on top of Apache Flink — without writing a Flink job by hand.
+You write a function keyed by a logical ID. The runtime gives it per-key durable state, routes messages to it, replays on failure, and connects it to Kafka and Kinesis. Actor programming on top of Apache Flink — without writing a Flink job by hand.
 
 ```mermaid
 flowchart LR
@@ -184,7 +184,7 @@ If you use StateFun Actors in research, please cite via the [`CITATION.cff`](CIT
 
 ## Contributors
 
-This fork continues the codebase originally developed by 41+ contributors at [Apache Stateful Functions](https://github.com/apache/flink-statefun), including [Tzu-Li (Gordon) Tai](https://github.com/tzulitai), [Igal Shilman](https://github.com/igalshilman), [Seth Wiesman](https://github.com/sjwiesman), [Stephan Ewen](https://github.com/StephanEwen), [Till Rohrmann](https://github.com/tillrohrmann), [Martijn Visser](https://github.com/MartijnVisser), [Marta Paes Moreira](https://github.com/morsapaes), and many others — see the [full contributor graph](https://github.com/kzmlabs/flink-statefun/graphs/contributors) for the complete list.
+This fork continues the codebase originally developed by 41+ contributors to [Apache Stateful Functions](https://github.com/apache/flink-statefun), including [Tzu-Li (Gordon) Tai](https://github.com/tzulitai), [Igal Shilman](https://github.com/igalshilman), [Seth Wiesman](https://github.com/sjwiesman), [Stephan Ewen](https://github.com/StephanEwen), [Till Rohrmann](https://github.com/tillrohrmann), [Martijn Visser](https://github.com/MartijnVisser), [Marta Paes Moreira](https://github.com/morsapaes), and many others — see the [full contributor graph](https://github.com/kzmlabs/flink-statefun/graphs/contributors) for the complete list.
 
 Active maintenance on Flink 2.x and Java 21 by [@oleksandr-kazimirov](https://github.com/oleksandr-kazimirov). Pull requests welcome — see [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
