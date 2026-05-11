@@ -74,7 +74,7 @@ public class GreeterFn implements StatefulFunction {
 }
 ```
 
-This code declares a greeter function that will be [registered](#serving-functions) under the logical type name `com.example.fns/greeter`. Type names must take the form `<namesapce>/<name>`.
+This code declares a greeter function that will be [registered](#serving-functions) under the logical type name `com.example.fns/greeter`. Type names must take the form `<namespace>/<name>`.
 It contains a single `ValueSpec`, which is implicitly scoped to the current address and stores an integer.
 
 Every time a message is sent to a greeter instance, it is interpreted as a `string` representing the users name.
@@ -151,7 +151,7 @@ State declaration is as simple as defining one or more `ValueSpec`s describing y
 Value specifications are defined with a unique (to the function) name and [type](#types).
 
 {{< hint info >}}
-All value specifications must be eagerly registered in the `StatefulFuctionSpec` when composing
+All value specifications must be eagerly registered in the `StatefulFunctionSpec` when composing
 the applications [RequestReplyHandler](#serving-functions).
 {{< /hint >}}
 

@@ -110,7 +110,7 @@ This makes it possible to execute functions on a Kubernetes deployment, a FaaS p
 
 ## <a name="getting-started"></a>Getting Started
 
-We highly recommend starting from the the tutorials and examples that can be found in the [Stateful Functions Playground repository](https://github.com/apache/flink-statefun-playground). There you will find material that serve as a great starting point if you've just started with getting to know the project, or looking for specific examples of common usage patterns.
+We highly recommend starting from the tutorials and examples that can be found in the [Stateful Functions Playground repository](https://github.com/apache/flink-statefun-playground). There you will find material that serve as a great starting point if you've just started with getting to know the project, or looking for specific examples of common usage patterns.
 
 ### <a name="java">New Java Users
 

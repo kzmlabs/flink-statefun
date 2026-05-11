@@ -26,7 +26,7 @@ under the License.
 
 # Application Building Blocks
 
-Stateful Functions provides a framework for building event driven applications. Here, we explain important aspects of Stateful Function’s architecture.
+Stateful Functions provides a framework for building event driven applications. Here, we explain important aspects of Stateful Functions’ architecture.
 
 ## Event Ingress
 
@@ -69,7 +69,7 @@ For both state and messaging, Stateful Functions is able to provide the exactly-
 
 In the case of failure, the entire state of the world (both persisted states and messages) are rolled back to simulate completely failure free execution.
 
-These guarantees are provided with no database required, instead Stateful Function's leverages Apache Flink's proven snapshotting mechanism.
+These guarantees are provided with no database required, instead Stateful Functions leverages Apache Flink's proven snapshotting mechanism.
 
 ### Event Egress
 
