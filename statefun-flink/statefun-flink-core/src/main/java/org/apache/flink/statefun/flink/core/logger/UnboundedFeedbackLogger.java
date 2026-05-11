@@ -107,9 +107,10 @@ public final class UnboundedFeedbackLogger<T> implements FeedbackLogger<T> {
 
   public void replyLoggedEnvelops(InputStream rawKeyedStateInputs, FeedbackConsumer<T> consumer)
       throws Exception {
-    DataInputView in =
-        new DataInputViewStreamWrapper(Header.skipHeaderSilently(rawKeyedStateInputs));
-    KeyGroupStream.readFrom(in, serializer, consumer);
+    try (DataInputViewStreamWrapper in =
+        new DataInputViewStreamWrapper(Header.skipHeaderSilently(rawKeyedStateInputs))) {
+      KeyGroupStream.readFrom(in, serializer, consumer);
+    }
   }
 
   @Nonnull

@@ -60,7 +60,9 @@ final class NettyProtobuf {
 
   private static <M extends Message> void serializeOutputStream(M message, ByteBuf buf)
       throws IOException {
-    message.writeTo(new ByteBufOutputStream(buf));
+    try (ByteBufOutputStream out = new ByteBufOutputStream(buf)) {
+      message.writeTo(out);
+    }
   }
 
   private static <M extends Message> M zeroCopyDeserialize(ByteBuf buf, Parser<M> parser)

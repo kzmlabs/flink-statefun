@@ -30,7 +30,7 @@ final class RandomReadLengthByteArrayInputStream extends ByteArrayInputStream {
   }
 
   @Override
-  public int read(byte[] b, int off, int len) {
+  public synchronized int read(byte[] b, int off, int len) {
     final int randomNumBytesToRead = RANDOM.nextInt(len) + 1;
     return super.read(b, off, randomNumBytesToRead);
   }

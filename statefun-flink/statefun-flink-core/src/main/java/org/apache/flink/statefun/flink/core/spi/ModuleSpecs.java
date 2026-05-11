@@ -87,7 +87,7 @@ public class ModuleSpecs implements Iterable<ModuleSpec>, Serializable {
     private final List<URI> artifactUrls;
 
     private ModuleSpec(List<URI> artifacts) {
-      this.artifactUrls = Collections.unmodifiableList(artifacts);
+      this.artifactUrls = List.copyOf(artifacts);
     }
 
     static Builder builder() {
