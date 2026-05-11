@@ -17,7 +17,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
-        <statefun.version>3.4.0-KZM-3.1</statefun.version>
+        <statefun.version>3.4.0-KZM-3.3</statefun.version>
     </properties>
 
     <dependencies>
