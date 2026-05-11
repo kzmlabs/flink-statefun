@@ -60,7 +60,7 @@ services:
       start_period: 10s
 
   jobmanager:
-    image: ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.1
+    image: ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.3
     container_name: quickstart-jobmanager
     command: jobmanager
     ports:
@@ -90,7 +90,7 @@ services:
       start_period: 30s
 
   taskmanager:
-    image: ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.1
+    image: ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.3
     container_name: quickstart-taskmanager
     command: taskmanager
     depends_on:
@@ -107,7 +107,7 @@ services:
         statefun.remote.module-name: file:///opt/statefun/module.yaml
 
   job-submit:
-    image: ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.1
+    image: ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.3
     container_name: quickstart-job-submit
     depends_on:
       jobmanager:
