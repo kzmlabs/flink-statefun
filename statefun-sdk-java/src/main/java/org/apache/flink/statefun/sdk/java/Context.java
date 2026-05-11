@@ -43,7 +43,7 @@ public interface Context {
   /**
    * Sends out a {@link Message} to another function, after a specified {@link Duration} delay.
    *
-   * @param duration the amount of time to delay the message delivery. * @param cancellationToken
+   * @param duration the amount of time to delay the message delivery.
    * @param cancellationToken the non-empty, non-null, unique token to attach to this message, to be
    *     used for message cancellation. (see {@link #cancelDelayedMessage(String)}.)
    * @param message the message to send.

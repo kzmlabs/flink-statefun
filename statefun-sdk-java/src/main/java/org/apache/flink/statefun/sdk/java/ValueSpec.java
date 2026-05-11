@@ -12,7 +12,7 @@ import org.apache.flink.statefun.sdk.shaded.com.google.protobuf.ByteString;
 /**
  * A {@link ValueSpec} identifies a registered persistent value of a function, which will be managed
  * by the Stateful Functions runtime for consistency and fault-tolerance. A {@link ValueSpec} is
- * registered for a function by configuring it on the function's assoicated {@link
+ * registered for a function by configuring it on the function's associated {@link
  * StatefulFunctionSpec}.
  *
  * @see StatefulFunctionSpec.Builder#withValueSpec(ValueSpec)

@@ -6,12 +6,12 @@ import java.util.Optional;
 import org.apache.flink.statefun.sdk.java.storage.IllegalStorageAccessException;
 
 /**
- * An {@link AddressScopedStorage} is used for reading and writing persistent values that is managed
+ * An {@link AddressScopedStorage} is used for reading and writing persistent values that are managed
  * by Stateful Functions for fault-tolerance and consistency.
  *
  * <p>All access to the storage is scoped to the current invoked function instance, identified by
  * the instance's {@link Address}. This means that within an invocation, function instances may only
- * access it's own persisted values through this storage.
+ * access its own persisted values through this storage.
  */
 public interface AddressScopedStorage {
 
@@ -21,7 +21,7 @@ public interface AddressScopedStorage {
    *
    * @param spec the {@link ValueSpec} to read the value for.
    * @param <T> the type of the value.
-   * @return the value, or {@link Optional#empty()} if there was not prior value set.
+   * @return the value, or {@link Optional#empty()} if there is no prior value set.
    * @throws IllegalStorageAccessException if the provided {@link ValueSpec} is not recognized by
    *     the storage (e.g., if it wasn't registered for the accessing function).
    */

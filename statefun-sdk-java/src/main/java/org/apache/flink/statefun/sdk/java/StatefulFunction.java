@@ -11,7 +11,7 @@ import org.apache.flink.statefun.sdk.java.message.Message;
  *
  * <h2>Concept</h2>
  *
- * <p>Each individual {@code StatefulFunction} is an uniquely invokable "instance" of a registered
+ * <p>Each individual {@code StatefulFunction} is a uniquely invokable "instance" of a registered
  * {@link StatefulFunctionSpec}. Each instance is identified by an {@link Address}, representing the
  * function's unique id (a string) within its type. From a user's perspective, it would seem as if
  * for each unique function id, there exists a stateful instance of the function that is always
@@ -19,7 +19,7 @@ import org.apache.flink.statefun.sdk.java.message.Message;
  *
  * <h2>Invoking a {@code StatefulFunction}</h2>
  *
- * <p>An individual {@code StatefulFunction} can be invoked with arbitrary input from any another
+ * <p>An individual {@code StatefulFunction} can be invoked with arbitrary input from any other
  * {@code StatefulFunction} (including itself), or routed from ingresses. To invoke a {@code
  * StatefulFunction}, the caller simply needs to know the {@code Address} of the target function.
  *
