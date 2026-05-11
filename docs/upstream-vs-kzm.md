@@ -17,7 +17,7 @@ description: Migration guide from Apache Stateful Functions 3.4.0 to StateFun Ac
 | **Kinesis I/O** | Built for Flink 1.x Kinesis source | **Restored** on Flink 2.x's `KinesisStreamsSource`/`KinesisStreamsSink` |
 | **Active CI** | Inactive after 3.4.0 | Ongoing — Dependabot, CodeQL, Scorecard, Trivy |
 | **K8s deployment** | Examples in docs | **K8s-native E2E gate** via Flink Operator + LocalStack |
-| **Docker image** | `apache/flink-statefun:3.4.0` (Flink 1.16) | `ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.1` (Flink 2.2) |
+| **Docker image** | `apache/flink-statefun:3.4.0` (Flink 1.16) | `ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.3` (Flink 2.2) |
 | **Test framework** | JUnit 4 | JUnit Jupiter 5.11 |
 | **Release cadence** | Dormant | Active (Maven Central + GHCR) |
 
@@ -31,7 +31,7 @@ description: Migration guide from Apache Stateful Functions 3.4.0 to StateFun Ac
 +  <groupId>io.github.kzmlabs.flinkstatefun</groupId>
    <artifactId>statefun-sdk-java</artifactId>
 -  <version>3.4.0</version>
-+  <version>3.4.0-KZM-3.1</version>
++  <version>3.4.0-KZM-3.3</version>
  </dependency>
 ```
 

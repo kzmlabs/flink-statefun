@@ -164,7 +164,7 @@ Releases are signed via Sigstore keyless attestation, scanned with Trivy, and tr
 Verify a release artifact with the GitHub CLI:
 
 ```bash
-gh attestation verify oci://ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.1 --owner kzmlabs
+gh attestation verify oci://ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.3 --owner kzmlabs
 ```
 
 ## Where next
