@@ -1,3 +1,8 @@
+---
+title: Snapshots
+description: How to consume StateFun Actors snapshot builds from GitHub Packages — repository configuration, authentication, and the maintainer publish flow.
+---
+
 # Using snapshot builds
 
 Stable releases ship to **Maven Central** (`central.sonatype.com`). Development snapshots between releases ship to **GitHub Packages** under the `kzmlabs/flink-statefun` repository.
