@@ -4,6 +4,106 @@ All notable changes to **StateFun Actors by Kzmlabs** are documented in this fil
 
 > **Reading guide:** "KZM-x.y" releases are this fork's versions on Flink 2.x. Apache StateFun's last release was [3.4.0](https://github.com/apache/flink-statefun/releases/tag/release-3.4.0) (October 2024) on Flink 1.16. See [docs/upstream-vs-kzm.md](https://kzmlabs.github.io/flink-statefun/upstream-vs-kzm/) for the full migration matrix.
 
+## [3.4.0-KZM-3.3] - 2026-05-11
+
+Patch release on the KZM-3.x line. Hardens the supply-chain security signal
+(SHA-pinning + Dependabot config), patches two transitive CVEs, ships a real
+user-facing quickstart docker-compose stack to replace the broken `cd dev`
+path, fixes a small set of real CodeQL findings (resource leaks, immutability,
+missing synchronization), and modernises every GitHub Action to its current
+major version. No runtime behaviour changes for SDK consumers — coordinates
+stay at the same Flink 2.2.0 + Java 21 baseline.
+
+### Added
+
+- **User-facing quickstart docker-compose stack** at `examples/quickstart/`
+  — Kafka 3.9 KRaft + Flink JM/TM + greeter remote function, brought up by
+  `docker compose up -d --wait --build`. Replaces the previous quickstart
+  which pointed at the gitignored `dev/` maintainer directory and failed
+  immediately on a fresh `git clone`. New `quickstart-smoke.yml` CI
+  workflow exercises the round-trip on every PR touching the surface.
+- **Combined coverage summary** rendered on every Build & Test job (JaCoCo
+  unit + e2e + line-union), with the heavy summary logic extracted to
+  `.github/scripts/coverage_summary.py`. README gains a Codecov badge.
+
+### Security
+
+- **NOTICE attribution** — added the Kzmlabs continuation block per
+  Apache 2.0 §4(d) while preserving the original Apache notice verbatim.
+- **CVEs patched** — `google.golang.org/protobuf` 1.26.0 → 1.36.11
+  (GHSA-8r3f-844c-mc37: `protojson.Unmarshal` infinite loop on certain
+  invalid JSON, CVSS 7.5); `pygments` 2.18.0 → 2.20.0 (GHSA-5239-wwwm-4pmq:
+  GUID regex ReDoS, CVSS 3.3).
+- **Supply-chain hardening** — every GitHub Action in every workflow now
+  references a commit SHA with a trailing tag comment; the
+  `apache/flink:2.2.0-java21` base image of `statefun-docker` is pinned to
+  its content digest. New `.github/dependabot.yml` watches all five
+  ecosystems (`github-actions`, `maven`, `pip`, `gomod`, `docker`) and
+  opens weekly bump PRs so the pins stay fresh. The actions group is
+  scoped to `minor` + `patch`; majors each open an individual PR for
+  proper review.
+- **CodeQL surface split** — dropped the `code-quality` lint pack from
+  the primary security signal, then re-added it as a separate SARIF
+  category (`/language:java/code-quality`) so the Security tab can be
+  filtered to real security findings.
+
+### Fixed
+
+- `UnboundedFeedbackLogger.replyLoggedEnvelops` now wraps the
+  `DataInputViewStreamWrapper` in try-with-resources, closing the wrapper
+  on every path (CodeQL `input-resource-leak`). Both call sites
+  (`FeedbackUnionOperator` and the unit test) hand the stream off and do
+  not read from it again.
+- `NettyProtobuf.serializeOutputStream` wraps `ByteBufOutputStream` in
+  try-with-resources (CodeQL `output-resource-leak`). Closing the stream
+  does **not** release the underlying `ByteBuf` — Netty buffer pooling
+  is unaffected.
+- `ModuleSpecs.ModuleSpec` switches from `Collections.unmodifiableList`
+  (read-only view) to `List.copyOf` (truly immutable copy), removing the
+  `internal-representation-exposure` flag and making the immutability
+  contract obvious.
+- Two test helpers extending `ByteArrayInputStream`
+  (`RandomReadLengthByteArrayInputStream`,
+  `OneBytePerReadByteArrayInputStream`) declare `synchronized` on their
+  `read(byte[], int, int)` overrides, matching the parent class's
+  synchronized read contract (CodeQL `non-sync-override`).
+
+### Dependencies
+
+GitHub Actions (each merged as its own PR; majors got individual review
+after the actions group was scoped to `minor` + `patch`):
+
+| Action | From | To |
+|---|---|---|
+| `actions/upload-artifact` | v4.6.2 | **v7.0.1** |
+| `codecov/codecov-action` | v5.5.4 | **v6.0.0** |
+| `github/codeql-action` | v3.35.4 | **v4.35.4** |
+| `docker/setup-buildx-action` | v3.12.0 | **v4.0.0** |
+| `sigstore/cosign-installer` | v3.9.1 | **v4.1.2** |
+
+Maven / pip / gomod patch + minor bumps:
+
+- `software.amazon.awssdk:bom` 2.44.0 → 2.44.4
+- `github.com/stretchr/testify` 1.7.0 → 1.11.1 (Go SDK test scope)
+- `org.slf4j:slf4j-simple` 2.0.9 → 2.0.17 (test scope)
+- `mkdocs-material` 9.6.20 → 9.7.6 (docs site)
+- `pymdown-extensions` 10.18 → 10.21.2 (docs site)
+
+### Deferred
+
+- `slf4j-log4j12` 1.x → 2.x cross-major artifact rename
+  (`slf4j-reload4j` in the 2.x line) is a coordinated `dependencyManagement`
+  migration, not a one-shot Dependabot bump. Dependabot is configured to
+  ignore `slf4j-log4j12 >= 2.0` until the migration lands.
+- 787 CodeQL `code-quality` findings (`missing-override`,
+  `unused-parameter`, `confusing-method-signature`, etc.) are upstream
+  Apache Flink legacy patterns. Triage tracked separately; filter the
+  `code-quality` CodeQL category in the Security tab to view.
+- 9 Scorecard supply-chain alerts dismissed `won't fix` with policy
+  rationale (single-maintainer branch-protection / code-review limits,
+  workflow-required token write permissions, no-fuzzer integration,
+  no-OpenSSF best-practices badge).
+
 ## [3.4.0-KZM-3.1] - 2026-04-29
 
 Patch release on top of 3.4.0-KZM-3.0. Same Kinesis-restoration baseline as

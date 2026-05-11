@@ -56,7 +56,7 @@ Full migration notes: **[Differences from Apache StateFun](https://kzmlabs.githu
     <dependency>
       <groupId>io.github.kzmlabs.flinkstatefun</groupId>
       <artifactId>statefun-bom</artifactId>
-      <version>3.4.0-KZM-3.1</version>
+      <version>3.4.0-KZM-3.3</version>
       <type>pom</type>
       <scope>import</scope>
     </dependency>
@@ -102,7 +102,7 @@ spec:
 ```bash
 docker run --rm -p 8081:8081 \
   -v $(pwd)/module.yaml:/opt/flink/conf/module.yaml \
-  ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.1
+  ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.3
 ```
 
 Full walkthrough → **[Quickstart guide](https://kzmlabs.github.io/flink-statefun/quickstart/)**.
@@ -141,14 +141,14 @@ Restricted-network builds: set `IMAGE_REGISTRY_PREFIX=harbor.example.com/dockerh
 
 | Kzmlabs version | Apache StateFun base | Flink | Java | Status |
 |---|---|---|---|---|
-| `3.4.0-KZM-3.1` | 3.4.0 | 2.2.0 | 21 | Latest |
+| `3.4.0-KZM-3.3` | 3.4.0 | 2.2.0 | 21 | Latest |
+| `3.4.0-KZM-3.1` | 3.4.0 | 2.2.0 | 21 | Stable |
 | `3.4.0-KZM-3.0` | 3.4.0 | 2.2.0 | 21 | Stable |
-| `3.4.0-KZM-2.0` | 3.4.0 | 2.2.0 | 21 | Stable |
 
 Releases are signed via Sigstore keyless attestation. Verify with:
 
 ```bash
-gh attestation verify oci://ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.1 --owner kzmlabs
+gh attestation verify oci://ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.3 --owner kzmlabs
 ```
 
 ## Branch model

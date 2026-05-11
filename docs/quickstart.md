@@ -126,7 +126,7 @@ The runtime owns state, routing, exactly-once delivery, and checkpointing. Your 
 
 ??? failure "`pull access denied` on the GHCR image"
 
-    The image is public. If you see this, your local Docker is logged into a different GHCR account that lacks access. Run `docker logout ghcr.io` and try again, or pin to a different tag with `docker pull ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.1` to verify connectivity.
+    The image is public. If you see this, your local Docker is logged into a different GHCR account that lacks access. Run `docker logout ghcr.io` and try again, or pin to a different tag with `docker pull ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.3` to verify connectivity.
 
 ??? failure "Step 4 returns no output / consumer hangs"
 
