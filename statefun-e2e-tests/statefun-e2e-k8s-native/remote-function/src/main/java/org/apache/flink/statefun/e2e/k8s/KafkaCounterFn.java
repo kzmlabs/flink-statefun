@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: Apache-2.0
+ // SPDX-License-Identifier: Apache-2.0
 
 package org.apache.flink.statefun.e2e.k8s;
 
@@ -28,7 +28,8 @@ public final class KafkaCounterFn implements StatefulFunction {
 
   static final Type<CounterCommand> COUNTER_COMMAND_TYPE =
       SimpleType.simpleTypeFrom(
-          COUNTER_COMMAND_TYPE_NAME, CounterCommand::toByteArray, CounterCommand::parseFrom);
+          COUNTER_COMMAND_TYPE_NAME, CounterCommand::toByteArray, 
+          (byte[] bytes) ->CounterCommand.parseFrom(bytes));
 
   @Override
   public CompletableFuture<Void> apply(Context context, Message message) {
