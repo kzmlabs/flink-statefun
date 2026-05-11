@@ -32,7 +32,7 @@ under the License.
     <version>3.4-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <url>http://flink.apache.org</url>
+    <url>https://flink.apache.org</url>
     <inceptionYear>2014</inceptionYear>
 
     <licenses>
@@ -294,6 +294,7 @@ under the License.
                         <exclude>.github/**</exclude>
                         <!-- IDE files. -->
                         <exclude>**/*.iml</exclude>
+                        <exclude>**/*.project</exclude>
                         <!-- Generated content -->
                         <exclude>**/target/**</exclude>
                         <exclude>**/_build/**</exclude>
@@ -310,7 +311,7 @@ under the License.
                         <!-- Python venv -->
                         <exclude>**/venv/**</exclude>
                         <!-- Generated lock file -->
-                        <exclude>**/go.sum/**</exclude>
+                        <exclude>**/go.sum</exclude>
                     </excludes>
                 </configuration>
             </plugin>
