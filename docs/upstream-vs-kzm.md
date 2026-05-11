@@ -9,7 +9,7 @@ description: Migration guide from Apache Stateful Functions 3.4.0 to StateFun Ac
 
 ## At a glance
 
-| | Apache StateFun 3.4.0 | StateFun Actors KZM-3.1 |
+| | Apache StateFun 3.4.0 | StateFun Actors KZM-3.3 |
 |---|---|---|
 | **Flink runtime** | 1.16.2 | **2.2.0** |
 | **Java baseline** | 11 | **21** |
