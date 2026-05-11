@@ -13,7 +13,7 @@ experience and elasticity of these platforms.
 Stateful Functions is developed under the umbrella of [Apache Flink](https://flink.apache.org/).
 
 This README is meant as a brief walkthrough on the core concepts and how to set things up
-to get yourself started with Stateful Functions.
+to get yourself started with Stateful Functions
 
 For a fully detailed documentation, please visit the [official docs](https://ci.apache.org/projects/flink/flink-statefun-docs-master).
 
