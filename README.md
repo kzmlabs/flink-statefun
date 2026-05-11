@@ -34,7 +34,7 @@ flowchart LR
 
 Apache Stateful Functions stopped releasing in October 2024 at 3.4.0, locked to Flink 1.16 and Java 11. Anyone wanting to run it against modern Flink either pinned old dependencies or vendored their own patches. StateFun Actors is the public, actively maintained branch — same code, modern stack, no vendor lock-in.
 
-| | Apache StateFun 3.4.0 | StateFun Actors KZM-3.1 |
+| | Apache StateFun 3.4.0 | StateFun Actors KZM-3.3 |
 |---|---|---|
 | **Flink runtime** | 1.16.2 | **2.2.0** |
 | **Java baseline** | 11 | **21** |
