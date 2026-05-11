@@ -75,5 +75,5 @@ Before putting your Stateful Functions application into production, read the [de
 
 {{< /columns >}}
 
-Stateful Functions is developed under the umbrella of [Apache Flink](flink.apache.org)
+Stateful Functions is developed under the umbrella of [Apache Flink](https://flink.apache.org/)
 
