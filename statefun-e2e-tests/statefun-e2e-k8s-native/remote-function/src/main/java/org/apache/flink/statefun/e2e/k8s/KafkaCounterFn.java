@@ -29,7 +29,7 @@ public final class KafkaCounterFn implements StatefulFunction {
   static final Type<CounterCommand> COUNTER_COMMAND_TYPE =
       SimpleType.simpleTypeFrom(
           COUNTER_COMMAND_TYPE_NAME, CounterCommand::toByteArray, 
-          (byte[] bytes) ->CounterCommand.parseFrom(bytes));
+          (byte[] bytes) -> CounterCommand.parseFrom(bytes));
 
   @Override
   public CompletableFuture<Void> apply(Context context, Message message) {
