@@ -44,7 +44,7 @@ This runs `.github/workflows/release.yml` which:
 
 ### 2. Docker Only Release (No Maven Central)
 
-Triggered by pushing a tag starting with `docker-`. Uses the same `release.yml` workflow
+Triggered by pushing a tag starting with `docker-`. Uses the same `release.yml` workflow,
 but skips Maven Central deploy and GitHub Release creation.
 
 ```bash

@@ -41,7 +41,7 @@ mvn spotless:apply
 
 CI will fail builds that do not conform.
 
-### Testing conventions
+### Testing Conventions
 
 The project uses **JUnit 5 Jupiter** with **AssertJ** for fluent assertions. Hamcrest is also available for legacy tests. Match the style of the surrounding tests in the module you are touching.
 
