@@ -27,7 +27,7 @@ final class OneBytePerReadByteArrayInputStream extends ByteArrayInputStream {
   }
 
   @Override
-  public int read(byte[] b, int off, int len) {
+  public synchronized int read(byte[] b, int off, int len) {
     return super.read(b, off, Math.min(len, 1));
   }
 

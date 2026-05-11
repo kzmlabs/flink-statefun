@@ -85,10 +85,11 @@ public class UnboundedFeedbackLoggerTest {
     out.writeInt(456);
     InputStream in = new RandomReadLengthByteArrayInputStream(out.getCopyOfBuffer());
 
-    DataInputViewStreamWrapper view = new DataInputViewStreamWrapper(Header.skipHeaderSilently(in));
-
-    assertThat(view.readInt(), is(123));
-    assertThat(view.readInt(), is(456));
+    try (DataInputViewStreamWrapper view =
+        new DataInputViewStreamWrapper(Header.skipHeaderSilently(in))) {
+      assertThat(view.readInt(), is(123));
+      assertThat(view.readInt(), is(456));
+    }
   }
 
   @Test
@@ -98,10 +99,11 @@ public class UnboundedFeedbackLoggerTest {
     out.writeInt(456);
     InputStream in = new RandomReadLengthByteArrayInputStream(out.getCopyOfBuffer());
 
-    DataInputViewStreamWrapper view = new DataInputViewStreamWrapper(Header.skipHeaderSilently(in));
-
-    assertThat(view.readInt(), is(123));
-    assertThat(view.readInt(), is(456));
+    try (DataInputViewStreamWrapper view =
+        new DataInputViewStreamWrapper(Header.skipHeaderSilently(in))) {
+      assertThat(view.readInt(), is(123));
+      assertThat(view.readInt(), is(456));
+    }
   }
 
   @Test
@@ -110,16 +112,19 @@ public class UnboundedFeedbackLoggerTest {
     Header.writeHeader(out);
     InputStream in = new RandomReadLengthByteArrayInputStream(out.getCopyOfBuffer());
 
-    DataInputViewStreamWrapper view = new DataInputViewStreamWrapper(Header.skipHeaderSilently(in));
-
-    assertThat(view.read(), is(-1));
+    try (DataInputViewStreamWrapper view =
+        new DataInputViewStreamWrapper(Header.skipHeaderSilently(in))) {
+      assertThat(view.read(), is(-1));
+    }
   }
 
   @Test
   public void emptyKeyGroupWithoutHeader() throws IOException {
     InputStream in = new RandomReadLengthByteArrayInputStream(new byte[0]);
-    DataInputViewStreamWrapper view = new DataInputViewStreamWrapper(Header.skipHeaderSilently(in));
-    assertThat(view.read(), is(-1));
+    try (DataInputViewStreamWrapper view =
+        new DataInputViewStreamWrapper(Header.skipHeaderSilently(in))) {
+      assertThat(view.read(), is(-1));
+    }
   }
 
   private void roundTrip(int numElements, int maxMemoryInBytes) throws Exception {
