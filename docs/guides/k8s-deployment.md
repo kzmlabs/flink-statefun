@@ -83,6 +83,7 @@ data:
       functions: example/*
       urlPathTemplate: http://my-remote-function.my-app.svc:8080/statefun
 
+    ---
     kind: io.statefun.kafka.v1/ingress
     spec:
       id: example/orders
