@@ -28,7 +28,7 @@ public final class Expiration implements Serializable {
   }
 
   /**
-   * Returns an {@link Expiration} configuration that would expire a @duration after the last write.
+   * Returns an {@link Expiration} configuration that would expire after a {@code duration} since the last write.
    *
    * @param duration a duration to wait before considering the state expired.
    */
@@ -37,7 +37,7 @@ public final class Expiration implements Serializable {
   }
 
   /**
-   * Returns an {@link Expiration} configuration that would expire a @duration after the last
+   * Returns an {@link Expiration} configuration that would expire after a {@code duration} since the last
    * invocation of the function.
    *
    * @param duration a duration to wait before considering the state expired.

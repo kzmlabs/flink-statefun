@@ -5,8 +5,8 @@ package org.apache.flink.statefun.sdk.java;
 import java.util.Objects;
 
 /**
- * An {@link Address} is the unique identity of an individual {@link StatefulFunction}, containing
- * of the function's {@link TypeName} and an unique identifier within the type. The function's type
+ * An {@link Address} is the unique identity of an individual {@link StatefulFunction}, consisting
+ * of the function's {@link TypeName} and a unique identifier within the type. The function's type
  * denotes the class of function to invoke, while the unique identifier addresses the invocation to
  * a specific function instance.
  */

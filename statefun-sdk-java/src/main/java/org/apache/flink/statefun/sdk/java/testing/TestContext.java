@@ -14,7 +14,7 @@ import org.apache.flink.statefun.sdk.java.message.EgressMessage;
 import org.apache.flink.statefun.sdk.java.message.Message;
 
 /**
- * An implementation of {@link Context} to to make it easier to test {@link
+ * An implementation of {@link Context} to make it easier to test {@link
  * org.apache.flink.statefun.sdk.java.StatefulFunction}s in isolation. It can be instantiated with
  * the address of the function under test and optionally the address of the caller.
  */
@@ -102,11 +102,7 @@ public final class TestContext implements Context {
 
   /**
    * This method returns a list of all messages sent by this function via {@link
-   * Context#send(Message)} or {@link Context#sendAfter(Duration, Message)}.
-   *
-   * <p>Messages are wrapped in an {@link SideEffects.SendSideEffect} that contains the message
-   * itself and the duration after which the message was sent. The Duration is {@link Duration#ZERO}
-   * for messages sent via {@link Context#send(Message)}.
+   * Context#send(Message)}.
    *
    * @return the list of sent messages wrapped in {@link SideEffects.SendSideEffect}s
    */

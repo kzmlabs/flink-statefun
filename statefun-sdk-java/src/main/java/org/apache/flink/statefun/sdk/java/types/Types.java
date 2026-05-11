@@ -70,7 +70,7 @@ public final class Types {
 
   /**
    * Compute the Protobuf field tag, as specified by the Protobuf wire format. See {@code
-   * WireFormat#makeTag(int, int)}}. NOTE: that, currently, for all StateFun provided wire types the
+   * WireFormat#makeTag(int, int)}. NOTE: that, currently, for all StateFun provided wire types the
    * tags should be 1 byte.
    *
    * @param fieldNumber the field number as specified in the message definition.
