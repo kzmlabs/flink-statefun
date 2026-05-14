@@ -69,7 +69,8 @@ public class RemoteFunctionServer {
               System.err.println("[Server] Error handling request: " + error);
               error.printStackTrace(System.err);
               sendResponse(exchange, 500, "Internal Server Error");
-            } else {
+              return;
+            } 
               byte[] responseBytes = result.toByteArray();
               System.out.println("[Server] Response: " + responseBytes.length + " bytes");
               exchange.getResponseHeaders().set("Content-Type", "application/octet-stream");
@@ -81,7 +82,6 @@ public class RemoteFunctionServer {
               } catch (IOException e) {
                 System.err.println("[Server] Error sending response: " + e.getMessage());
               }
-            }
           });
     } catch (IOException e) {
       System.err.println("[Server] Error reading request: " + e.getMessage());
