@@ -95,9 +95,6 @@ spec:
       --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
       --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED
       --add-opens=java.base/java.util.concurrent.locks=ALL-UNNAMED
-  # Required because the Flink Operator's auto-generated ConfigMap masks the image-baked
-  # /opt/flink/conf/logback-console.xml. Keep this block in sync with the canonical XML at
-  # statefun-docker/src/main/docker/conf/logback-console.xml.
   logConfiguration:
     logback-console.xml: |
       <?xml version="1.0" encoding="UTF-8"?>
