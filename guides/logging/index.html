@@ -6,17 +6,17 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Apache Kafka ingress and egress configuration for StateFun Actors on Apache Flink — exactly-once delivery, multi-topic ingresses, custom Protobuf types, routing patterns.">
+        <meta name="description" content="How JobManager and TaskManager logging is configured in StateFun Actors on Kubernetes — spec.logConfiguration, the Operator ConfigMap overlay, JSON output via LogstashEncoder.">
       
       
       
-        <link rel="canonical" href="https://kzmlabs.github.io/flink-statefun/guides/kafka-io/">
+        <link rel="canonical" href="https://kzmlabs.github.io/flink-statefun/guides/logging/">
       
       
-        <link rel="prev" href="../../examples/iot-fleet/">
+        <link rel="prev" href="../k8s-deployment/">
       
       
-        <link rel="next" href="../kafka-egress-tuning/">
+        <link rel="next" href="../../architecture/">
       
       
         
@@ -27,7 +27,7 @@
     
     
       
-        <title>Kafka I/O - StateFun Actors by Kzmlabs</title>
+        <title>Logging - StateFun Actors by Kzmlabs</title>
       
     
     
@@ -76,19 +76,19 @@
 
   <!-- OpenGraph -->
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Kafka I/O">
-  <meta property="og:description" content="Apache Kafka ingress and egress configuration for StateFun Actors on Apache Flink — exactly-once delivery, multi-topic ingresses, custom Protobuf types, routing patterns.">
+  <meta property="og:title" content="Logging">
+  <meta property="og:description" content="How JobManager and TaskManager logging is configured in StateFun Actors on Kubernetes — spec.logConfiguration, the Operator ConfigMap overlay, JSON output via LogstashEncoder.">
   <meta property="og:image" content="https://kzmlabs.github.io/flink-statefun/assets/social-preview.png">
   <meta property="og:image:width" content="1280">
   <meta property="og:image:height" content="640">
-  <meta property="og:url" content="https://kzmlabs.github.io/flink-statefun/guides/kafka-io/">
+  <meta property="og:url" content="https://kzmlabs.github.io/flink-statefun/guides/logging/">
   <meta property="og:site_name" content="StateFun Actors by Kzmlabs">
   <meta property="og:locale" content="en_US">
 
   <!-- Twitter card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Kafka I/O">
-  <meta name="twitter:description" content="Apache Kafka ingress and egress configuration for StateFun Actors on Apache Flink — exactly-once delivery, multi-topic ingresses, custom Protobuf types, routing patterns.">
+  <meta name="twitter:title" content="Logging">
+  <meta name="twitter:description" content="How JobManager and TaskManager logging is configured in StateFun Actors on Kubernetes — spec.logConfiguration, the Operator ConfigMap overlay, JSON output via LogstashEncoder.">
   <meta name="twitter:image" content="https://kzmlabs.github.io/flink-statefun/assets/social-preview.png">
 
   
@@ -114,7 +114,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#kafka-io" class="md-skip">
+        <a href="#logging" class="md-skip">
           Skip to content
         </a>
       
@@ -147,7 +147,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Kafka I/O
+              Logging
             
           </span>
         </div>
@@ -328,7 +328,7 @@
     
     
       <li class="md-tabs__item md-tabs__item--active">
-        <a href="./" class="md-tabs__link">
+        <a href="../kafka-io/" class="md-tabs__link">
           
   
   
@@ -855,37 +855,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Kafka I/O
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../kafka-io/" class="md-nav__link">
         
   
   
@@ -901,154 +874,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#ingress" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Ingress
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Ingress">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#startup-position" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Startup position
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#startup-from-timestamp-example" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Startup-from-timestamp example
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#egress" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Egress
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Egress">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#at-least-once-vs-exactly-once" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        At-least-once vs exactly-once
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#patterns" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Patterns
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Patterns">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#routing-to-multiple-namespaces" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Routing to multiple namespaces
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#multi-topic-ingresses" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Multi-topic ingresses
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#custom-protobuf-types" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Custom Protobuf types
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#next-steps" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Next steps
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1142,10 +967,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../logging/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logging
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1161,6 +1013,103 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works-in-statefun-on-k8s" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works in StateFun on K8s
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#json-config-used-by-statefun-e2e" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        JSON config used by StateFun E2E
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#override-the-root-level" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Override the root level
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-incident-debug-candidates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In-incident DEBUG candidates
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-to-verify-what-the-pod-actually-sees" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How to verify what the pod actually sees
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aggregator-compatibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Aggregator compatibility
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#async-logging-when-to-opt-in" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Async logging — when to opt in
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1492,127 +1441,76 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#ingress" class="md-nav__link">
+  <a href="#how-it-works-in-statefun-on-k8s" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Ingress
+        How it works in StateFun on K8s
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Ingress">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#startup-position" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Startup position
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#startup-from-timestamp-example" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Startup-from-timestamp example
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#egress" class="md-nav__link">
+  <a href="#json-config-used-by-statefun-e2e" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Egress
+        JSON config used by StateFun E2E
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Egress">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#at-least-once-vs-exactly-once" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        At-least-once vs exactly-once
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#patterns" class="md-nav__link">
+  <a href="#override-the-root-level" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Patterns
+        Override the root level
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Patterns">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#routing-to-multiple-namespaces" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Routing to multiple namespaces
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#multi-topic-ingresses" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Multi-topic ingresses
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#custom-protobuf-types" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Custom Protobuf types
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#next-steps" class="md-nav__link">
+  <a href="#in-incident-debug-candidates" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Next steps
+        In-incident DEBUG candidates
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-to-verify-what-the-pod-actually-sees" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How to verify what the pod actually sees
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aggregator-compatibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Aggregator compatibility
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#async-logging-when-to-opt-in" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Async logging — when to opt in
       
     </span>
   </a>
@@ -1639,7 +1537,7 @@
 
 
   
-    <a href="https://github.com/kzmlabs/flink-statefun/edit/release/docs/guides/kafka-io.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/kzmlabs/flink-statefun/edit/release/docs/guides/logging.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
     </a>
@@ -1647,145 +1545,143 @@
   
 
 
-<h1 id="kafka-io">Kafka I/O<a class="headerlink" href="#kafka-io" title="Permanent link">&para;</a></h1>
-<blockquote>
-<p>StateFun functions consume and emit through Kafka via declarative <code>module.yaml</code> specs. Exactly-once when paired with transactional Kafka and Flink checkpointing.</p>
-</blockquote>
-<h2 id="ingress">Ingress<a class="headerlink" href="#ingress" title="Permanent link">&para;</a></h2>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">io.statefun.kafka.v1/ingress</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nt">spec</span><span class="p">:</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example/orders</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span><span class="nt">address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kafka.svc:9092</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">  </span><span class="nt">consumerGroupId</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example-orders</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">  </span><span class="nt">startupPosition</span><span class="p">:</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">latest</span><span class="w">                   </span><span class="c1"># or earliest, group-offsets, specific-offsets</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">  </span><span class="nt">topics</span><span class="p">:</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">topic</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example.orders</span>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">      </span><span class="nt">valueType</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example/Order</span><span class="w">      </span><span class="c1"># registered SDK type</span>
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">      </span><span class="nt">targets</span><span class="p">:</span>
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example/order-handler</span>
+<h1 id="logging">Logging<a class="headerlink" href="#logging" title="Permanent link">&para;</a></h1>
+<h2 id="how-it-works-in-statefun-on-k8s">How it works in StateFun on K8s<a class="headerlink" href="#how-it-works-in-statefun-on-k8s" title="Permanent link">&para;</a></h2>
+<p>Both JobManager and TaskManager read their Logback config from <code>${FLINK_HOME}/conf/logback-console.xml</code>. Under the Flink Kubernetes Operator that file lives in an auto-generated read-only ConfigMap that the Operator mounts over <code>/opt/flink/conf/</code> — the mount <strong>replaces the whole directory</strong>, so anything baked into the image at <code>/opt/flink/conf/*</code> is masked at runtime.</p>
+<p>The Operator builds that ConfigMap from two sources:</p>
+<ol>
+<li><strong><code>config.yaml</code></strong> — derived from <code>spec.flinkConfiguration</code>.</li>
+<li><strong><code>spec.logConfiguration</code></strong> — a map of <code>&lt;filename&gt; → &lt;content&gt;</code> you provide on the <code>FlinkDeployment</code>. The key for Logback is exactly <code>logback-console.xml</code>.</li>
+</ol>
+<p>If <code>spec.logConfiguration.logback-console.xml</code> is not set, the Operator omits the key entirely. Logback then has no config file to read, falls back to <code>BasicConfigurator</code>, and emits plain-text WARN+ to stderr. Structured JSON is <strong>opt-in via this block</strong>.</p>
+<h2 id="json-config-used-by-statefun-e2e">JSON config used by StateFun E2E<a class="headerlink" href="#json-config-used-by-statefun-e2e" title="Permanent link">&para;</a></h2>
+<p>The reference XML lives at <a href="https://github.com/kzmlabs/flink-statefun/blob/release/statefun-e2e-tests/statefun-e2e-k8s-native/src/test/resources/k8s/flink-deployment.yaml"><code>statefun-e2e-tests/statefun-e2e-k8s-native/src/test/resources/k8s/flink-deployment.yaml</code></a>. Copy-paste:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">spec</span><span class="p">:</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">logConfiguration</span><span class="p">:</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="nt">logback-console.xml</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">      </span><span class="no">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">      </span><span class="no">&lt;configuration scan=&quot;true&quot; scanPeriod=&quot;30 seconds&quot;&gt;</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">          </span><span class="no">&lt;appender name=&quot;console&quot; class=&quot;ch.qos.logback.core.ConsoleAppender&quot;&gt;</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">              </span><span class="no">&lt;encoder class=&quot;net.logstash.logback.encoder.LogstashEncoder&quot;&gt;</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">                  </span><span class="no">&lt;timestampPattern&gt;yyyy-MM-dd&#39;T&#39;HH:mm:ss.SSS&#39;Z&#39;&lt;/timestampPattern&gt;</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">                  </span><span class="no">&lt;throwableConverter class=&quot;net.logstash.logback.stacktrace.ShortenedThrowableConverter&quot;&gt;</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">                      </span><span class="no">&lt;maxDepthPerThrowable&gt;120&lt;/maxDepthPerThrowable&gt;</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">                      </span><span class="no">&lt;shortenedClassNameLength&gt;60&lt;/shortenedClassNameLength&gt;</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">                      </span><span class="no">&lt;exclude&gt;^sun\.reflect\..*\.invoke&lt;/exclude&gt;</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">                      </span><span class="no">&lt;exclude&gt;^jdk\.internal\.reflect\..*&lt;/exclude&gt;</span>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="w">                      </span><span class="no">&lt;exclude&gt;^java\.lang\.reflect\.Method\.invoke&lt;/exclude&gt;</span>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="w">                      </span><span class="no">&lt;rootCauseFirst&gt;true&lt;/rootCauseFirst&gt;</span>
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="w">                  </span><span class="no">&lt;/throwableConverter&gt;</span>
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="w">              </span><span class="no">&lt;/encoder&gt;</span>
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="w">          </span><span class="no">&lt;/appender&gt;</span>
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="w">          </span><span class="no">&lt;root level=&quot;${ROOT_LOG_LEVEL:-INFO}&quot;&gt;</span>
+</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="w">              </span><span class="no">&lt;appender-ref ref=&quot;console&quot;/&gt;</span>
+</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="w">          </span><span class="no">&lt;/root&gt;</span>
+</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a><span class="w">          </span><span class="no">&lt;logger name=&quot;org.apache.pekko&quot;                                level=&quot;INFO&quot;/&gt;</span>
+</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a><span class="w">          </span><span class="no">&lt;logger name=&quot;org.apache.kafka&quot;                                level=&quot;INFO&quot;/&gt;</span>
+</span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a><span class="w">          </span><span class="no">&lt;logger name=&quot;org.apache.hadoop&quot;                               level=&quot;INFO&quot;/&gt;</span>
+</span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a><span class="w">          </span><span class="no">&lt;logger name=&quot;org.apache.zookeeper&quot;                            level=&quot;INFO&quot;/&gt;</span>
+</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a><span class="w">          </span><span class="no">&lt;logger name=&quot;org.jboss.netty.channel.DefaultChannelPipeline&quot;  level=&quot;ERROR&quot;/&gt;</span>
+</span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a><span class="w">          </span><span class="no">&lt;logger name=&quot;com.amazonaws.services.s3.internal.Mimetypes&quot;    level=&quot;ERROR&quot;/&gt;</span>
+</span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a><span class="w">      </span><span class="no">&lt;/configuration&gt;</span>
 </span></code></pre></div>
-<p>Each entry under <code>topics:</code> maps inbound records to a target function namespace + name. The <code>valueType</code> declares how StateFun decodes the record value — typically a Protobuf type registered in your SDK code.</p>
-<h3 id="startup-position">Startup position<a class="headerlink" href="#startup-position" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th><code>startupPosition.type</code></th>
-<th>Meaning</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>latest</code></td>
-<td>Consume only records produced after the consumer starts</td>
-</tr>
-<tr>
-<td><code>earliest</code></td>
-<td>Consume from the beginning of each partition</td>
-</tr>
-<tr>
-<td><code>group-offsets</code></td>
-<td>Resume from the consumer group's last committed offset (default for restarts)</td>
-</tr>
-<tr>
-<td><code>specific-offsets</code></td>
-<td>Pin specific partition offsets (advanced)</td>
-</tr>
-<tr>
-<td><code>at-timestamp</code></td>
-<td>Resume from records produced at or after a wall-clock time</td>
-</tr>
-</tbody>
-</table>
-<h3 id="startup-from-timestamp-example">Startup-from-timestamp example<a class="headerlink" href="#startup-from-timestamp-example" title="Permanent link">&para;</a></h3>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">startupPosition</span><span class="p">:</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">at-timestamp</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">timestamp</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;2026-04-23T00:00:00.000Z&quot;</span><span class="w">     </span><span class="c1"># ISO-8601</span>
-</span></code></pre></div>
-<h2 id="egress">Egress<a class="headerlink" href="#egress" title="Permanent link">&para;</a></h2>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">io.statefun.kafka.v1/egress</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="nt">spec</span><span class="p">:</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example/notifications</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">  </span><span class="nt">address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kafka.svc:9092</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">  </span><span class="nt">deliverySemantic</span><span class="p">:</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">exactly-once</span>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">    </span><span class="nt">transactionTimeoutMillis</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">60000</span>
-</span></code></pre></div>
-<p>Functions emit to a Kafka egress via the SDK:</p>
-<div class="language-java highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">KafkaEgressMessage</span><span class="w"> </span><span class="n">outbound</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">KafkaEgressMessage</span><span class="p">.</span><span class="na">forEgress</span><span class="p">(</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">        </span><span class="n">TypeName</span><span class="p">.</span><span class="na">typeNameFromString</span><span class="p">(</span><span class="s">&quot;example/notifications&quot;</span><span class="p">))</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span><span class="p">.</span><span class="na">withTopic</span><span class="p">(</span><span class="s">&quot;example.notifications&quot;</span><span class="p">)</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">    </span><span class="p">.</span><span class="na">withKey</span><span class="p">(</span><span class="n">orderId</span><span class="p">)</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">    </span><span class="p">.</span><span class="na">withValue</span><span class="p">(</span><span class="n">notificationPayload</span><span class="p">)</span>
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">    </span><span class="p">.</span><span class="na">build</span><span class="p">();</span>
-</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>
-</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="n">ctx</span><span class="p">.</span><span class="na">send</span><span class="p">(</span><span class="n">outbound</span><span class="p">);</span>
-</span></code></pre></div>
-<p>The runtime uses Flink transactions to deliver exactly once when paired with a transactional Kafka client and exactly-once Flink checkpointing.</p>
-<h3 id="at-least-once-vs-exactly-once">At-least-once vs exactly-once<a class="headerlink" href="#at-least-once-vs-exactly-once" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th><code>deliverySemantic.type</code></th>
-<th>Trade-off</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>exactly-once</code></td>
-<td>Strongest guarantee. Slightly higher producer latency due to transactions. Default for production.</td>
-</tr>
-<tr>
-<td><code>at-least-once</code></td>
-<td>Higher throughput. Duplicates possible on JM failover (the runtime replays the last checkpoint window).</td>
-</tr>
-</tbody>
-</table>
-<div class="admonition warning">
-<p class="admonition-title">Transaction timeout</p>
-<p>For <code>exactly-once</code>, set <code>transactionTimeoutMillis</code> higher than your Flink checkpoint interval, but lower than the Kafka broker's <code>transaction.max.timeout.ms</code> (default 15 min). 60 s is a good starting point for sub-minute checkpoint intervals.</p>
-</div>
-<h2 id="patterns">Patterns<a class="headerlink" href="#patterns" title="Permanent link">&para;</a></h2>
-<h3 id="routing-to-multiple-namespaces">Routing to multiple namespaces<a class="headerlink" href="#routing-to-multiple-namespaces" title="Permanent link">&para;</a></h3>
-<p><code>TargetFunctions.fromPatternString</code> accepts <code>&lt;namespace&gt;/&lt;name&gt;</code> or <code>&lt;namespace&gt;/*</code>. Comma-lists and wildcard namespaces (<code>*/foo</code>) are not supported. To target multiple namespaces, declare one entry per namespace:</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nt">topics</span><span class="p">:</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">topic</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">orders.events</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="nt">valueType</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example/OrderEvent</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">    </span><span class="nt">targets</span><span class="p">:</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">orders/order-handler</span>
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">audit/order-audit</span>
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">billing/order-billing</span>
-</span></code></pre></div>
-<h3 id="multi-topic-ingresses">Multi-topic ingresses<a class="headerlink" href="#multi-topic-ingresses" title="Permanent link">&para;</a></h3>
-<p>A single <code>kafka.v1/ingress</code> can declare multiple <code>topics:</code> entries; each has its own <code>valueType</code> and <code>targets</code>:</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nt">topics</span><span class="p">:</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">topic</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">orders.events</span>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="nt">valueType</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example/OrderEvent</span>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">    </span><span class="nt">targets</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">orders/handler</span><span class="p p-Indicator">]</span>
-</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>
-</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">topic</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">shipments.events</span>
-</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">    </span><span class="nt">valueType</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example/ShipmentEvent</span>
-</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">    </span><span class="nt">targets</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">shipments/handler</span><span class="p p-Indicator">]</span>
-</span></code></pre></div>
-<h3 id="custom-protobuf-types">Custom Protobuf types<a class="headerlink" href="#custom-protobuf-types" title="Permanent link">&para;</a></h3>
-<p>The default <code>io.statefun.types/string</code> works for simple cases. For typed binary payloads, register <code>SimpleType.simpleImmutableTypeFrom(...)</code> in your SDK and reference it as <code>valueType</code>:</p>
-<div class="language-java highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">Type</span><span class="o">&lt;</span><span class="n">Order</span><span class="o">&gt;</span><span class="w"> </span><span class="n">ORDER_TYPE</span><span class="w"> </span><span class="o">=</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">    </span><span class="n">SimpleType</span><span class="p">.</span><span class="na">simpleImmutableTypeFrom</span><span class="p">(</span>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">        </span><span class="n">TypeName</span><span class="p">.</span><span class="na">typeNameFromString</span><span class="p">(</span><span class="s">&quot;example/Order&quot;</span><span class="p">),</span>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">        </span><span class="n">Order</span><span class="p">::</span><span class="n">toByteArray</span><span class="p">,</span>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">        </span><span class="n">Order</span><span class="p">::</span><span class="n">parseFrom</span><span class="p">);</span>
-</span></code></pre></div>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nt">valueType</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example/Order</span>
-</span></code></pre></div>
-<p>Works more reliably than the generic string codec for binary content.</p>
-<h2 id="next-steps">Next steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
-<div class="grid cards">
+<p>What each piece does:</p>
 <ul>
-<li><span class="twemoji lg middle"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7.64 10.38c0 .25.02.45.07.62.05.12.12.28.21.46.04.04.05.1.05.15 0 .07-.04.13-.13.2l-.42.28c-.06.04-.12.06-.17.06-.07 0-.13-.04-.2-.1-.09-.1-.17-.2-.24-.31-.06-.11-.13-.24-.2-.39-.52.61-1.17.92-1.96.92-.56 0-1-.16-1.33-.48-.32-.32-.49-.75-.49-1.29 0-.55.2-1 .6-1.36.41-.34.95-.52 1.63-.52.23 0 .44.02.71.06.23.03.5.08.76.14v-.48c0-.51-.1-.84-.31-1.07-.22-.21-.57-.3-1.08-.3-.24 0-.48.03-.72.08-.25.06-.49.13-.72.23-.11.04-.2.07-.23.08-.05.02-.08.02-.11.02-.09 0-.14-.06-.14-.2v-.33c0-.1.01-.18.05-.23q.045-.075.18-.12c.24-.14.51-.24.84-.32a4 4 0 0 1 1.04-.13q1.185 0 1.74.54c.37.36.55.91.55 1.64v2.15zm-2.7 1.02c.22 0 .44-.04.68-.12s.45-.23.63-.43c.11-.13.19-.27.25-.43 0-.16.05-.35.05-.58v-.27c-.2-.07-.4-.07-.62-.12a7 7 0 0 0-.62-.04c-.45 0-.77.09-.99.27s-.32.43-.32.76c0 .32.07.56.24.71.16.17.39.25.7.25m5.34.71a.6.6 0 0 1-.28-.06c-.03-.05-.08-.14-.12-.26L8.32 6.65c-.04-.15-.06-.22-.06-.27 0-.11.05-.17.16-.17h.65c.13 0 .22.02.26.07.06.04.1.13.14.26l1.11 4.4 1.04-4.4c.03-.13.07-.22.13-.26.05-.04.14-.07.25-.07h.55c.12 0 .21.02.26.07.05.04.1.13.13.26L14 11l1.14-4.46c.04-.13.09-.22.13-.26.06-.04.14-.07.26-.07h.62c.11 0 .17.06.17.17 0 .03-.01.07-.02.12 0 0-.02.08-.04.15l-1.61 5.14c-.04.14-.08.21-.15.26-.04.04-.13.07-.24.07h-.57c-.13 0-.19-.02-.27-.07a.45.45 0 0 1-.12-.26L12.27 7.5l-1.03 4.28q-.045.195-.12.27a.5.5 0 0 1-.27.06zm8.55.18c-.33 0-.7-.04-1.03-.12s-.59-.17-.76-.26a.5.5 0 0 1-.21-.19.4.4 0 0 1-.04-.18v-.34c0-.14.05-.2.15-.2h.12c.04 0 .1.05.17.08.22.1.47.18.73.23.27.05.54.08.79.08.42 0 .75-.07.97-.22.23-.17.35-.36.35-.63 0-.19-.07-.34-.18-.47-.12-.12-.35-.24-.67-.34l-.97-.3c-.48-.16-.84-.38-1.06-.68a1.58 1.58 0 0 1-.33-.97c0-.28.06-.52.18-.73.12-.22.28-.4.46-.55.22-.15.44-.26.71-.34q.39-.12.84-.12.21 0 .45.03c.14.02.28.05.42.07.14.04.26.07.38.11s.2.08.28.12c.09.05.16.1.2.16s.06.13.06.22v.32q0 .21-.15.21c-.05 0-.14-.03-.26-.08-.37-.17-.8-.26-1.27-.26-.38 0-.66.06-.89.19-.2.12-.31.32-.31.59 0 .19.07.35.2.47.13.13.38.25.73.37l.95.3c.48.14.82.36 1.03.64q.3.405.3.93c0 .28-.06.54-.17.77-.12.22-.28.42-.5.58-.19.17-.44.29-.72.38s-.62.13-.95.13m1.25 3.24C17.89 17.14 14.71 18 12 18c-3.85 0-7.3-1.42-9.91-3.77-.21-.19-.02-.44.23-.29 2.82 1.63 6.29 2.62 9.89 2.62 2.43 0 5.1-.5 7.55-1.56.37-.15.68.26.32.53M21 14.5c-.29-.37-1.86-.18-2.57-.1-.21.03-.24-.16-.05-.3 1.25-.87 3.31-.6 3.54-.33.24.3-.06 2.36-1.23 3.34-.19.15-.36.07-.28-.11.27-.68.86-2.16.59-2.5"/></svg></span> &nbsp; <strong><a href="../kinesis-io/">Kinesis I/O</a></strong> — same routing model, AWS Kinesis transport.</li>
-<li><span class="twemoji lg middle"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13.95 13.5h-.23c-.18.11-.26.32-.18.5l.86 2.11c.83-.53 1.46-1.32 1.79-2.25l-2.23-.36zm-3.45.29a.415.415 0 0 0-.38-.29h-.08l-2.22.37c.33.92.96 1.7 1.79 2.23l.85-2.07V14c.04-.05.04-.14.04-.21m1.83.81a.38.38 0 0 0-.51-.15c-.07.05-.12.08-.15.15h-.01l-1.09 1.97c.78.26 1.62.31 2.43.12.14-.03.29-.07.43-.12l-1.09-1.97zm3.45-4.57L14.1 11.5l.01.03a.37.37 0 0 0-.04.53q.075.09.18.12l.01.01 2.17.62c.07-.97-.14-1.95-.65-2.78m-3.11.16c.01.21.18.37.39.36.08 0 .15-.02.21-.05h.01l1.83-1.31a4.45 4.45 0 0 0-2.57-1.24zm-1.94.31c.17.11.4.08.52-.09.05-.06.07-.13.08-.21h.01l.12-2.25c-.15.02-.3.05-.46.08-.8.18-1.54.58-2.12 1.16l1.84 1.31zm-.99 1.69c.2-.05.32-.26.26-.46 0-.08-.05-.14-.11-.19v-.01L8.21 10c-.52.86-.74 1.84-.63 2.82l2.16-.62zm1.64.66.62.3.62-.3.15-.67-.43-.53h-.69l-.43.53zm10.89 1.32L20.5 6.5c-.09-.42-.37-.76-.74-.94l-7.17-3.43c-.37-.17-.81-.17-1.19 0L4.24 5.56c-.37.18-.65.52-.74.94l-1.77 7.67c-.05.2-.05.4 0 .59.01.06.03.12.05.18.03.09.08.19.13.27.03.04.05.08.09.11l4.95 6.18c.02 0 .05.04.05.06.1.09.19.16.28.22.12.08.26.14.4.17.11.05.23.05.32.05h8.12c.07 0 .14-.03.2-.05.05-.01.1-.03.14-.04.04-.02.07-.03.11-.05.05-.02.1-.05.15-.08.12-.08.23-.18.33-.28l.15-.2 4.8-5.98c.1-.12.17-.25.22-.38.02-.06.04-.12.05-.18.05-.19.05-.4 0-.59m-7.43 2.99c.02.06.04.12.07.17-.04.08-.06.17-.03.26.12.24.23.46.38.68.08.11.16.23.24.34 0 .03.03.08.04.12.12.2.06.46-.15.59s-.47.05-.59-.15c-.01-.03-.02-.05-.03-.08-.02-.03-.04-.09-.06-.09-.05-.15-.09-.28-.12-.41-.09-.25-.17-.49-.3-.72a.38.38 0 0 0-.21-.14l-.08-.16c-1.29.48-2.7.48-3.97-.01l-.1.18c-.07.01-.14.04-.19.09-.14.24-.24.49-.33.77-.03.13-.07.26-.12.4-.02 0-.04.07-.06.1a.43.43 0 0 1-.81-.29c.01-.03.03-.05.04-.08.04-.03.04-.08.04-.11.09-.12.16-.23.24-.35.16-.21.29-.45.39-.69a.54.54 0 0 0-.03-.25l.07-.18a5.6 5.6 0 0 1-2.47-3.09l-.2.03a.4.4 0 0 0-.23-.09c-.27.05-.51.13-.77.22-.11.06-.24.11-.37.15-.03.01-.07.02-.13.03a.44.44 0 0 1-.54-.27c-.07-.23.04-.47.28-.55.02 0 .05-.01.08-.01v-.01h.01l.11-.02c.14-.04.28-.04.41-.04.26 0 .52-.06.77-.12.08-.05.14-.11.19-.19l.19-.05c-.21-1.36.1-2.73.86-3.87l-.14-.12c0-.09-.03-.18-.08-.25-.2-.17-.41-.32-.64-.45q-.18-.09-.36-.21c-.02-.02-.06-.05-.08-.07l-.01-.01c-.2-.16-.25-.42-.11-.63.09-.1.21-.15.35-.15q.165.015.3.12l.09.07c.1.09.19.2.28.3.18.19.37.37.58.52.08.04.17.05.26.03l.15.11c.75-.8 1.73-1.36 2.8-1.6.25-.06.52-.1.78-.12l.01-.18a.45.45 0 0 0 .14-.23c.01-.26-.01-.52-.05-.77-.03-.13-.05-.27-.06-.41V5.1c-.02-.24.15-.45.39-.48s.44.15.47.38v.22c-.01.14-.03.28-.06.41-.04.25-.06.51-.05.77.02.1.07.17.14.22l.01.19c1.36.12 2.62.73 3.56 1.72l.16-.12c.09.02.18.01.26-.03.21-.15.41-.33.58-.52.09-.1.18-.2.28-.3.03-.02.07-.06.1-.06.17-.18.44-.18.59 0 .19.16.18.43 0 .6 0 .02-.03.04-.06.06a2.495 2.495 0 0 1-.44.28c-.23.13-.45.28-.64.45-.06.07-.09.15-.08.24l-.16.14a5.44 5.44 0 0 1 .88 3.86l.19.05c.04.08.11.14.19.18.25.07.51.11.77.14h.41c.03.03.08.04.12.05.24.03.4.25.37.49-.05.23-.24.4-.48.37-.03-.01-.07-.01-.07-.02v-.01c-.06 0-.1-.01-.14-.02q-.195-.06-.36-.15c-.26-.1-.5-.17-.77-.21-.09 0-.17 0-.23.08-.07-.01-.13-.02-.19-.03-.41 1.31-1.31 2.41-2.47 3.11"/></svg></span> &nbsp; <strong><a href="../k8s-deployment/">Kubernetes deployment</a></strong> — wiring ingress/egress in production.</li>
-<li><span class="twemoji lg middle"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19.5 17c-.13 0-.26 0-.39.04l-1.61-3.25a2.5 2.5 0 0 0-1.75-4.29c-.13 0-.25 0-.39.04l-1.63-3.25c.48-.45.77-1.08.77-1.79a2.5 2.5 0 0 0-5 0c0 .71.29 1.34.76 1.79L8.64 9.54c-.14-.04-.26-.04-.39-.04a2.5 2.5 0 0 0-1.75 4.29l-1.61 3.25C4.76 17 4.63 17 4.5 17a2.5 2.5 0 0 0 0 5A2.5 2.5 0 0 0 7 19.5c0-.7-.29-1.34-.76-1.79l1.62-3.25c.14.04.26.04.39.04s.25 0 .39-.04l1.63 3.25c-.47.45-.77 1.09-.77 1.79a2.5 2.5 0 0 0 5 0A2.5 2.5 0 0 0 12 17c-.13 0-.26 0-.39.04L10 13.79c.46-.45.75-1.08.75-1.79s-.29-1.34-.75-1.79l1.61-3.25c.13.04.26.04.39.04s.26 0 .39-.04L14 10.21c-.45.45-.75 1.09-.75 1.79a2.5 2.5 0 0 0 2.5 2.5c.13 0 .25 0 .39-.04l1.63 3.25c-.47.45-.77 1.09-.77 1.79a2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0-2.5-2.5"/></svg></span> &nbsp; <strong><a href="../../architecture/">Architecture overview</a></strong> — how the dispatcher routes ingress messages.</li>
+<li><strong><code>LogstashEncoder</code></strong> — single-line JSON per event; Logstash-standard field names (<code>@timestamp</code>, <code>level</code>, <code>logger_name</code>, <code>thread_name</code>, <code>message</code>, <code>stack_trace</code>, MDC fields flattened).</li>
+<li><strong><code>ShortenedThrowableConverter</code> + <code>rootCauseFirst=true</code></strong> — Flink wraps exceptions deeply (task → operator → function → user code); root-cause-first puts the user-actionable frame on top. The <code>&lt;exclude&gt;</code> patterns drop reflection plumbing frames.</li>
+<li><strong><code>scan="true" scanPeriod="30 seconds"</code></strong> — Logback's auto-reload. Edits to the operator-mounted ConfigMap are picked up within 30 seconds <strong>without pod restart</strong>.</li>
+<li><strong><code>${ROOT_LOG_LEVEL:-INFO}</code></strong> — root level falls back to <code>INFO</code> but can be overridden per deployment via env var or <code>-D</code> JVM opt (see below).</li>
+<li><strong>Flink stock logger pins</strong> — verbatim from upstream <code>flink/conf/logback-console.xml</code>. Pekko/Kafka/Hadoop/Zookeeper at <code>INFO</code>, Netty's noisy pipeline logger at <code>ERROR</code>.</li>
+<li><strong><code>com.amazonaws.services.s3.internal.Mimetypes</code> ERROR</strong> — silences a benign AWS SDK v1 startup warning emitted by <code>flink-s3-fs-presto</code>.</li>
 </ul>
-</div>
+<p>Sample emitted record (real JM output):</p>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p">{</span><span class="nt">&quot;@timestamp&quot;</span><span class="p">:</span><span class="s2">&quot;2026-05-17T17:14:32.597Z&quot;</span><span class="p">,</span><span class="nt">&quot;@version&quot;</span><span class="p">:</span><span class="s2">&quot;1&quot;</span><span class="p">,</span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="s2">&quot;Preconfiguration: &quot;</span><span class="p">,</span><span class="nt">&quot;logger_name&quot;</span><span class="p">:</span><span class="s2">&quot;org.apache.flink.runtime.entrypoint.ClusterEntrypoint&quot;</span><span class="p">,</span><span class="nt">&quot;thread_name&quot;</span><span class="p">:</span><span class="s2">&quot;main&quot;</span><span class="p">,</span><span class="nt">&quot;level&quot;</span><span class="p">:</span><span class="s2">&quot;INFO&quot;</span><span class="p">,</span><span class="nt">&quot;level_value&quot;</span><span class="p">:</span><span class="mi">20000</span><span class="p">}</span>
+</span></code></pre></div>
+<h2 id="override-the-root-level">Override the root level<a class="headerlink" href="#override-the-root-level" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Mechanism</th>
+<th>Effect</th>
+<th>Scope</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-e ROOT_LOG_LEVEL=DEBUG</code> (container env)</td>
+<td>Single value, all loggers</td>
+<td>Per pod, restart needed</td>
+</tr>
+<tr>
+<td><code>-DROOT_LOG_LEVEL=DEBUG</code> (JVM opt via <code>env.java.opts.all</code>)</td>
+<td>Same as above</td>
+<td>Per pod, restart needed</td>
+</tr>
+<tr>
+<td><code>&lt;logger&gt;</code> entries added to <code>spec.logConfiguration.logback-console.xml</code></td>
+<td>Per-logger overrides</td>
+<td>Per FlinkDeployment, restart needed</td>
+</tr>
+<tr>
+<td>Edit the operator-mounted ConfigMap directly (<code>kubectl edit cm flink-config-&lt;deployment&gt;</code>)</td>
+<td>Per-logger overrides</td>
+<td>Picked up within 30s via <code>scan="true"</code>, <strong>no restart</strong></td>
+</tr>
+</tbody>
+</table>
+<p>The last option is the safest in-incident path — no pod cycle.</p>
+<h2 id="in-incident-debug-candidates">In-incident DEBUG candidates<a class="headerlink" href="#in-incident-debug-candidates" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Logger to bump</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Checkpoints failing / slow</td>
+<td><code>org.apache.flink.runtime.checkpoint.CheckpointCoordinator</code></td>
+</tr>
+<tr>
+<td>HA failover / split brain</td>
+<td><code>org.apache.flink.runtime.leaderelection</code></td>
+</tr>
+<tr>
+<td>TM crash / restart</td>
+<td><code>org.apache.flink.runtime.taskmanager</code></td>
+</tr>
+<tr>
+<td>Kafka consumer-group rebalance</td>
+<td><code>org.apache.kafka.clients.consumer.internals.ConsumerCoordinator</code></td>
+</tr>
+<tr>
+<td>Kafka source lag</td>
+<td><code>org.apache.flink.connector.kafka.source</code></td>
+</tr>
+<tr>
+<td>StateFun routing / dispatch</td>
+<td><code>org.apache.flink.statefun.flink.core</code></td>
+</tr>
+<tr>
+<td>K8s client errors</td>
+<td><code>io.fabric8.kubernetes.client</code></td>
+</tr>
+<tr>
+<td>RocksDB state-backend</td>
+<td><code>org.apache.flink.contrib.streaming.state</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-to-verify-what-the-pod-actually-sees">How to verify what the pod actually sees<a class="headerlink" href="#how-to-verify-what-the-pod-actually-sees" title="Permanent link">&para;</a></h2>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>kubectl<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>&lt;jm-pod&gt;<span class="w"> </span>--<span class="w"> </span>cat<span class="w"> </span>/opt/flink/conf/logback-console.xml
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>kubectl<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>&lt;tm-pod&gt;<span class="w"> </span>--<span class="w"> </span>cat<span class="w"> </span>/opt/flink/conf/logback-console.xml
+</span></code></pre></div>
+<p>If the output is empty or doesn't contain <code>LogstashEncoder</code>, the Operator's ConfigMap was generated without the <code>logback-console.xml</code> key — re-check <code>spec.logConfiguration</code> on the FlinkDeployment.</p>
+<h2 id="aggregator-compatibility">Aggregator compatibility<a class="headerlink" href="#aggregator-compatibility" title="Permanent link">&para;</a></h2>
+<p><code>LogstashEncoder</code> defaults drop cleanly into Elasticsearch / Logstash (native), Loki / Grafana (JSON parser stage), Datadog (<code>level</code>/<code>message</code> map directly), and CloudWatch / OpenObserve (JSON ingestion native). Existing <code>logback_events_total{level="error"}</code> counters propagate unchanged.</p>
+<h2 id="async-logging-when-to-opt-in">Async logging — when to opt in<a class="headerlink" href="#async-logging-when-to-opt-in" title="Permanent link">&para;</a></h2>
+<p>The reference config writes <strong>synchronously</strong>, matching Flink upstream. Sync is fine up to ~5k events/sec/pod; checkpoint-completion bursts on typical workloads peak at 50–100 events/sec/pod. For genuinely high throughput, wrap the <code>console</code> appender in <code>ch.qos.logback.classic.AsyncAppender</code> and add an explicit <code>&lt;shutdownHook&gt;</code> to drain on SIGTERM (Logback 1.4+ no longer auto-registers one).</p>
 
 
 
