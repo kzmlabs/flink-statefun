@@ -141,7 +141,7 @@ Restricted-network builds: set `IMAGE_REGISTRY_PREFIX=harbor.example.com/dockerh
 
 ## Logging
 
-The image ships **structured JSON logs to stdout by default** — Logback + `LogstashEncoder`, Logstash-standard field names (`@timestamp`, `logger_name`, `thread_name`, `level`, `message`, `stack_trace`), root-cause-first stack traces. No per-deployment `spec.logConfiguration` block needed. Override the root level via `ROOT_LOG_LEVEL` env var, bump individual loggers at runtime via the bundled JMX configurator, or fully replace the config via the Flink Operator. See the **[logging guide](https://kzmlabs.github.io/flink-statefun/guides/logging/)** for in-incident DEBUG targets and aggregator notes (Elastic, Loki, Datadog).
+Both JobManager and TaskManager pods emit **structured JSON logs to stdout by default** — Logback + `LogstashEncoder`, Logstash-standard field names (`@timestamp`, `logger_name`, `thread_name`, `level`, `message`, `stack_trace`), root-cause-first stack traces. No per-deployment `spec.logConfiguration` block needed. Override the root level via `ROOT_LOG_LEVEL` env var or fully replace the config via the Flink Operator. See the **[logging guide](https://kzmlabs.github.io/flink-statefun/guides/logging/)** for in-incident DEBUG targets and aggregator notes (Elastic, Loki, Datadog).
 
 ## Versioning and compatibility
 
