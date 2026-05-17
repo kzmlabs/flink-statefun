@@ -98,51 +98,29 @@ spec:
   logConfiguration:
     logback-console.xml: |
       <?xml version="1.0" encoding="UTF-8"?>
-      <configuration>
-        <appender name="JSON" class="ch.qos.logback.core.ConsoleAppender">
-          <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
-            <providers>
-              <timestamp>
-                <fieldName>ts</fieldName>
-                <timeZone>UTC</timeZone>
-              </timestamp>
-              <logLevel>
-                <fieldName>level</fieldName>
-              </logLevel>
-              <loggerName>
-                <fieldName>logger</fieldName>
-              </loggerName>
-              <callerData>
-                <classFieldName>class</classFieldName>
-                <methodFieldName>method</methodFieldName>
-                <lineFieldName>line</lineFieldName>
-                <fileFieldName>file</fileFieldName>
-              </callerData>
-              <threadName>
-                <fieldName>thread</fieldName>
-              </threadName>
-              <mdc/>
-              <arguments>
-                <includeNonStructuredArguments>false</includeNonStructuredArguments>
-              </arguments>
-              <stackTrace>
-                <fieldName>stack</fieldName>
-              </stackTrace>
-              <message>
-                <fieldName>msg</fieldName>
-              </message>
-            </providers>
-          </encoder>
-        </appender>
-        <root level="INFO">
-          <appender-ref ref="JSON"/>
-        </root>
-        <logger name="org.apache.flink.statefun" level="INFO"/>
-        <logger name="org.apache.flink" level="INFO"/>
-        <logger name="org.apache.kafka" level="WARN"/>
-        <logger name="org.apache.flink.runtime.leaderelection" level="DEBUG"/>
-        <logger name="org.apache.flink.runtime.checkpoint" level="INFO"/>
-        <logger name="com.amazonaws.services.s3.internal.Mimetypes" level="ERROR"/>
+      <configuration scan="true" scanPeriod="30 seconds">
+          <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+              <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                  <timestampPattern>yyyy-MM-dd'T'HH:mm:ss.SSS'Z'</timestampPattern>
+                  <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+                      <maxDepthPerThrowable>120</maxDepthPerThrowable>
+                      <shortenedClassNameLength>60</shortenedClassNameLength>
+                      <exclude>^sun\.reflect\..*\.invoke</exclude>
+                      <exclude>^jdk\.internal\.reflect\..*</exclude>
+                      <exclude>^java\.lang\.reflect\.Method\.invoke</exclude>
+                      <rootCauseFirst>true</rootCauseFirst>
+                  </throwableConverter>
+              </encoder>
+          </appender>
+          <root level="${ROOT_LOG_LEVEL:-INFO}">
+              <appender-ref ref="console"/>
+          </root>
+          <logger name="org.apache.pekko"                                level="INFO"/>
+          <logger name="org.apache.kafka"                                level="INFO"/>
+          <logger name="org.apache.hadoop"                               level="INFO"/>
+          <logger name="org.apache.zookeeper"                            level="INFO"/>
+          <logger name="org.jboss.netty.channel.DefaultChannelPipeline"  level="ERROR"/>
+          <logger name="com.amazonaws.services.s3.internal.Mimetypes"    level="ERROR"/>
       </configuration>
   podTemplate:
     spec:
