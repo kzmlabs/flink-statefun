@@ -95,6 +95,36 @@ spec:
       --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
       --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED
       --add-opens=java.base/java.util.concurrent.locks=ALL-UNNAMED
+  # Required because the Flink Operator's auto-generated ConfigMap masks the image-baked
+  # /opt/flink/conf/logback-console.xml. Keep this block in sync with the canonical XML at
+  # statefun-docker/src/main/docker/conf/logback-console.xml.
+  logConfiguration:
+    logback-console.xml: |
+      <?xml version="1.0" encoding="UTF-8"?>
+      <configuration scan="true" scanPeriod="30 seconds">
+          <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+              <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                  <timestampPattern>yyyy-MM-dd'T'HH:mm:ss.SSS'Z'</timestampPattern>
+                  <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+                      <maxDepthPerThrowable>120</maxDepthPerThrowable>
+                      <shortenedClassNameLength>60</shortenedClassNameLength>
+                      <exclude>^sun\.reflect\..*\.invoke</exclude>
+                      <exclude>^jdk\.internal\.reflect\..*</exclude>
+                      <exclude>^java\.lang\.reflect\.Method\.invoke</exclude>
+                      <rootCauseFirst>true</rootCauseFirst>
+                  </throwableConverter>
+              </encoder>
+          </appender>
+          <root level="${ROOT_LOG_LEVEL:-INFO}">
+              <appender-ref ref="console"/>
+          </root>
+          <logger name="org.apache.pekko"                                level="INFO"/>
+          <logger name="org.apache.kafka"                                level="INFO"/>
+          <logger name="org.apache.hadoop"                               level="INFO"/>
+          <logger name="org.apache.zookeeper"                            level="INFO"/>
+          <logger name="org.jboss.netty.channel.DefaultChannelPipeline"  level="ERROR"/>
+          <logger name="com.amazonaws.services.s3.internal.Mimetypes"    level="ERROR"/>
+      </configuration>
   podTemplate:
     spec:
       containers:

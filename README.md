@@ -141,7 +141,7 @@ Restricted-network builds: set `IMAGE_REGISTRY_PREFIX=harbor.example.com/dockerh
 
 ## Logging
 
-Both JobManager and TaskManager pods emit **structured JSON logs to stdout by default** — Logback + `LogstashEncoder`, Logstash-standard field names (`@timestamp`, `logger_name`, `thread_name`, `level`, `message`, `stack_trace`), root-cause-first stack traces. No per-deployment `spec.logConfiguration` block needed. Override the root level via `ROOT_LOG_LEVEL` env var or fully replace the config via the Flink Operator. See the **[logging guide](https://kzmlabs.github.io/flink-statefun/guides/logging/)** for in-incident DEBUG targets and aggregator notes (Elastic, Loki, Datadog).
+JobManager and TaskManager logging is configured via `spec.logConfiguration.logback-console.xml` on the `FlinkDeployment` — the Flink K8s Operator turns it into a ConfigMap mounted at `/opt/flink/conf/`. The recommended config uses Logback + `LogstashEncoder` to emit single-line JSON to stdout (Logstash-standard fields: `@timestamp`, `logger_name`, `thread_name`, `level`, `message`, `stack_trace`) with `ShortenedThrowableConverter` and `rootCauseFirst=true` so Flink's deeply wrapped exceptions surface the user-actionable frame on top. See the **[logging guide](https://kzmlabs.github.io/flink-statefun/guides/logging/)** for the copy-paste block, in-incident DEBUG targets, and the Operator overlay quirk to be aware of.
 
 ## Versioning and compatibility
 

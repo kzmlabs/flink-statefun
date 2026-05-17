@@ -28,9 +28,6 @@ RUN curl -fSL "${MAVEN_CENTRAL}/ch/qos/logback/logback-classic/${LOGBACK_VERSION
     && curl -fSL "${MAVEN_CENTRAL}/org/slf4j/slf4j-api/${SLF4J_VERSION}/slf4j-api-${SLF4J_VERSION}.jar" \
         -o ${FLINK_HOME}/lib/slf4j-api.jar
 
-# Override stock plain-text logback-console.xml with JSON-encoded variant (issue #215)
-COPY conf/logback-console.xml ${FLINK_HOME}/conf/logback-console.xml
-
 # Copy StateFun JARs to Flink lib (parent classloader)
 COPY flink/lib/statefun-flink-core.jar ${FLINK_HOME}/lib/
 COPY flink/lib/statefun-flink-distribution.jar ${FLINK_HOME}/lib/
