@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<!-- Copyright 2026 Kzmlabs -->
+<configuration scan="true" scanPeriod="30 seconds">
+    <jmxConfigurator/>
+
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <timestampPattern>yyyy-MM-dd'T'HH:mm:ss.SSS'Z'</timestampPattern>
+            <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+                <maxDepthPerThrowable>120</maxDepthPerThrowable>
+                <shortenedClassNameLength>60</shortenedClassNameLength>
+                <exclude>^sun\.reflect\..*\.invoke</exclude>
+                <exclude>^jdk\.internal\.reflect\..*</exclude>
+                <exclude>^java\.lang\.reflect\.Method\.invoke</exclude>
+                <rootCauseFirst>true</rootCauseFirst>
+            </throwableConverter>
+        </encoder>
+    </appender>
+
+    <root level="${ROOT_LOG_LEVEL:-INFO}">
+        <appender-ref ref="console"/>
+    </root>
+
+    <!-- Verbatim from Flink stock logback-console.xml -->
+    <logger name="org.apache.pekko"                                level="INFO"/>
+    <logger name="org.apache.kafka"                                level="INFO"/>
+    <logger name="org.apache.hadoop"                               level="INFO"/>
+    <logger name="org.apache.zookeeper"                            level="INFO"/>
+    <logger name="org.jboss.netty.channel.DefaultChannelPipeline"  level="ERROR"/>
+
+    <!-- StateFun-specific: silence AWS SDK v1 startup MIME warning emitted by flink-s3-fs-presto -->
+    <logger name="com.amazonaws.services.s3.internal.Mimetypes"    level="ERROR"/>
+</configuration>

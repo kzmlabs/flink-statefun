@@ -139,6 +139,10 @@ cd flink-statefun
 
 Restricted-network builds: set `IMAGE_REGISTRY_PREFIX=harbor.example.com/dockerhub-proxy/` to pull all base images through your registry mirror — every Dockerfile and k8s manifest honours it. Full details in the **[build guide](https://kzmlabs.github.io/flink-statefun/build/)**.
 
+## Logging
+
+The image ships **structured JSON logs to stdout by default** — Logback + `LogstashEncoder`, Logstash-standard field names (`@timestamp`, `logger_name`, `thread_name`, `level`, `message`, `stack_trace`), root-cause-first stack traces. No per-deployment `spec.logConfiguration` block needed. Override the root level via `ROOT_LOG_LEVEL` env var, bump individual loggers at runtime via the bundled JMX configurator, or fully replace the config via the Flink Operator. See the **[logging guide](https://kzmlabs.github.io/flink-statefun/guides/logging/)** for in-incident DEBUG targets and aggregator notes (Elastic, Loki, Datadog).
+
 ## Versioning and compatibility
 
 | Kzmlabs version | Apache StateFun base | Flink | Java | Status |

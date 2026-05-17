@@ -75,6 +75,7 @@ nav:
       - Kafka egress tuning: guides/kafka-egress-tuning.md
       - Kinesis I/O: guides/kinesis-io.md
       - Kubernetes deployment: guides/k8s-deployment.md
+      - Logging: guides/logging.md
   - Architecture:
       - Overview: architecture/index.md
       - Shading layer: architecture/shading.md
