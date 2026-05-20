@@ -35,11 +35,16 @@ updates:
     ignore:
       # slf4j-log4j12 was renamed to slf4j-reload4j in slf4j 2.x and
       # pulls slf4j-api 2.x transitively. Flink 2.2.0 still drags slf4j-api
-      # 1.7.36, so the bump triggers Maven enforcer's DependencyConvergence.
-      # slf4j 2.x migration is tracked as a coordinated effort, not a
-      # Dependabot one-shot. See PR #187 for the failure mode.
+      # 1.7.36, so the bump trips Maven enforcer's DependencyConvergence.
+      # The shared <slf4j-log4j12.version> property pins BOTH slf4j-api
+      # and slf4j-log4j12, so both must be ignored — Dependabot opens the
+      # PR keyed on whichever artifact it sees first. See PR #221 for the
+      # failure mode; slf4j 2.x migration is tracked as a coordinated
+      # change gated on upstream Flink.
       - dependency-name: "org.slf4j:slf4j-log4j12"
-        versions: [">=2.0"]
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.slf4j:slf4j-api"
+        update-types: ["version-update:semver-major"]
 
   # Docs site requirements (MkDocs Material + plugins).
   - package-ecosystem: pip
