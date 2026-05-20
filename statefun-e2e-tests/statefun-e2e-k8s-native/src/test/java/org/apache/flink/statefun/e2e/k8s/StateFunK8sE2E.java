@@ -171,7 +171,27 @@ class StateFunK8sE2E {
     Thread.sleep(STATE_TTL.plus(TTL_EXPIRY_PAD).toMillis());
 
     sendCounterCommand(COUNTER_TTL_COMMANDS_TOPIC, counterId, 3);
-    awaitCounterTotal(counterTtlResultsConsumer, counterId, 3L);
+    // total=8 would mean state was not wiped (prior 5 + new 3); assert explicitly to make a
+    // TTL regression surface as "found forbidden [8]" rather than just "missing [3]".
+    await()
+        .atMost(E2eContext.POLL_TIMEOUT)
+        .pollInterval(E2eContext.POLL_INTERVAL)
+        .untilAsserted(
+            () -> {
+              List<CounterResult> results =
+                  StreamSupport.stream(
+                          counterTtlResultsConsumer.poll(Duration.ofSeconds(1)).spliterator(),
+                          false)
+                      .map(ConsumerRecord::value)
+                      .map(StateFunK8sE2E::parseCounterResult)
+                      .filter(r -> counterId.equals(r.getId()))
+                      .collect(Collectors.toList());
+              assertThat(results)
+                  .as("counter result for id=%s after TTL expiry", counterId)
+                  .extracting(CounterResult::getTotal)
+                  .contains(3L)
+                  .doesNotContain(8L);
+            });
   }
 
   @Test
