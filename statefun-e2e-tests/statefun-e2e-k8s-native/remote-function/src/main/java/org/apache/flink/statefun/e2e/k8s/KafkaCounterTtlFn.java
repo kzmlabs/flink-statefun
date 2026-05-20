@@ -1,3 +1,4 @@
+// Copyright 2026 Kzmlabs
 // SPDX-License-Identifier: Apache-2.0
 
 package org.apache.flink.statefun.e2e.k8s;
