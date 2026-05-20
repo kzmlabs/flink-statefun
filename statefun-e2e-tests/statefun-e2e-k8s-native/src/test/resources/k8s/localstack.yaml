@@ -28,6 +28,14 @@ spec:
               value: us-east-1
             - name: DEBUG
               value: "0"
+            # Opt-in TLS knobs for restricted networks (e.g. corp MITM proxy).
+            # LocalStack lazily downloads kinesis-local from npmjs.org at first call;
+            # set LOCALSTACK_NPM_STRICT_SSL=false to tolerate untrusted CAs.
+            # Defaults preserve secure verification.
+            - name: NPM_CONFIG_STRICT_SSL
+              value: "${LOCALSTACK_NPM_STRICT_SSL}"
+            - name: NODE_TLS_REJECT_UNAUTHORIZED
+              value: "${LOCALSTACK_NODE_TLS_REJECT}"
           readinessProbe:
             httpGet:
               path: /_localstack/health

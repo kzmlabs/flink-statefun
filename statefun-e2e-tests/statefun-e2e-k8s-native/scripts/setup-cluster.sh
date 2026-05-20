@@ -24,6 +24,11 @@ S3_BUCKET=statefun-checkpoints
 
 IMAGE_REGISTRY_PREFIX="${IMAGE_REGISTRY_PREFIX:-}"
 
+# Opt-in TLS knobs for restricted networks. Defaults preserve upstream behavior
+# (strict TLS verification). Override on the env to relax for corp MITM proxies.
+LOCALSTACK_NPM_STRICT_SSL="${LOCALSTACK_NPM_STRICT_SSL:-true}"
+LOCALSTACK_NODE_TLS_REJECT="${LOCALSTACK_NODE_TLS_REJECT:-1}"
+
 BASEDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
 K8S_MANIFESTS="${BASEDIR}/../src/test/resources/k8s"
 
@@ -73,7 +78,13 @@ if kind get clusters 2>/dev/null | grep -q "^${CLUSTER_NAME}$"; then
 fi
 
 echo "=== Creating kind cluster: ${CLUSTER_NAME} ==="
-kind create cluster --name "${CLUSTER_NAME}" --wait 5m
+# Optional override of the kind node image — useful when docker.io is unreachable
+# and a registry proxy is required. Default: kind's baked-in image.
+KIND_IMAGE_FLAG=()
+if [[ -n "${KIND_NODE_IMAGE:-}" ]]; then
+  KIND_IMAGE_FLAG=(--image "${KIND_NODE_IMAGE}")
+fi
+kind create cluster --name "${CLUSTER_NAME}" --wait 5m "${KIND_IMAGE_FLAG[@]}"
 
 echo "=== Loading Docker images into kind ==="
 kind load docker-image flink-statefun:e2e            --name "${CLUSTER_NAME}"
@@ -103,6 +114,8 @@ kubectl apply -f "${K8S_MANIFESTS}/flink-rbac.yaml"
 sed -e "s|\${IMAGE_REGISTRY_PREFIX}|${IMAGE_REGISTRY_PREFIX}|g" \
     "${K8S_MANIFESTS}/kafka.yaml" | kubectl apply -f -
 sed -e "s|\${IMAGE_REGISTRY_PREFIX}|${IMAGE_REGISTRY_PREFIX}|g" \
+    -e "s|\${LOCALSTACK_NPM_STRICT_SSL}|${LOCALSTACK_NPM_STRICT_SSL}|g" \
+    -e "s|\${LOCALSTACK_NODE_TLS_REJECT}|${LOCALSTACK_NODE_TLS_REJECT}|g" \
     "${K8S_MANIFESTS}/localstack.yaml" | kubectl apply -f -
 kubectl apply -f "${K8S_MANIFESTS}/remote-function.yaml"
 kubectl apply -f "${K8S_MANIFESTS}/module-configmap.yaml"

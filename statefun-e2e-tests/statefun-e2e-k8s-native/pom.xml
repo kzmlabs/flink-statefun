@@ -189,7 +189,10 @@
                                     </arguments>
                                 </configuration>
                             </execution>
-                            <!-- 3. Build remote function Docker image -->
+                            <!-- 3. Build remote function Docker image. IMAGE_REGISTRY_PREFIX is
+                                 forwarded so base images (alpine, eclipse-temurin) can resolve
+                                 through a registry proxy when docker.io is unreachable. Empty
+                                 default preserves upstream behavior. -->
                             <execution>
                                 <id>build-remote-function-image</id>
                                 <phase>pre-integration-test</phase>
@@ -201,6 +204,8 @@
                                     <workingDirectory>${project.basedir}/remote-function</workingDirectory>
                                     <arguments>
                                         <argument>build</argument>
+                                        <argument>--build-arg</argument>
+                                        <argument>IMAGE_REGISTRY_PREFIX=${env.IMAGE_REGISTRY_PREFIX}</argument>
                                         <argument>-t</argument>
                                         <argument>statefun-remote-function:e2e</argument>
                                         <argument>.</argument>
