@@ -23,9 +23,6 @@ KINESIS_STREAMS=(counter.commands counter.results)
 S3_BUCKET=statefun-checkpoints
 
 IMAGE_REGISTRY_PREFIX="${IMAGE_REGISTRY_PREFIX:-}"
-
-# Opt-in TLS knobs for restricted networks. Defaults preserve upstream behavior
-# (strict TLS verification). Override on the env to relax for corp MITM proxies.
 LOCALSTACK_NPM_STRICT_SSL="${LOCALSTACK_NPM_STRICT_SSL:-true}"
 LOCALSTACK_NODE_TLS_REJECT="${LOCALSTACK_NODE_TLS_REJECT:-1}"
 
@@ -78,8 +75,6 @@ if kind get clusters 2>/dev/null | grep -q "^${CLUSTER_NAME}$"; then
 fi
 
 echo "=== Creating kind cluster: ${CLUSTER_NAME} ==="
-# Optional override of the kind node image — useful when docker.io is unreachable
-# and a registry proxy is required. Default: kind's baked-in image.
 KIND_IMAGE_FLAG=()
 if [[ -n "${KIND_NODE_IMAGE:-}" ]]; then
   KIND_IMAGE_FLAG=(--image "${KIND_NODE_IMAGE}")
@@ -140,9 +135,6 @@ done
 
 LOCALSTACK_POD=$(kubectl get pod -n "${NAMESPACE}" -l app=localstack -o jsonpath='{.items[0].metadata.name}')
 
-# Pod readiness only proves the container is up; LocalStack providers can lag
-# behind by several seconds. Poll the kinesis provider specifically so the next
-# awslocal calls don't race the boot.
 echo "=== Waiting for LocalStack kinesis provider to respond ==="
 for i in $(seq 1 60); do
   if MSYS_NO_PATHCONV=1 kubectl exec -n "${NAMESPACE}" "${LOCALSTACK_POD}" -- \

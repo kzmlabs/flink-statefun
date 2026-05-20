@@ -23,9 +23,6 @@
         <slf4j.version>2.0.17</slf4j.version>
         <!-- CI can set this true to keep the cluster alive for log collection -->
         <skip.teardown>false</skip.teardown>
-        <!-- Optional registry prefix forwarded to docker build. Empty by default;
-             override via -Dimage.registry.prefix=... or by setting env
-             IMAGE_REGISTRY_PREFIX (resolved through the profile below). -->
         <image.registry.prefix></image.registry.prefix>
     </properties>
 
@@ -193,10 +190,7 @@
                                     </arguments>
                                 </configuration>
                             </execution>
-                            <!-- 3. Build remote function Docker image. IMAGE_REGISTRY_PREFIX is
-                                 forwarded so base images (alpine, eclipse-temurin) can resolve
-                                 through a registry proxy when docker.io is unreachable. Empty
-                                 default preserves upstream behavior. -->
+                            <!-- 3. Build remote function Docker image -->
                             <execution>
                                 <id>build-remote-function-image</id>
                                 <phase>pre-integration-test</phase>
