@@ -18,11 +18,13 @@ set -euo pipefail
 CLUSTER_NAME=${1:-statefun-e2e}
 NAMESPACE=statefun-e2e
 FLINK_OPERATOR_VERSION=1.11.0
-KAFKA_TOPICS=(counter.commands counter.results greeter.commands greeter.results)
+KAFKA_TOPICS=(counter.commands counter.results counter.commands.ttl counter.results.ttl greeter.commands greeter.results)
 KINESIS_STREAMS=(counter.commands counter.results)
 S3_BUCKET=statefun-checkpoints
 
 IMAGE_REGISTRY_PREFIX="${IMAGE_REGISTRY_PREFIX:-}"
+LOCALSTACK_NPM_STRICT_SSL="${LOCALSTACK_NPM_STRICT_SSL:-true}"
+LOCALSTACK_NODE_TLS_REJECT="${LOCALSTACK_NODE_TLS_REJECT:-1}"
 
 BASEDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
 K8S_MANIFESTS="${BASEDIR}/../src/test/resources/k8s"
@@ -73,7 +75,11 @@ if kind get clusters 2>/dev/null | grep -q "^${CLUSTER_NAME}$"; then
 fi
 
 echo "=== Creating kind cluster: ${CLUSTER_NAME} ==="
-kind create cluster --name "${CLUSTER_NAME}" --wait 5m
+KIND_IMAGE_FLAG=()
+if [[ -n "${KIND_NODE_IMAGE:-}" ]]; then
+  KIND_IMAGE_FLAG=(--image "${KIND_NODE_IMAGE}")
+fi
+kind create cluster --name "${CLUSTER_NAME}" --wait 5m "${KIND_IMAGE_FLAG[@]}"
 
 echo "=== Loading Docker images into kind ==="
 kind load docker-image flink-statefun:e2e            --name "${CLUSTER_NAME}"
@@ -103,6 +109,8 @@ kubectl apply -f "${K8S_MANIFESTS}/flink-rbac.yaml"
 sed -e "s|\${IMAGE_REGISTRY_PREFIX}|${IMAGE_REGISTRY_PREFIX}|g" \
     "${K8S_MANIFESTS}/kafka.yaml" | kubectl apply -f -
 sed -e "s|\${IMAGE_REGISTRY_PREFIX}|${IMAGE_REGISTRY_PREFIX}|g" \
+    -e "s|\${LOCALSTACK_NPM_STRICT_SSL}|${LOCALSTACK_NPM_STRICT_SSL}|g" \
+    -e "s|\${LOCALSTACK_NODE_TLS_REJECT}|${LOCALSTACK_NODE_TLS_REJECT}|g" \
     "${K8S_MANIFESTS}/localstack.yaml" | kubectl apply -f -
 kubectl apply -f "${K8S_MANIFESTS}/remote-function.yaml"
 kubectl apply -f "${K8S_MANIFESTS}/module-configmap.yaml"
@@ -126,6 +134,17 @@ done
 # --- Kinesis streams + S3 bucket on LocalStack ------------------------------
 
 LOCALSTACK_POD=$(kubectl get pod -n "${NAMESPACE}" -l app=localstack -o jsonpath='{.items[0].metadata.name}')
+
+echo "=== Waiting for LocalStack kinesis provider to respond ==="
+for i in $(seq 1 60); do
+  if MSYS_NO_PATHCONV=1 kubectl exec -n "${NAMESPACE}" "${LOCALSTACK_POD}" -- \
+      awslocal kinesis list-streams >/dev/null 2>&1; then
+    echo "  LocalStack kinesis is responding"
+    break
+  fi
+  [[ $i -eq 60 ]] && { echo "ERROR: LocalStack kinesis not responding within 120s"; exit 1; }
+  sleep 2
+done
 
 echo "=== Creating Kinesis streams ==="
 for stream in "${KINESIS_STREAMS[@]}"; do
