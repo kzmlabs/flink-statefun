@@ -23,6 +23,10 @@
         <slf4j.version>2.0.17</slf4j.version>
         <!-- CI can set this true to keep the cluster alive for log collection -->
         <skip.teardown>false</skip.teardown>
+        <!-- Optional registry prefix forwarded to docker build. Empty by default;
+             override via -Dimage.registry.prefix=... or by setting env
+             IMAGE_REGISTRY_PREFIX (resolved through the profile below). -->
+        <image.registry.prefix></image.registry.prefix>
     </properties>
 
     <dependencies>
@@ -205,7 +209,7 @@
                                     <arguments>
                                         <argument>build</argument>
                                         <argument>--build-arg</argument>
-                                        <argument>IMAGE_REGISTRY_PREFIX=${env.IMAGE_REGISTRY_PREFIX}</argument>
+                                        <argument>IMAGE_REGISTRY_PREFIX=${image.registry.prefix}</argument>
                                         <argument>-t</argument>
                                         <argument>statefun-remote-function:e2e</argument>
                                         <argument>.</argument>
@@ -267,6 +271,17 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+        <profile>
+            <id>image-registry-prefix-env</id>
+            <activation>
+                <property>
+                    <name>env.IMAGE_REGISTRY_PREFIX</name>
+                </property>
+            </activation>
+            <properties>
+                <image.registry.prefix>${env.IMAGE_REGISTRY_PREFIX}</image.registry.prefix>
+            </properties>
         </profile>
     </profiles>
 
