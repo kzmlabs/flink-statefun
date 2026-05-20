@@ -85,6 +85,28 @@ echo "=== Loading Docker images into kind ==="
 kind load docker-image flink-statefun:e2e            --name "${CLUSTER_NAME}"
 kind load docker-image statefun-remote-function:e2e  --name "${CLUSTER_NAME}"
 
+# Pre-load infra images so kubelet doesn't pull on cold cache and overrun the
+# 180s readiness wait. Explicit --platform keeps the docker-save tarball
+# single-platform; kind load uses `ctr images import --all-platforms` and
+# otherwise fails on multi-arch manifest lists.
+echo "=== Pre-loading infra images into kind ==="
+# Match the kind node's actual architecture (which can differ from the host's
+# when KIND_NODE_IMAGE pins a specific platform), fall back to host uname.
+NODE_ARCH="$(docker inspect "${CLUSTER_NAME}-control-plane" --format '{{.Architecture}}' 2>/dev/null || uname -m)"
+case "${NODE_ARCH}" in
+  amd64|x86_64)   PRELOAD_PLATFORM="linux/amd64" ;;
+  arm64|aarch64)  PRELOAD_PLATFORM="linux/arm64" ;;
+  *)              PRELOAD_PLATFORM="linux/amd64" ;;
+esac
+PRELOAD_IMAGES=(
+  "${IMAGE_REGISTRY_PREFIX}apache/kafka:3.9.0"
+  "${IMAGE_REGISTRY_PREFIX}localstack/localstack:4.1"
+)
+for img in "${PRELOAD_IMAGES[@]}"; do
+  docker pull --platform "${PRELOAD_PLATFORM}" "${img}"
+  kind load docker-image "${img}" --name "${CLUSTER_NAME}"
+done
+
 # --- cert-manager + Flink Operator ------------------------------------------
 
 echo "=== Installing cert-manager ==="
@@ -136,13 +158,17 @@ done
 LOCALSTACK_POD=$(kubectl get pod -n "${NAMESPACE}" -l app=localstack -o jsonpath='{.items[0].metadata.name}')
 
 echo "=== Waiting for LocalStack kinesis provider to respond ==="
+# Bound each invocation: LocalStack's lazy `kinesis-local` install can stall a
+# single `awslocal` call ~70s on networks with proxy/cert issues, making the
+# nominal 60x2s loop budget meaningless. 10s gives slow-but-not-hung installs
+# a fair first chance while keeping the worst case finite (~10 min).
 for i in $(seq 1 60); do
   if MSYS_NO_PATHCONV=1 kubectl exec -n "${NAMESPACE}" "${LOCALSTACK_POD}" -- \
-      awslocal kinesis list-streams >/dev/null 2>&1; then
+      timeout 10 awslocal kinesis list-streams >/dev/null 2>&1; then
     echo "  LocalStack kinesis is responding"
     break
   fi
-  [[ $i -eq 60 ]] && { echo "ERROR: LocalStack kinesis not responding within 120s"; exit 1; }
+  [[ $i -eq 60 ]] && { echo "ERROR: LocalStack kinesis not responding"; exit 1; }
   sleep 2
 done
 
