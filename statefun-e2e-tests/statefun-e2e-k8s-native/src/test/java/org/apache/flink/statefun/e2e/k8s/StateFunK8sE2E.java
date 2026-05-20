@@ -58,14 +58,20 @@ class StateFunK8sE2E {
 
   private static final String COUNTER_COMMANDS_TOPIC = "counter.commands";
   private static final String COUNTER_RESULTS_TOPIC = "counter.results";
+  private static final String COUNTER_TTL_COMMANDS_TOPIC = "counter.commands.ttl";
+  private static final String COUNTER_TTL_RESULTS_TOPIC = "counter.results.ttl";
   private static final String GREETER_COMMANDS_TOPIC = "greeter.commands";
   private static final String GREETER_RESULTS_TOPIC = "greeter.results";
   private static final String CHECKPOINTS_BUCKET = "statefun-checkpoints";
+
+  private static final Duration STATE_TTL = Duration.ofSeconds(5);
+  private static final Duration TTL_EXPIRY_PAD = Duration.ofSeconds(7);
 
   private KubectlPortForward kafkaForward;
   private KubectlPortForward localStackForward;
   private KafkaProducer<String, byte[]> producer;
   private KafkaConsumer<String, byte[]> counterResultsConsumer;
+  private KafkaConsumer<String, byte[]> counterTtlResultsConsumer;
   private KafkaConsumer<String, byte[]> greeterResultsConsumer;
   private S3Client s3;
 
@@ -86,6 +92,8 @@ class StateFunK8sE2E {
     String runId = UUID.randomUUID().toString().substring(0, 8);
     counterResultsConsumer =
         createConsumer(bootstrap, "e2e-counter-" + runId, COUNTER_RESULTS_TOPIC);
+    counterTtlResultsConsumer =
+        createConsumer(bootstrap, "e2e-counter-ttl-" + runId, COUNTER_TTL_RESULTS_TOPIC);
     greeterResultsConsumer =
         createConsumer(bootstrap, "e2e-greeter-" + runId, GREETER_RESULTS_TOPIC);
 
@@ -154,6 +162,20 @@ class StateFunK8sE2E {
 
   @Test
   @Order(3)
+  void counterStateIsCleanedUpByTtl() throws Exception {
+    String counterId = "counter-ttl-" + UUID.randomUUID();
+
+    sendCounterCommand(COUNTER_TTL_COMMANDS_TOPIC, counterId, 5);
+    awaitCounterTotal(counterTtlResultsConsumer, counterId, 5L);
+
+    Thread.sleep(STATE_TTL.plus(TTL_EXPIRY_PAD).toMillis());
+
+    sendCounterCommand(COUNTER_TTL_COMMANDS_TOPIC, counterId, 3);
+    awaitCounterTotal(counterTtlResultsConsumer, counterId, 3L);
+  }
+
+  @Test
+  @Order(4)
   void checkpointsWrittenToS3() {
     await()
         .atMost(E2eContext.POLL_TIMEOUT)
@@ -172,10 +194,40 @@ class StateFunK8sE2E {
   void teardown() {
     if (producer != null) producer.close(Duration.ofSeconds(5));
     if (counterResultsConsumer != null) counterResultsConsumer.close(Duration.ofSeconds(5));
+    if (counterTtlResultsConsumer != null) counterTtlResultsConsumer.close(Duration.ofSeconds(5));
     if (greeterResultsConsumer != null) greeterResultsConsumer.close(Duration.ofSeconds(5));
     if (s3 != null) s3.close();
     if (kafkaForward != null) kafkaForward.close();
     if (localStackForward != null) localStackForward.close();
+  }
+
+  private void sendCounterCommand(String topic, String counterId, long delta) throws Exception {
+    CounterCommand cmd = CounterCommand.newBuilder().setId(counterId).setDelta(delta).build();
+    producer
+        .send(new ProducerRecord<>(topic, counterId, cmd.toByteArray()))
+        .get(10, TimeUnit.SECONDS);
+    producer.flush();
+    LOG.info("Sent CounterCommand(id={}, delta={}) to {}", counterId, delta, topic);
+  }
+
+  private static void awaitCounterTotal(
+      KafkaConsumer<String, byte[]> consumer, String counterId, long expectedTotal) {
+    await()
+        .atMost(E2eContext.POLL_TIMEOUT)
+        .pollInterval(E2eContext.POLL_INTERVAL)
+        .untilAsserted(
+            () -> {
+              List<CounterResult> results =
+                  StreamSupport.stream(consumer.poll(Duration.ofSeconds(1)).spliterator(), false)
+                      .map(ConsumerRecord::value)
+                      .map(StateFunK8sE2E::parseCounterResult)
+                      .filter(r -> counterId.equals(r.getId()))
+                      .collect(Collectors.toList());
+              assertThat(results)
+                  .as("counter result for id=%s", counterId)
+                  .extracting(CounterResult::getTotal)
+                  .contains(expectedTotal);
+            });
   }
 
   private static CounterResult parseCounterResult(byte[] bytes) {

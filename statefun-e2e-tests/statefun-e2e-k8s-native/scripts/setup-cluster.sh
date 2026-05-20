@@ -18,7 +18,7 @@ set -euo pipefail
 CLUSTER_NAME=${1:-statefun-e2e}
 NAMESPACE=statefun-e2e
 FLINK_OPERATOR_VERSION=1.11.0
-KAFKA_TOPICS=(counter.commands counter.results greeter.commands greeter.results)
+KAFKA_TOPICS=(counter.commands counter.results counter.commands.ttl counter.results.ttl greeter.commands greeter.results)
 KINESIS_STREAMS=(counter.commands counter.results)
 S3_BUCKET=statefun-checkpoints
 
@@ -126,6 +126,20 @@ done
 # --- Kinesis streams + S3 bucket on LocalStack ------------------------------
 
 LOCALSTACK_POD=$(kubectl get pod -n "${NAMESPACE}" -l app=localstack -o jsonpath='{.items[0].metadata.name}')
+
+# Pod readiness only proves the container is up; LocalStack providers can lag
+# behind by several seconds. Poll the kinesis provider specifically so the next
+# awslocal calls don't race the boot.
+echo "=== Waiting for LocalStack kinesis provider to respond ==="
+for i in $(seq 1 60); do
+  if MSYS_NO_PATHCONV=1 kubectl exec -n "${NAMESPACE}" "${LOCALSTACK_POD}" -- \
+      awslocal kinesis list-streams >/dev/null 2>&1; then
+    echo "  LocalStack kinesis is responding"
+    break
+  fi
+  [[ $i -eq 60 ]] && { echo "ERROR: LocalStack kinesis not responding within 120s"; exit 1; }
+  sleep 2
+done
 
 echo "=== Creating Kinesis streams ==="
 for stream in "${KINESIS_STREAMS[@]}"; do
