@@ -14,7 +14,7 @@
     <artifactId>statefun-e2e-tests-common</artifactId>
 
     <properties>
-        <kafka.version>3.9.1</kafka.version>
+        <kafka.version>4.3.0</kafka.version>
         <central.skip>true</central.skip>
     </properties>
 
