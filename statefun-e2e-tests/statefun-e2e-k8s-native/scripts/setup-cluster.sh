@@ -17,7 +17,7 @@ set -euo pipefail
 
 CLUSTER_NAME=${1:-statefun-e2e}
 NAMESPACE=statefun-e2e
-FLINK_OPERATOR_VERSION=1.11.0
+FLINK_OPERATOR_VERSION=1.15.0
 KAFKA_TOPICS=(counter.commands counter.results counter.commands.ttl counter.results.ttl greeter.commands greeter.results)
 KINESIS_STREAMS=(counter.commands counter.results)
 S3_BUCKET=statefun-checkpoints
@@ -116,11 +116,17 @@ for dep in cert-manager cert-manager-webhook cert-manager-cainjector; do
 done
 
 echo "=== Installing Flink Kubernetes Operator ${FLINK_OPERATOR_VERSION} ==="
-helm repo add flink-operator-repo \
-  "https://archive.apache.org/dist/flink/flink-kubernetes-operator-${FLINK_OPERATOR_VERSION}/" || true
-helm repo update
+# --force-update overwrites any stale version-specific URL left by a previous run
+# (the repo URL embeds the operator version, so a plain `repo add` on a machine
+# that already has the repo would silently keep the old version's chart).
+helm repo add --force-update flink-operator-repo \
+  "https://archive.apache.org/dist/flink/flink-kubernetes-operator-${FLINK_OPERATOR_VERSION}/"
+helm repo update flink-operator-repo
+# Pin --version so a chart/URL skew fails loudly instead of installing a
+# mismatched chart against the requested image.tag.
 helm install flink-kubernetes-operator flink-operator-repo/flink-kubernetes-operator \
   --namespace flink-operator --create-namespace --wait --timeout 5m \
+  --version "${FLINK_OPERATOR_VERSION}" \
   --set image.tag="${FLINK_OPERATOR_VERSION}"
 
 # --- In-namespace infra -----------------------------------------------------

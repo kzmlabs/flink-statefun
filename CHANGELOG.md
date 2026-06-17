@@ -4,6 +4,20 @@ All notable changes to **StateFun Actors by Kzmlabs** are documented in this fil
 
 > **Reading guide:** "KZM-x.y" releases are this fork's versions on Flink 2.x. Apache StateFun's last release was [3.4.0](https://github.com/apache/flink-statefun/releases/tag/release-3.4.0) (October 2024) on Flink 1.16. See [docs/upstream-vs-kzm.md](https://kzmlabs.github.io/flink-statefun/upstream-vs-kzm/) for the full migration matrix.
 
+## [Unreleased]
+
+### Changed
+
+- **Flink Kubernetes Operator 1.11 → 1.15** — the K8s E2E release gate, the
+  deployment guide, and the runner example now target Operator **1.15.0**,
+  which adds Flink 2.2 support. Both `FlinkDeployment` CRs move from
+  `flinkVersion: v2_0` to **`v2_2`**, matching the Flink 2.2.0 runtime image —
+  previously pinned to `v2_0` only because Operator 1.11 capped there. The
+  Helm install, cert-manager dependency, and the conservatively-audited
+  `flinkConfiguration` keys are otherwise unchanged; the Operator pod stays on
+  its Log4j2 default (JSON Operator logs would require a custom image, so the
+  guide documents that as opt-in rather than baking it in).
+
 ## [3.4.0-KZM-3.3] - 2026-05-11
 
 Patch release on the KZM-3.x line. Hardens the supply-chain security signal

@@ -24,7 +24,7 @@ flowchart LR
 
 - **Kubernetes 1.27+**
 - **Cert-manager** (Operator dependency)
-- **Flink Kubernetes Operator 1.11+**
+- **Flink Kubernetes Operator 1.15+** (adds Flink 2.2 support)
 - An **S3-compatible bucket** for checkpoints (S3, GCS via interop, MinIO, Ceph)
 - IAM Roles for Service Accounts (IRSA) on EKS for credential-free S3 / Kinesis access (recommended)
 
@@ -38,7 +38,7 @@ metadata:
   namespace: my-app
 spec:
   image: ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.3
-  flinkVersion: v2_0
+  flinkVersion: v2_2
   flinkConfiguration:
     state.backend.type: rocksdb
     state.checkpoints.dir: s3://my-bucket/checkpoints
@@ -108,6 +108,14 @@ Flink 2.x renamed several configuration keys. The differences most likely to bit
 !!! warning "Use the fully-qualified keys"
 
     The short forms are no longer recognized in Flink 2.x. The Operator will silently use defaults if you keep the old keys.
+
+## Logging
+
+JobManager and TaskManager emit **JSON logs** out of the box — the runtime image bundles the Logback JSON encoder, driven by the `spec.logConfiguration` (`logback-console.xml`) on the `FlinkDeployment`. No image changes needed.
+
+!!! note "Operator pod logs"
+
+    The **Operator pod** itself logs plain text via Log4j2 (its default). Operator 1.15 can run on Logback, but its base image bundles Logback 1.2.x with no JSON encoder, so JSON Operator logs would require a custom Operator image bundling `logstash-logback-encoder`. The Operator is infra, not application output, so this is rarely worth the maintenance — leave it on the Log4j2 default unless your log pipeline requires JSON from every pod.
 
 ## Tuning
 
