@@ -1057,6 +1057,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#logging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logging
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#tuning" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1546,6 +1557,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#logging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logging
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#tuning" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1662,7 +1684,7 @@
 <ul>
 <li><strong>Kubernetes 1.27+</strong></li>
 <li><strong>Cert-manager</strong> (Operator dependency)</li>
-<li><strong>Flink Kubernetes Operator 1.11+</strong></li>
+<li><strong>Flink Kubernetes Operator 1.15+</strong> (adds Flink 2.2 support)</li>
 <li>An <strong>S3-compatible bucket</strong> for checkpoints (S3, GCS via interop, MinIO, Ceph)</li>
 <li>IAM Roles for Service Accounts (IRSA) on EKS for credential-free S3 / Kinesis access (recommended)</li>
 </ul>
@@ -1674,7 +1696,7 @@
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-app</span>
 </span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="nt">spec</span><span class="p">:</span>
 </span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">  </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.3</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">  </span><span class="nt">flinkVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v2_0</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">  </span><span class="nt">flinkVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v2_2</span>
 </span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">  </span><span class="nt">flinkConfiguration</span><span class="p">:</span>
 </span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">    </span><span class="nt">state.backend.type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rocksdb</span>
 </span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">    </span><span class="nt">state.checkpoints.dir</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">s3://my-bucket/checkpoints</span>
@@ -1753,6 +1775,12 @@
 <div class="admonition warning">
 <p class="admonition-title">Use the fully-qualified keys</p>
 <p>The short forms are no longer recognized in Flink 2.x. The Operator will silently use defaults if you keep the old keys.</p>
+</div>
+<h2 id="logging">Logging<a class="headerlink" href="#logging" title="Permanent link">&para;</a></h2>
+<p>JobManager and TaskManager emit <strong>JSON logs</strong> out of the box — the runtime image bundles the Logback JSON encoder, driven by the <code>spec.logConfiguration</code> (<code>logback-console.xml</code>) on the <code>FlinkDeployment</code>. No image changes needed.</p>
+<div class="admonition note">
+<p class="admonition-title">Operator pod logs</p>
+<p>The <strong>Operator pod</strong> itself logs plain text via Log4j2 (its default). Operator 1.15 can run on Logback, but its base image bundles Logback 1.2.x with no JSON encoder, so JSON Operator logs would require a custom Operator image bundling <code>logstash-logback-encoder</code>. The Operator is infra, not application output, so this is rarely worth the maintenance — leave it on the Log4j2 default unless your log pipeline requires JSON from every pod.</p>
 </div>
 <h2 id="tuning">Tuning<a class="headerlink" href="#tuning" title="Permanent link">&para;</a></h2>
 <h3 id="jobmanager-startup-time">JobManager startup time<a class="headerlink" href="#jobmanager-startup-time" title="Permanent link">&para;</a></h3>
