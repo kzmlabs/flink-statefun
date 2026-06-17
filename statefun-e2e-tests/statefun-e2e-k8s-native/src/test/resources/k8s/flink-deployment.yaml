@@ -9,7 +9,7 @@ metadata:
 spec:
   image: flink-statefun:e2e
   imagePullPolicy: Never
-  flinkVersion: "v2_0"
+  flinkVersion: "v2_2"
   serviceAccount: flink
   flinkConfiguration:
     # --- Classloader ---
