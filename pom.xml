@@ -112,7 +112,7 @@
         <awssdk.version>2.44.4</awssdk.version>
         <flatten-maven-plugin.version>1.7.3</flatten-maven-plugin.version>
         <auto-service.version>1.1.1</auto-service.version>
-        <protobuf.version>3.25.5</protobuf.version>
+        <protobuf.version>4.35.1</protobuf.version>
         <unixsocket.version>2.10.1</unixsocket.version>
         <protoc-jar-maven-plugin.version>3.11.4</protoc-jar-maven-plugin.version>
         <flink.version>2.2.1</flink.version>
