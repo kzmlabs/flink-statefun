@@ -118,7 +118,7 @@ Apache Stateful Functions stopped releasing in **October 2024** at version 3.4.0
 
 | | Apache StateFun 3.4.0 | StateFun Actors KZM-3.3 |
 |---|---|---|
-| **Flink runtime** | 1.16.2 | **2.2.0** |
+| **Flink runtime** | 1.16.2 | **2.2.1** |
 | **Java baseline** | 11 | **21** |
 | **Maven group** | `org.apache.flink` | `io.github.kzmlabs.flinkstatefun` |
 | **Kinesis I/O** | Flink 1.x consumer | **Restored** on Flink 2.x source/sink |

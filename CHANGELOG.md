@@ -18,6 +18,28 @@ All notable changes to **StateFun Actors by Kzmlabs** are documented in this fil
   its Log4j2 default (JSON Operator logs would require a custom image, so the
   guide documents that as opt-in rather than baking it in).
 
+### Security
+
+- **Addressed the High CVEs reported by a Trivy scan of the release-branch
+  image ([#247])**:
+  - **io.netty** (6 CVEs) — the fat `statefun-flink-distribution` jar pulled
+    `io.netty:*` transitively via `awssdk netty-nio-client`. Imported
+    `io.netty:netty-bom` **4.1.135.Final** to force the patched line.
+  - **jackson-databind** (CVE-2026-54512 / CVE-2026-54513) — the plain
+    `com.fasterxml.jackson:*` copy (from the aws-sdk) is pinned via
+    `jackson-bom` **2.18.8**. The *relocated* `flink-shaded-jackson` copy is
+    left at **2.18.2-20.0** to match Flink 2.2.1's own shipped version — a
+    patched `flink-shaded-jackson` is Flink's to release upstream; forcing a
+    newer flink-shaded line here would diverge from the runtime it is built
+    against.
+  - **flink-table-planner** (CVE-2026-35194) and base-image **openssl**
+    (CVE-2026-45447) — bumped **Flink 2.2.0 → 2.2.1** and repinned the
+    `statefun-docker` base image to `apache/flink:2.2.1-java21` (fresh OS
+    packages; table jars are already stripped at build time).
+  - Added an `at.yawk.lz4:lz4-java` **1.10.3** convergence pin: Flink 2.2.1's
+    runtime moved its lz4 fork to 1.10.3 while `flink-connector-kafka`'s
+    kafka-clients still pulls 1.8.1.
+
 ## [3.4.0-KZM-3.3] - 2026-05-11
 
 Patch release on the KZM-3.x line. Hardens the supply-chain security signal
@@ -294,6 +316,7 @@ First stable release of the KZM-2.0 line, promoting RC7 after successful Maven C
 - Add Docker image publishing to GitHub Container Registry
 - Add release setup guide and release script
 
+[#247]: https://github.com/kzmlabs/flink-statefun/issues/247
 [3.4.0-KZM-3.1]: https://github.com/kzmlabs/flink-statefun/releases/tag/v3.4.0-KZM-3.1
 [3.4.0-KZM-3.0]: https://github.com/kzmlabs/flink-statefun/releases/tag/v3.4.0-KZM-3.0
 [3.4.0-KZM-3.0-RC1]: https://github.com/kzmlabs/flink-statefun/releases/tag/v3.4.0-KZM-3.0-RC1
