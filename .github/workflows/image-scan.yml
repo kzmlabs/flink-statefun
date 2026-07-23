@@ -36,6 +36,7 @@ on:
 
 permissions:
   contents: read
+  issues: write   # report_scan_failure.sh opens a tracking issue on cron failure
 
 concurrency:
   group: image-scan-${{ github.ref }}
@@ -76,3 +77,13 @@ jobs:
           exit-code: "1"
           severity: HIGH,CRITICAL
           ignore-unfixed: true
+
+      # Cron failures have no PR to surface them — open (or bump) a tracking
+      # issue so the failure lands in email and stays visible until fixed.
+      - name: Open tracking issue on scan failure
+        if: failure() && github.event_name == 'schedule'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: bash .github/scripts/report_scan_failure.sh
