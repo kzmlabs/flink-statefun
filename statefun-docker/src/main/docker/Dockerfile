@@ -7,6 +7,22 @@ ARG IMAGE_REGISTRY_PREFIX=
 ARG FLINK_BASE_IMAGE=${IMAGE_REGISTRY_PREFIX}apache/flink:2.2.1-java21@sha256:256a3dde6a0d613fff973f3d86b04c22bbeddabee4acb3376f24b6ac1f1d6a58
 FROM ${FLINK_BASE_IMAGE}
 
+# Security: patch base-image OS packages that already have fixed versions
+# published — openssl/libssl3t64 CVE-2026-45447 (High) plus the gnutls, krb5,
+# sqlite, systemd/udev, nghttp2, gcrypt, gzip, perl-base and ncurses
+# Mediums/Lows. Scoped --only-upgrade: touches only the flagged packages,
+# never installs new ones. Base runs build steps as flink, so root for apt.
+USER root
+RUN apt-get update \
+ && apt-get install -y --only-upgrade \
+      openssl libssl3t64 libgnutls30t64 \
+      libgssapi-krb5-2 libk5crypto3 libkrb5-3 libkrb5support0 \
+      libsqlite3-0 libsystemd0 libudev1 libnghttp2-14 libgcrypt20 \
+      gzip perl-base libncursesw6 libtinfo6 ncurses-base ncurses-bin \
+ && rm -rf /var/lib/apt/lists/*
+USER flink
+
+
 # Logging library versions (downloaded from Maven Central)
 ARG LOGBACK_VERSION=1.4.14
 ARG LOGSTASH_LOGBACK_ENCODER_VERSION=7.4

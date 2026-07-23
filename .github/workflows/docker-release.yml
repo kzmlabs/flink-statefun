@@ -84,7 +84,7 @@ jobs:
         with:
           image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}
           format: table
-          exit-code: "0"
+          exit-code: "1"
           severity: HIGH,CRITICAL
           ignore-unfixed: true
 
