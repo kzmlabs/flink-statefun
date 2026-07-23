@@ -109,7 +109,7 @@
         <maven.minimum.version>3.9.0</maven.minimum.version>
         <!-- Central publishing skip flag - modules can override to true -->
         <central.skip>false</central.skip>
-        <awssdk.version>2.44.4</awssdk.version>
+        <awssdk.version>2.49.1</awssdk.version>
         <flatten-maven-plugin.version>1.7.3</flatten-maven-plugin.version>
         <auto-service.version>1.1.1</auto-service.version>
         <protobuf.version>3.25.5</protobuf.version>
