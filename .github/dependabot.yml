@@ -34,7 +34,7 @@ updates:
     open-pull-requests-limit: 10
     ignore:
       # slf4j-log4j12 was renamed to slf4j-reload4j in slf4j 2.x and
-      # pulls slf4j-api 2.x transitively. Flink 2.2.0 still drags slf4j-api
+      # pulls slf4j-api 2.x transitively. Flink 2.2.1 still drags slf4j-api
       # 1.7.36, so the bump trips Maven enforcer's DependencyConvergence.
       # The shared <slf4j-log4j12.version> property pins BOTH slf4j-api
       # and slf4j-log4j12, so both must be ignored — Dependabot opens the

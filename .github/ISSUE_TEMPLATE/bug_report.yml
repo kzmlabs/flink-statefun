@@ -18,7 +18,7 @@ body:
     id: flink
     attributes:
       label: Flink version
-      placeholder: "2.2.0"
+      placeholder: "2.2.1"
     validations:
       required: true
   - type: input
