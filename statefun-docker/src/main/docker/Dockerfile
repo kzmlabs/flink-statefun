@@ -24,15 +24,15 @@ USER flink
 
 
 # Logging library versions (downloaded from Maven Central)
-ARG LOGBACK_VERSION=1.4.14
-ARG LOGSTASH_LOGBACK_ENCODER_VERSION=7.4
+ARG LOGBACK_VERSION=1.5.19
+ARG LOGSTASH_LOGBACK_ENCODER_VERSION=8.0
 ARG SLF4J_VERSION=2.0.9
 
 ARG MAVEN_CENTRAL=https://repo1.maven.org/maven2
 
 # Remove unnecessary Flink libs
 RUN rm -rf ${FLINK_HOME}/lib/flink-table*jar \
-    && rm -rf ${FLINK_HOME}/lib/log4j-slf4j-impl*jar
+    && rm -rf ${FLINK_HOME}/lib/log4j-*.jar
 
 # Download logging JARs from Maven Central
 RUN curl -fSL "${MAVEN_CENTRAL}/ch/qos/logback/logback-classic/${LOGBACK_VERSION}/logback-classic-${LOGBACK_VERSION}.jar" \
