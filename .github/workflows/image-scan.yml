@@ -74,9 +74,30 @@ jobs:
         with:
           image-ref: statefun-scan:${{ github.sha }}
           format: table
+          output: trivy-report.txt
           exit-code: "1"
           severity: HIGH,CRITICAL
           ignore-unfixed: true
+
+      # Surface the report on the run's Summary page — no log digging needed.
+      - name: Publish report to run summary
+        if: always()
+        run: |
+          [ -s trivy-report.txt ] || exit 0
+          {
+            echo '## Trivy image scan report'
+            echo '```'
+            cat trivy-report.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload report artifact
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: trivy-report
+          path: trivy-report.txt
+          if-no-files-found: ignore
 
       # Cron failures have no PR to surface them — open (or bump) a tracking
       # issue so the failure lands in email and stays visible until fixed.
