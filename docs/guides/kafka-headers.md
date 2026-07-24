@@ -1,6 +1,6 @@
 # Kafka record headers
 
-Kafka records carry headers — key/value metadata pairs alongside the payload, commonly used for
+Kafka records carry headers - key/value metadata pairs alongside the payload, commonly used for
 trace IDs, correlation IDs, schema hints, retry counters, or routing tags. StateFun Actors
 supports headers in **both directions** for remote functions built with `statefun-sdk-java`:
 
@@ -16,11 +16,11 @@ Semantics match Kafka's own contract exactly:
 | Duplicate header keys are allowed | Preserved, in original order |
 | Header **value** may be `null` (distinct from empty) | Preserved as `null` end-to-end |
 | Header **key** must not be `null` | A null key degrades to an empty key instead of failing |
-| Headers are raw bytes on the wire | Choose an encoding — see [Choosing an encoding](#choosing-an-encoding) |
+| Headers are raw bytes on the wire | Choose an encoding - see [Choosing an encoding](#choosing-an-encoding) |
 
 Egress headers work out of the box. Ingress header **forwarding is opt-in**: headers cost payload
 bytes on every hop between the ingress and the remote function, so a topic only pays for them
-after opting in — see [Enabling header forwarding](#enabling-header-forwarding).
+after opting in - see [Enabling header forwarding](#enabling-header-forwarding).
 
 ## Enabling header forwarding
 
@@ -51,7 +51,7 @@ The effective value per topic is resolved as: per-topic `forwardHeaders` if pres
 the ingress-level `forwardHeaders`, otherwise `false`. With a 20-topic ingress you set the policy
 once at ingress level and override individual topics in either direction.
 
-For a topic that has not opted in, record headers are never captured — no header bytes enter the
+For a topic that has not opted in, record headers are never captured - no header bytes enter the
 runtime, the Flink shuffle, or the remote-function request, and `Message#headers()` returns an
 empty list. Records on opted-in topics without headers still add zero overhead.
 
@@ -80,16 +80,16 @@ public CompletableFuture<Void> apply(Context context, Message message) {
 - headers appear in the order they were set on the Kafka record, duplicates included;
 - messages from a topic that did not enable
   [`forwardHeaders`](#enabling-header-forwarding), and messages that did not originate from a
-  Kafka ingress, return an empty list (unless the sender attached headers explicitly — see
+  Kafka ingress, return an empty list (unless the sender attached headers explicitly - see
   [Forwarding headers](#forwarding-headers-between-functions));
-- the list is computed lazily and cached — untouched headers cost nothing.
+- the list is computed lazily and cached - untouched headers cost nothing.
 
 ### `MessageHeader` accessors
 
 | Accessor | Returns | For values written with |
 |---|---|---|
-| `key()` | `String` (never null) | — |
-| `hasValue()` | `false` when the Kafka header value was null | — |
+| `key()` | `String` (never null) | - |
+| `hasValue()` | `false` when the Kafka header value was null | - |
 | `value()` | `Slice` (zero-copy), or `null` for a null-valued header | `withHeader(key, byte[]/Slice)` |
 | `valueAsUtf8String()` | `String` | `withUtf8Header(key, text)` |
 | `valueAsInt()` / `valueAsLong()` / `valueAsFloat()` / `valueAsDouble()` / `valueAsBoolean()` | boxed primitive | the matching primitive `withHeader` overload |
@@ -97,7 +97,7 @@ public CompletableFuture<Void> apply(Context context, Message message) {
 
 !!! note "Never throws"
 
-    Every accessor is production-safe: a null or undecodable value returns `null` — an exception
+    Every accessor is production-safe: a null or undecodable value returns `null` - an exception
     is never thrown inside a live function invocation because of malformed header bytes.
 
 ## Writing headers to a Kafka egress
@@ -123,25 +123,25 @@ context.send(
 | `withHeader(String key, byte[] value)` | raw bytes as given |
 | `withHeader(String key, Slice value)` | raw bytes as given (zero-copy) |
 | `withHeader(String key, Type<T> type, T value)` | the SDK type's serializer |
-| `withHeader(String key, int / long / float / double / boolean value)` | binary SDK `Types` encoding — shorthand for the `Type<T>` overload |
+| `withHeader(String key, int / long / float / double / boolean value)` | binary SDK `Types` encoding - shorthand for the `Type<T>` overload |
 
 Headers may repeat keys; they are written in call order.
 
 ## Choosing an encoding
 
-Kafka headers are always raw bytes on the wire — there is no native "number" header type — so
+Kafka headers are always raw bytes on the wire - there is no native "number" header type - so
 the choice is which encoding the *reader* expects:
 
-- **Binary (`withHeader(key, 10)` / `Type<T>` overload)** — a real binary number, decoded
+- **Binary (`withHeader(key, 10)` / `Type<T>` overload)** - a real binary number, decoded
   losslessly by any StateFun SDK reader via `valueAsInt()` etc. Best between StateFun functions.
-- **UTF-8 text (`withUtf8Header(key, "10")`)** — readable by any Kafka consumer, `kcat`, Kafka
+- **UTF-8 text (`withUtf8Header(key, "10")`)** - readable by any Kafka consumer, `kcat`, Kafka
   Connect, or UI tooling. Best when non-StateFun systems consume the topic.
-- **Raw bytes (`byte[]`/`Slice`)** — you own the encoding on both sides (e.g. hashes, protobuf).
+- **Raw bytes (`byte[]`/`Slice`)** - you own the encoding on both sides (e.g. hashes, protobuf).
 
 ## Null semantics
 
 Kafka distinguishes a header with a **null value** from one with an **empty value**, and so does
-StateFun — a null value survives the full ingress → function → egress round-trip as null:
+StateFun - a null value survives the full ingress → function → egress round-trip as null:
 
 ```java
 // echoing headers preserves null-ness:
@@ -149,8 +149,8 @@ message.headers().forEach(h -> egress.withHeader(h.key(), h.value())); // null v
 
 // reading:
 header.hasValue();   // false for a null-valued header
-header.value();      // null   — same contract as Kafka's own Header#value()
-header.valueAsInt(); // null   — no exception
+header.value();      // null   - same contract as Kafka's own Header#value()
+header.valueAsInt(); // null   - no exception
 ```
 
 Write-side null handling (never fails a send):
@@ -159,12 +159,12 @@ Write-side null handling (never fails a send):
 |---|---|
 | null header *value* (any overload) | header present with a **null** value |
 | explicitly empty value (`new byte[0]`) | header present with an **empty** value |
-| null header *key* | key degrades to `""` (Kafka forbids null keys — failing inside the running job would be worse) |
+| null header *key* | key degrades to `""` (Kafka forbids null keys - failing inside the running job would be worse) |
 | null `Type<T>` object | treated as a null value |
 
 ## Forwarding headers between functions
 
-Function-to-function messages can carry headers too — `MessageBuilder` has the same overload
+Function-to-function messages can carry headers too - `MessageBuilder` has the same overload
 family, and the receiving function reads them with the same `Message#headers()` API:
 
 ```java
@@ -180,7 +180,7 @@ or forwarding, including null-valued ones.
 
 ## Testing header-aware functions
 
-The SDK testing toolkit covers headers end-to-end — construct incoming messages with headers via
+The SDK testing toolkit covers headers end-to-end - construct incoming messages with headers via
 `MessageBuilder`, and assert egress headers with `KafkaEgressCapture` (no protobuf hand-parsing):
 
 ```java
@@ -215,15 +215,15 @@ production paths it fails loudly: passing a non-Kafka egress message throws
 Header support is strictly additive at the protocol level:
 
 - `KafkaProducerRecord` (egress), `TypedValue.Metadata` (request-reply), and the internal ingress
-  envelope each gained a repeated header field with a `has_value` flag — the same idiom
+  envelope each gained a repeated header field with a `has_value` flag - the same idiom
   `TypedValue` itself uses to distinguish empty from absent.
 - Remote functions built against **older SDKs** keep working against a runtime with header
-  support — they simply do not see headers.
-- A **new SDK** talking to an **older runtime** also keeps working — headers set on egress
+  support - they simply do not see headers.
+- A **new SDK** talking to an **older runtime** also keeps working - headers set on egress
   messages are ignored by the old runtime, nothing fails.
-- `forwardHeaders` is an additive YAML property — existing `module.yaml` files parse unchanged
+- `forwardHeaders` is an additive YAML property - existing `module.yaml` files parse unchanged
   and keep the default (off).
-- Records without headers — and all records on topics that did not opt in — have unchanged wire
+- Records without headers - and all records on topics that did not opt in - have unchanged wire
   size and no extra allocations on any path.
 
 !!! info "Kafka only"

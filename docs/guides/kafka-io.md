@@ -1,6 +1,6 @@
 ---
 title: Kafka I/O
-description: Apache Kafka ingress and egress configuration for StateFun Actors on Apache Flink — exactly-once delivery, multi-topic ingresses, custom Protobuf types, routing patterns.
+description: Apache Kafka ingress and egress configuration for StateFun Actors on Apache Flink - exactly-once delivery, multi-topic ingresses, custom Protobuf types, routing patterns.
 ---
 
 # Kafka I/O
@@ -24,7 +24,7 @@ spec:
         - example/order-handler
 ```
 
-Each entry under `topics:` maps inbound records to a target function namespace + name. The `valueType` declares how StateFun decodes the record value — typically a Protobuf type registered in your SDK code.
+Each entry under `topics:` maps inbound records to a target function namespace + name. The `valueType` declares how StateFun decodes the record value - typically a Protobuf type registered in your SDK code.
 
 ### Startup position
 
@@ -88,7 +88,7 @@ Kafka record headers travel in both directions: functions read the headers of th
 triggered them via `Message#headers()` and attach headers to egress records via the
 `KafkaEgressMessage` builder. Ingress header forwarding is opt-in per topic through the
 `forwardHeaders` spec property (default `false`, settable at ingress level with per-topic
-overrides). Semantics match Kafka's own — duplicate keys, ordering, and the null-vs-empty value
+overrides). Semantics match Kafka's own - duplicate keys, ordering, and the null-vs-empty value
 distinction are all preserved, and header operations never throw on null input.
 
 See the dedicated guide: **[Kafka record headers](kafka-headers.md)**.
@@ -146,8 +146,8 @@ Works more reliably than the generic string codec for binary content.
 
 <div class="grid cards" markdown>
 
-- :material-aws:{ .lg .middle } &nbsp; **[Kinesis I/O](kinesis-io.md)** — same routing model, AWS Kinesis transport.
-- :material-kubernetes:{ .lg .middle } &nbsp; **[Kubernetes deployment](k8s-deployment.md)** — wiring ingress/egress in production.
-- :material-graph:{ .lg .middle } &nbsp; **[Architecture overview](../architecture/index.md)** — how the dispatcher routes ingress messages.
+- :material-aws:{ .lg .middle } &nbsp; **[Kinesis I/O](kinesis-io.md)** - same routing model, AWS Kinesis transport.
+- :material-kubernetes:{ .lg .middle } &nbsp; **[Kubernetes deployment](k8s-deployment.md)** - wiring ingress/egress in production.
+- :material-graph:{ .lg .middle } &nbsp; **[Architecture overview](../architecture/index.md)** - how the dispatcher routes ingress messages.
 
 </div>
