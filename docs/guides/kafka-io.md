@@ -96,10 +96,15 @@ KafkaEgressMessage.forEgress(TypeName.typeNameFromString("example/notifications"
     .withTopic("example.notifications")
     .withKey(orderId)
     .withValue(notificationPayload)
-    .withUtf8Header("trace-id", traceId)
-    .withHeader("payload-hash", hashBytes)
+    .withUtf8Header("trace-id", traceId)   // UTF-8 text, readable by any Kafka tool
+    .withHeader("payload-hash", hashBytes) // raw bytes
+    .withHeader("retry-count", 10)         // binary int (SDK Types encoding)
     .build();
 ```
+
+Primitive header values travel as real binary numbers and decode symmetrically on the read side —
+`header.valueAsInt()`, `valueAsLong()`, `valueAsDouble()`, `valueAsBoolean()` — returning `null`
+(never throwing) for null or undecodable values.
 
 Header semantics match Kafka's own: duplicate keys and ordering are preserved, and a **null**
 header value — which Kafka distinguishes from an empty one — stays null end-to-end

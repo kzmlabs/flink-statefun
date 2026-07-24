@@ -88,6 +88,46 @@ class MessageHeadersTest {
   }
 
   @Test
+  void primitiveAccessorsDecodeBinaryNumbersWrittenByPrimitiveOverloads() {
+    TypedValue typedValue =
+        plainStringValue()
+            .addMetadata(typedMetadata("retry-count", Types.integerType(), 10))
+            .addMetadata(typedMetadata("offset", Types.longType(), 42_000_000_000L))
+            .addMetadata(typedMetadata("ratio", Types.doubleType(), 0.5d))
+            .addMetadata(typedMetadata("replayed", Types.booleanType(), true))
+            .build();
+
+    List<MessageHeader> headers = new MessageWrapper(TARGET, typedValue).headers();
+
+    assertThat(headers.get(0).valueAsInt()).isEqualTo(10);
+    assertThat(headers.get(1).valueAsLong()).isEqualTo(42_000_000_000L);
+    assertThat(headers.get(2).valueAsDouble()).isEqualTo(0.5d);
+    assertThat(headers.get(3).valueAsBoolean()).isTrue();
+  }
+
+  @Test
+  void primitiveAccessorsNeverThrowOnGarbageOrNullValues() {
+    TypedValue typedValue =
+        plainStringValue()
+            .addMetadata(
+                TypedValue.Metadata.newBuilder()
+                    .setKey("garbage")
+                    .setValue(ByteString.copyFrom(new byte[] {0x01}))
+                    .setHasValue(true))
+            .addMetadata(TypedValue.Metadata.newBuilder().setKey("null-valued"))
+            .build();
+
+    List<MessageHeader> headers = new MessageWrapper(TARGET, typedValue).headers();
+
+    assertThat(headers.get(0).valueAsInt()).isNull();
+    assertThat(headers.get(0).valueAsLong()).isNull();
+    assertThat(headers.get(0).valueAsDouble()).isNull();
+    assertThat(headers.get(0).valueAs(Types.integerType())).isNull();
+    assertThat(headers.get(1).valueAsInt()).isNull();
+    assertThat(headers.get(1).valueAsBoolean()).isNull();
+  }
+
+  @Test
   void messageWithoutMetadataHasNoHeaders() {
     Message message = new MessageWrapper(TARGET, plainStringValue().build());
 

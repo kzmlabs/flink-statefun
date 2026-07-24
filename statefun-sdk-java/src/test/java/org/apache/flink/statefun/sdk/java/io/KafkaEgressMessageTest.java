@@ -235,6 +235,31 @@ class KafkaEgressMessageTest {
   }
 
   @Test
+  void primitiveHeaderOverloadsTransferBinaryNumbersNotText()
+      throws InvalidProtocolBufferException {
+    EgressMessage message =
+        KafkaEgressMessage.forEgress(EGRESS_ID)
+            .withTopic("t")
+            .withUtf8Value("v")
+            .withHeader("retry-count", 10)
+            .withHeader("offset", 42_000_000_000L)
+            .withHeader("ratio", 0.5d)
+            .withHeader("replayed", true)
+            .build();
+
+    KafkaProducerRecord record = unpack(message);
+    assertThat(record.getHeaders(0).getValue().toByteArray())
+        .isEqualTo(Types.integerType().typeSerializer().serialize(10).toByteArray());
+    assertThat(record.getHeaders(1).getValue().toByteArray())
+        .isEqualTo(Types.longType().typeSerializer().serialize(42_000_000_000L).toByteArray());
+    assertThat(record.getHeaders(2).getValue().toByteArray())
+        .isEqualTo(Types.doubleType().typeSerializer().serialize(0.5d).toByteArray());
+    assertThat(record.getHeaders(3).getValue().toByteArray())
+        .isEqualTo(Types.booleanType().typeSerializer().serialize(true).toByteArray());
+    assertThat(record.getHeadersList()).allMatch(KafkaProducerRecord.Header::getHasValue);
+  }
+
+  @Test
   void recordWithoutHeadersHasEmptyHeaderList() throws InvalidProtocolBufferException {
     EgressMessage message =
         KafkaEgressMessage.forEgress(EGRESS_ID).withTopic("t").withUtf8Value("v").build();

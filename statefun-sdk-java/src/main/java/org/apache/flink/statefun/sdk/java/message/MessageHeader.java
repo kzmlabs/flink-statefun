@@ -5,6 +5,7 @@ package org.apache.flink.statefun.sdk.java.message;
 import java.nio.charset.StandardCharsets;
 import org.apache.flink.statefun.sdk.java.slice.Slice;
 import org.apache.flink.statefun.sdk.java.types.Type;
+import org.apache.flink.statefun.sdk.java.types.Types;
 
 /**
  * A single transport-level header attached to an incoming {@link Message}, e.g. a Kafka record
@@ -46,11 +47,39 @@ public final class MessageHeader {
 
   /**
    * Decodes the header value with the given SDK {@link Type}, the read-side counterpart of {@code
-   * KafkaEgressMessage.Builder#withHeader(String, Type, Object)}. Returns {@code null} when the
-   * header value was null.
+   * KafkaEgressMessage.Builder#withHeader(String, Type, Object)}. Prod-safe by design: a null or
+   * undecodable value yields {@code null}, never an exception.
    */
   public <T> T valueAs(Type<T> type) {
-    return value == null ? null : type.typeSerializer().deserialize(value);
+    if (value == null || type == null) {
+      return null;
+    }
+    try {
+      return type.typeSerializer().deserialize(value);
+    } catch (RuntimeException e) {
+      return null;
+    }
+  }
+
+  /**
+   * Primitive accessors decode the binary SDK {@code Types} encodings written by the matching
+   * {@code withHeader(key, 10)}-style overloads. Same prod-safe contract as {@link
+   * #valueAs(Type)}: null or undecodable values yield {@code null}.
+   */
+  public Integer valueAsInt() {
+    return valueAs(Types.integerType());
+  }
+
+  public Long valueAsLong() {
+    return valueAs(Types.longType());
+  }
+
+  public Double valueAsDouble() {
+    return valueAs(Types.doubleType());
+  }
+
+  public Boolean valueAsBoolean() {
+    return valueAs(Types.booleanType());
   }
 
   @Override

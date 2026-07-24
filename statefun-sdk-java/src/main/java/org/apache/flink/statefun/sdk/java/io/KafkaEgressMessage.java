@@ -14,6 +14,7 @@ import org.apache.flink.statefun.sdk.java.slice.Slice;
 import org.apache.flink.statefun.sdk.java.slice.SliceProtobufUtil;
 import org.apache.flink.statefun.sdk.java.types.Type;
 import org.apache.flink.statefun.sdk.java.types.TypeSerializer;
+import org.apache.flink.statefun.sdk.java.types.Types;
 import org.apache.flink.statefun.sdk.reqreply.generated.TypedValue;
 import org.apache.flink.statefun.sdk.shaded.com.google.protobuf.ByteString;
 
@@ -119,6 +120,28 @@ public final class KafkaEgressMessage {
       }
       TypeSerializer<T> serializer = type.typeSerializer();
       return withHeader(key, serializer.serialize(value));
+    }
+
+    /**
+     * Primitive convenience overloads transfer the actual binary number (the SDK {@code Types}
+     * encoding), equivalent to {@code withHeader(key, Types.integerType(), value)} — no text
+     * round-trip. Read back with the matching {@code MessageHeader#valueAsInt()}-style accessor.
+     * For text headers readable by generic Kafka tooling, use {@link #withUtf8Header}.
+     */
+    public Builder withHeader(String key, int value) {
+      return withHeader(key, Types.integerType(), value);
+    }
+
+    public Builder withHeader(String key, long value) {
+      return withHeader(key, Types.longType(), value);
+    }
+
+    public Builder withHeader(String key, double value) {
+      return withHeader(key, Types.doubleType(), value);
+    }
+
+    public Builder withHeader(String key, boolean value) {
+      return withHeader(key, Types.booleanType(), value);
     }
 
     private Builder addHeader(String key, ByteString valueOrNull) {
