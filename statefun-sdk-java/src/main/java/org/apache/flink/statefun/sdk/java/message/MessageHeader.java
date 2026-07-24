@@ -5,6 +5,7 @@ package org.apache.flink.statefun.sdk.java.message;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import org.apache.flink.statefun.sdk.java.slice.Slice;
+import org.apache.flink.statefun.sdk.java.types.Type;
 
 /**
  * A single transport-level header attached to an incoming {@link Message}, e.g. a Kafka record
@@ -30,6 +31,14 @@ public final class MessageHeader {
 
   public String valueAsUtf8String() {
     return new String(value.toByteArray(), StandardCharsets.UTF_8);
+  }
+
+  /**
+   * Decodes the header value with the given SDK {@link Type}, the read-side counterpart of {@code
+   * KafkaEgressMessage.Builder#withHeader(String, Type, Object)}.
+   */
+  public <T> T valueAs(Type<T> type) {
+    return type.typeSerializer().deserialize(value);
   }
 
   @Override

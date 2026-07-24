@@ -110,6 +110,11 @@ public final class KafkaEgressMessage {
       return addHeader(key, SliceProtobufUtil.asByteString(value));
     }
 
+    public <T> Builder withHeader(String key, Type<T> type, T value) {
+      TypeSerializer<T> serializer = type.typeSerializer();
+      return withHeader(key, serializer.serialize(value));
+    }
+
     private Builder addHeader(String key, ByteString value) {
       Objects.requireNonNull(key);
       if (headers == null) {

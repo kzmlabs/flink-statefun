@@ -8,6 +8,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.util.List;
 import org.apache.flink.statefun.sdk.java.Address;
 import org.apache.flink.statefun.sdk.java.TypeName;
+import org.apache.flink.statefun.sdk.java.types.Types;
 import org.apache.flink.statefun.sdk.reqreply.generated.TypedValue;
 import org.apache.flink.statefun.sdk.shaded.com.google.protobuf.ByteString;
 import org.junit.jupiter.api.Test;
@@ -60,6 +61,31 @@ class MessageHeadersTest {
   }
 
   @Test
+  void headerValuesDecodeAsBytesStringAndTypedPrimitives() {
+    TypedValue typedValue =
+        plainStringValue()
+            .addMetadata(
+                TypedValue.Metadata.newBuilder()
+                    .setKey("raw-bytes")
+                    .setValue(ByteString.copyFrom(new byte[] {1, 2, 3})))
+            .addMetadata(metadata("str", "hello"))
+            .addMetadata(typedMetadata("int", Types.integerType(), 42))
+            .addMetadata(typedMetadata("long", Types.longType(), 42_000_000_000L))
+            .addMetadata(typedMetadata("double", Types.doubleType(), 3.14d))
+            .addMetadata(typedMetadata("bool", Types.booleanType(), true))
+            .build();
+
+    List<MessageHeader> headers = new MessageWrapper(TARGET, typedValue).headers();
+
+    assertThat(headers.get(0).value().toByteArray()).containsExactly(1, 2, 3);
+    assertThat(headers.get(1).valueAsUtf8String()).isEqualTo("hello");
+    assertThat(headers.get(2).valueAs(Types.integerType())).isEqualTo(42);
+    assertThat(headers.get(3).valueAs(Types.longType())).isEqualTo(42_000_000_000L);
+    assertThat(headers.get(4).valueAs(Types.doubleType())).isEqualTo(3.14d);
+    assertThat(headers.get(5).valueAs(Types.booleanType())).isTrue();
+  }
+
+  @Test
   void messageWithoutMetadataHasNoHeaders() {
     Message message = new MessageWrapper(TARGET, plainStringValue().build());
 
@@ -95,5 +121,12 @@ class MessageHeadersTest {
     return TypedValue.Metadata.newBuilder()
         .setKey(key)
         .setValue(ByteString.copyFromUtf8(utf8Value));
+  }
+
+  private static <T> TypedValue.Metadata.Builder typedMetadata(
+      String key, org.apache.flink.statefun.sdk.java.types.Type<T> type, T value) {
+    return TypedValue.Metadata.newBuilder()
+        .setKey(key)
+        .setValue(ByteString.copyFrom(type.typeSerializer().serialize(value).toByteArray()));
   }
 }
