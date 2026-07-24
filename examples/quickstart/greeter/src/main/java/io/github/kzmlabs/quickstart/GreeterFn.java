@@ -48,6 +48,7 @@ public final class GreeterFn implements StatefulFunction {
             .withTopic(RESULTS_TOPIC)
             .withUtf8Key(context.self().id())
             .withUtf8Value(greeting)
+            .withUtf8Header("greeted-by", "quickstart-greeter") // Kafka record header, since KZM-3.4
             .build());
 
     return context.done();
