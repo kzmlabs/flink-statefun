@@ -5,7 +5,7 @@ description: StateFun Actors 3.4.0-KZM-3.4 adds end-to-end Kafka record header s
 
 # Kafka record headers in Stateful Functions: closing a five-year-old gap
 
-*Published 2026-07-24 · by the kzmlabs maintainers · [Read on dev.to](https://dev.to/okazimirov/kafka-record-headers-in-stateful-functions-closing-a-five-year-old-gap-5bon)*
+*Published 2026-07-24 · by the kzmlabs maintainers · [Read on dev.to](https://dev.to/okazimirov/kafka-record-headers-in-stateful-functions-closing-a-five-year-old-gap-5bon) · [Read on Medium](https://medium.com/@kazimirov.oleksandr/kafka-record-headers-in-stateful-functions-3f24c82b473f)*
 
 Apache Stateful Functions never supported Kafka record headers. Not on the way in: a function had no way to see the headers of the record that invoked it. Not on the way out: the egress builder had topic, key, and value, and nothing else. If your platform standardized on header-borne trace context, tenant tags, or schema hints, StateFun was a black hole in the middle of your pipeline. Headers went in, and they never came out.
 
