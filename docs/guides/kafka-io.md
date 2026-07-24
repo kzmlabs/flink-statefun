@@ -86,9 +86,10 @@ The runtime uses Flink transactions to deliver exactly once when paired with a t
 
 Kafka record headers travel in both directions: functions read the headers of the record that
 triggered them via `Message#headers()` and attach headers to egress records via the
-`KafkaEgressMessage` builder. Semantics match Kafka's own — duplicate keys, ordering, and the
-null-vs-empty value distinction are all preserved, and header operations never throw on null
-input.
+`KafkaEgressMessage` builder. Ingress header forwarding is opt-in per topic through the
+`forwardHeaders` spec property (default `false`, settable at ingress level with per-topic
+overrides). Semantics match Kafka's own — duplicate keys, ordering, and the null-vs-empty value
+distinction are all preserved, and header operations never throw on null input.
 
 See the dedicated guide: **[Kafka record headers](kafka-headers.md)**.
 

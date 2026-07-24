@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.annotation.JsonCreator;
@@ -45,7 +46,8 @@ final class RoutableKafkaIngressSpec {
   private final IngressIdentifier<Message> id;
   private final Optional<String> kafkaAddress;
   private final Optional<String> consumerGroupId;
-  private final Map<String, RoutingConfig> topicRoutings;
+  private final Map<String, TopicRouting> topicRoutings;
+  private final boolean forwardHeaders;
   private final KafkaIngressAutoResetPosition autoOffsetResetPosition;
   private final KafkaIngressStartupPosition startupPosition;
   private final Properties properties;
@@ -54,7 +56,8 @@ final class RoutableKafkaIngressSpec {
       IngressIdentifier<Message> id,
       Optional<String> kafkaAddress,
       Optional<String> consumerGroupId,
-      Map<String, RoutingConfig> topicRoutings,
+      Map<String, TopicRouting> topicRoutings,
+      boolean forwardHeaders,
       KafkaIngressAutoResetPosition autoOffsetResetPosition,
       KafkaIngressStartupPosition startupPosition,
       Properties properties) {
@@ -62,6 +65,7 @@ final class RoutableKafkaIngressSpec {
     this.kafkaAddress = kafkaAddress;
     this.consumerGroupId = consumerGroupId;
     this.topicRoutings = topicRoutings;
+    this.forwardHeaders = forwardHeaders;
     this.autoOffsetResetPosition = autoOffsetResetPosition;
     this.startupPosition = startupPosition;
     this.properties = properties;
@@ -80,9 +84,46 @@ final class RoutableKafkaIngressSpec {
     builder.withStartupPosition(startupPosition);
     builder.withProperties(properties);
     KafkaIngressBuilderApiExtension.withDeserializer(
-        builder, new RoutableKafkaIngressDeserializer(topicRoutings));
+        builder,
+        new RoutableKafkaIngressDeserializer(routingConfigsByTopic(), forwardHeaderTopics()));
 
     return builder.build();
+  }
+
+  private Map<String, RoutingConfig> routingConfigsByTopic() {
+    return topicRoutings.entrySet().stream()
+        .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().config()));
+  }
+
+  Set<String> forwardHeaderTopics() {
+    return topicRoutings.entrySet().stream()
+        .filter(entry -> entry.getValue().forwardsHeaders(forwardHeaders))
+        .map(Map.Entry::getKey)
+        .collect(Collectors.toUnmodifiableSet());
+  }
+
+  /**
+   * A topic routing entry: the routing config plus the topic's optional {@code forwardHeaders}
+   * override. The effective per-topic value is the override when present, otherwise the
+   * ingress-level {@code forwardHeaders} default (which itself defaults to false — header
+   * forwarding is strictly opt-in).
+   */
+  static final class TopicRouting {
+    private final RoutingConfig config;
+    private final Boolean forwardHeadersOverride;
+
+    TopicRouting(RoutingConfig config, Boolean forwardHeadersOverride) {
+      this.config = Objects.requireNonNull(config);
+      this.forwardHeadersOverride = forwardHeadersOverride;
+    }
+
+    RoutingConfig config() {
+      return config;
+    }
+
+    boolean forwardsHeaders(boolean ingressDefault) {
+      return forwardHeadersOverride != null ? forwardHeadersOverride : ingressDefault;
+    }
   }
 
   @JsonPOJOBuilder
@@ -92,7 +133,8 @@ final class RoutableKafkaIngressSpec {
 
     private Optional<String> kafkaAddress = Optional.empty();
     private Optional<String> consumerGroupId = Optional.empty();
-    private Map<String, RoutingConfig> topicRoutings = new HashMap<>();
+    private Map<String, TopicRouting> topicRoutings = new HashMap<>();
+    private boolean forwardHeaders = false;
     private KafkaIngressAutoResetPosition autoOffsetResetPosition =
         KafkaIngressAutoResetPosition.LATEST;
     private KafkaIngressStartupPosition startupPosition = KafkaIngressStartupPosition.fromLatest();
@@ -121,8 +163,14 @@ final class RoutableKafkaIngressSpec {
 
     @JsonProperty("topics")
     @JsonDeserialize(using = TopicRoutingsJsonDeserializer.class)
-    public Builder withTopicRoutings(Map<String, RoutingConfig> topicRoutings) {
+    public Builder withTopicRoutings(Map<String, TopicRouting> topicRoutings) {
       this.topicRoutings = Objects.requireNonNull(topicRoutings);
+      return this;
+    }
+
+    @JsonProperty("forwardHeaders")
+    public Builder withForwardHeaders(boolean forwardHeaders) {
+      this.forwardHeaders = forwardHeaders;
       return this;
     }
 
@@ -154,6 +202,7 @@ final class RoutableKafkaIngressSpec {
           kafkaAddress,
           consumerGroupId,
           topicRoutings,
+          forwardHeaders,
           autoOffsetResetPosition,
           startupPosition,
           properties);
@@ -161,22 +210,29 @@ final class RoutableKafkaIngressSpec {
   }
 
   private static class TopicRoutingsJsonDeserializer
-      extends JsonDeserializer<Map<String, RoutingConfig>> {
+      extends JsonDeserializer<Map<String, TopicRouting>> {
     @Override
-    public Map<String, RoutingConfig> deserialize(
+    public Map<String, TopicRouting> deserialize(
         JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
       final ObjectNode[] routingJsonNodes = jsonParser.readValueAs(ObjectNode[].class);
 
-      final Map<String, RoutingConfig> result = new HashMap<>(routingJsonNodes.length);
+      final Map<String, TopicRouting> result = new HashMap<>(routingJsonNodes.length);
       for (ObjectNode routingJsonNode : routingJsonNodes) {
         final RoutingConfig routingConfig =
             RoutingConfig.newBuilder()
                 .setTypeUrl(routingJsonNode.get("valueType").textValue())
                 .addAllTargetFunctionTypes(parseTargetFunctions(routingJsonNode))
                 .build();
-        result.put(routingJsonNode.get("topic").asText(), routingConfig);
+        result.put(
+            routingJsonNode.get("topic").asText(),
+            new TopicRouting(routingConfig, parseForwardHeadersOverride(routingJsonNode)));
       }
       return result;
+    }
+
+    private static Boolean parseForwardHeadersOverride(ObjectNode routingJsonNode) {
+      final JsonNode overrideNode = routingJsonNode.get("forwardHeaders");
+      return overrideNode == null || overrideNode.isNull() ? null : overrideNode.asBoolean();
     }
   }
 

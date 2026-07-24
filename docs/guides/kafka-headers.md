@@ -18,8 +18,42 @@ Semantics match Kafka's own contract exactly:
 | Header **key** must not be `null` | A null key degrades to an empty key instead of failing |
 | Headers are raw bytes on the wire | Choose an encoding — see [Choosing an encoding](#choosing-an-encoding) |
 
-No configuration is needed — header support is always on and adds zero overhead to records
-without headers.
+Egress headers work out of the box. Ingress header **forwarding is opt-in**: headers cost payload
+bytes on every hop between the ingress and the remote function, so a topic only pays for them
+after opting in — see [Enabling header forwarding](#enabling-header-forwarding).
+
+## Enabling header forwarding
+
+Ingress headers are forwarded to remote functions only for topics that enable
+`forwardHeaders` (default `false`). The flag exists at two levels of the
+`io.statefun.kafka.v1/ingress` spec:
+
+```yaml
+kind: io.statefun.kafka.v1/ingress
+spec:
+  id: example/orders-in
+  address: kafka:9092
+  consumerGroupId: my-group
+  forwardHeaders: true        # ingress-level default for all topics below
+  topics:
+    - topic: orders
+      valueType: example/Order
+      targets:
+        - example/order-fn
+    - topic: audit-log
+      forwardHeaders: false   # per-topic override wins over the ingress-level value
+      valueType: example/AuditEntry
+      targets:
+        - example/audit-fn
+```
+
+The effective value per topic is resolved as: per-topic `forwardHeaders` if present, otherwise
+the ingress-level `forwardHeaders`, otherwise `false`. With a 20-topic ingress you set the policy
+once at ingress level and override individual topics in either direction.
+
+For a topic that has not opted in, record headers are never captured — no header bytes enter the
+runtime, the Flink shuffle, or the remote-function request, and `Message#headers()` returns an
+empty list. Records on opted-in topics without headers still add zero overhead.
 
 ## Reading headers in a function
 
@@ -44,8 +78,10 @@ public CompletableFuture<Void> apply(Context context, Message message) {
 `Message#headers()` returns an immutable `List<MessageHeader>`:
 
 - headers appear in the order they were set on the Kafka record, duplicates included;
-- messages that did not originate from a Kafka ingress return an empty list (unless the sender
-  attached headers explicitly — see [Forwarding headers](#forwarding-headers-between-functions));
+- messages from a topic that did not enable
+  [`forwardHeaders`](#enabling-header-forwarding), and messages that did not originate from a
+  Kafka ingress, return an empty list (unless the sender attached headers explicitly — see
+  [Forwarding headers](#forwarding-headers-between-functions));
 - the list is computed lazily and cached — untouched headers cost nothing.
 
 ### `MessageHeader` accessors
@@ -185,7 +221,10 @@ Header support is strictly additive at the protocol level:
   support — they simply do not see headers.
 - A **new SDK** talking to an **older runtime** also keeps working — headers set on egress
   messages are ignored by the old runtime, nothing fails.
-- Records without headers have unchanged wire size and no extra allocations on any path.
+- `forwardHeaders` is an additive YAML property — existing `module.yaml` files parse unchanged
+  and keep the default (off).
+- Records without headers — and all records on topics that did not opt in — have unchanged wire
+  size and no extra allocations on any path.
 
 !!! info "Kafka only"
 

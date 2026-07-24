@@ -9,6 +9,7 @@ import com.google.protobuf.Message;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import org.apache.flink.statefun.flink.io.generated.AutoRoutable;
 import org.apache.flink.statefun.flink.io.generated.RoutingConfig;
 import org.apache.flink.statefun.flink.io.generated.TargetFunctionType;
@@ -39,7 +40,8 @@ class RoutableKafkaIngressDeserializerTest {
   @BeforeEach
   void setUp() {
     deserializer =
-        new RoutableKafkaIngressDeserializer(routingMap(ORDERS_TOPIC, ORDERS_ROUTING));
+        new RoutableKafkaIngressDeserializer(
+            routingMap(ORDERS_TOPIC, ORDERS_ROUTING), Set.of(ORDERS_TOPIC));
   }
 
   @Test
@@ -92,6 +94,22 @@ class RoutableKafkaIngressDeserializerTest {
             "p".getBytes(StandardCharsets.UTF_8));
 
     final AutoRoutable routable = (AutoRoutable) deserializer.deserialize(record);
+
+    assertThat(routable.getHeadersCount()).isZero();
+  }
+
+  @Test
+  void headersAreIgnoredWhenTopicHasNotOptedIntoForwarding() {
+    final RoutableKafkaIngressDeserializer optedOut =
+        new RoutableKafkaIngressDeserializer(routingMap(ORDERS_TOPIC, ORDERS_ROUTING), Set.of());
+    final ConsumerRecord<byte[], byte[]> record =
+        consumerRecord(
+            ORDERS_TOPIC,
+            "pk-7".getBytes(StandardCharsets.UTF_8),
+            "p".getBytes(StandardCharsets.UTF_8));
+    record.headers().add("trace-id", "abc-123".getBytes(StandardCharsets.UTF_8));
+
+    final AutoRoutable routable = (AutoRoutable) optedOut.deserialize(record);
 
     assertThat(routable.getHeadersCount()).isZero();
   }
