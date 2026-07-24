@@ -2,11 +2,13 @@
 // Copyright 2014 The Apache Software Foundation
 package org.apache.flink.statefun.flink.io.kafka.binders.ingress.v1;
 
+import com.google.protobuf.ByteString;
 import com.google.protobuf.Message;
 import com.google.protobuf.MoreByteStrings;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import org.apache.flink.statefun.flink.io.generated.AutoRoutable;
+import org.apache.flink.statefun.flink.io.generated.Header;
 import org.apache.flink.statefun.flink.io.generated.RoutingConfig;
 import org.apache.flink.statefun.sdk.TypeName;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -38,11 +40,20 @@ public final class RoutableKafkaIngressDeserializer
       throw new IllegalStateException(
           "Consumed a record from topic [" + topic + "], but no routing config was specified.");
     }
-    return AutoRoutable.newBuilder()
-        .setConfig(routingConfig)
-        .setId(id)
-        .setPayloadBytes(MoreByteStrings.wrap(payload))
-        .build();
+    final AutoRoutable.Builder routable =
+        AutoRoutable.newBuilder()
+            .setConfig(routingConfig)
+            .setId(id)
+            .setPayloadBytes(MoreByteStrings.wrap(payload));
+    for (org.apache.kafka.common.header.Header header : input.headers()) {
+      final byte[] headerValue = header.value();
+      routable.addHeaders(
+          Header.newBuilder()
+              .setKey(header.key())
+              .setValue(
+                  headerValue == null ? ByteString.EMPTY : MoreByteStrings.wrap(headerValue)));
+    }
+    return routable.build();
   }
 
   private byte[] requireNonNullKey(byte[] key) {

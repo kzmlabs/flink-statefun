@@ -3,9 +3,9 @@
 
 package org.apache.flink.statefun.flink.io.common;
 
-import com.google.protobuf.ByteString;
 import com.google.protobuf.Message;
 import org.apache.flink.statefun.flink.io.generated.AutoRoutable;
+import org.apache.flink.statefun.flink.io.generated.Header;
 import org.apache.flink.statefun.flink.io.generated.RoutingConfig;
 import org.apache.flink.statefun.flink.io.generated.TargetFunctionType;
 import org.apache.flink.statefun.sdk.FunctionType;
@@ -29,11 +29,9 @@ public final class AutoRoutableProtobufRouter implements Router<Message> {
   public void route(Message message, Downstream<Message> downstream) {
     final AutoRoutable routable = asAutoRoutable(message);
     final RoutingConfig config = routable.getConfig();
+    final TypedValue payload = typedValuePayload(config.getTypeUrl(), routable);
     for (TargetFunctionType targetFunction : config.getTargetFunctionTypesList()) {
-      downstream.forward(
-          sdkFunctionType(targetFunction),
-          routable.getId(),
-          typedValuePayload(config.getTypeUrl(), routable.getPayloadBytes()));
+      downstream.forward(sdkFunctionType(targetFunction), routable.getId(), payload);
     }
   }
 
@@ -50,11 +48,16 @@ public final class AutoRoutableProtobufRouter implements Router<Message> {
     return new FunctionType(targetFunctionType.getNamespace(), targetFunctionType.getType());
   }
 
-  private static TypedValue typedValuePayload(String typeUrl, ByteString payloadBytes) {
-    return TypedValue.newBuilder()
-        .setTypename(typeUrl)
-        .setHasValue(true)
-        .setValue(payloadBytes)
-        .build();
+  private static TypedValue typedValuePayload(String typeUrl, AutoRoutable routable) {
+    final TypedValue.Builder payload =
+        TypedValue.newBuilder()
+            .setTypename(typeUrl)
+            .setHasValue(true)
+            .setValue(routable.getPayloadBytes());
+    for (Header header : routable.getHeadersList()) {
+      payload.addMetadata(
+          TypedValue.Metadata.newBuilder().setKey(header.getKey()).setValue(header.getValue()));
+    }
+    return payload.build();
   }
 }

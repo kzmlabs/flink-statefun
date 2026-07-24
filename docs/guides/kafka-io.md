@@ -71,6 +71,39 @@ ctx.send(outbound);
 
 The runtime uses Flink transactions to deliver exactly once when paired with a transactional Kafka client and exactly-once Flink checkpointing.
 
+## Record headers
+
+Kafka record headers travel in both directions.
+
+**Reading ingress headers** — a function invoked by a record from a Kafka ingress can read the
+record's headers through `Message#headers()`. Duplicate keys are allowed and the original order is
+preserved; messages that did not originate from Kafka (e.g. function-to-function sends) return an
+empty list:
+
+```java
+for (MessageHeader header : message.headers()) {
+    if (header.key().equals("trace-id")) {
+        String traceId = header.valueAsUtf8String();
+    }
+}
+```
+
+**Setting egress headers** — attach headers when building a `KafkaEgressMessage`; the runtime
+copies them onto the produced Kafka record:
+
+```java
+KafkaEgressMessage.forEgress(TypeName.typeNameFromString("example/notifications"))
+    .withTopic("example.notifications")
+    .withKey(orderId)
+    .withValue(notificationPayload)
+    .withUtf8Header("trace-id", traceId)
+    .withHeader("payload-hash", hashBytes)
+    .build();
+```
+
+Header support is additive at the protocol level: remote functions built against older SDKs keep
+working unchanged, they simply do not see headers.
+
 ### At-least-once vs exactly-once
 
 | `deliverySemantic.type` | Trade-off |

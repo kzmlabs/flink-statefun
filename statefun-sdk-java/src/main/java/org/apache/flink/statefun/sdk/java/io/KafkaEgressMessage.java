@@ -2,6 +2,8 @@
 // Copyright 2014 The Apache Software Foundation
 package org.apache.flink.statefun.sdk.java.io;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import org.apache.flink.statefun.sdk.egress.generated.KafkaProducerRecord;
 import org.apache.flink.statefun.sdk.java.ApiExtension;
@@ -31,6 +33,7 @@ public final class KafkaEgressMessage {
     private ByteString targetTopic;
     private ByteString keyBytes;
     private ByteString value;
+    private List<KafkaProducerRecord.Header> headers;
 
     private Builder(TypeName targetEgressId) {
       this.targetEgressId = targetEgressId;
@@ -92,6 +95,30 @@ public final class KafkaEgressMessage {
       return this;
     }
 
+    public Builder withUtf8Header(String key, String value) {
+      Objects.requireNonNull(value);
+      return addHeader(key, ByteString.copyFromUtf8(value));
+    }
+
+    public Builder withHeader(String key, byte[] value) {
+      Objects.requireNonNull(value);
+      return addHeader(key, ByteString.copyFrom(value));
+    }
+
+    public Builder withHeader(String key, Slice value) {
+      Objects.requireNonNull(value);
+      return addHeader(key, SliceProtobufUtil.asByteString(value));
+    }
+
+    private Builder addHeader(String key, ByteString value) {
+      Objects.requireNonNull(key);
+      if (headers == null) {
+        headers = new ArrayList<>();
+      }
+      headers.add(KafkaProducerRecord.Header.newBuilder().setKey(key).setValue(value).build());
+      return this;
+    }
+
     public EgressMessage build() {
       if (targetTopic == null) {
         throw new IllegalStateException("A Kafka record requires a target topic.");
@@ -103,6 +130,9 @@ public final class KafkaEgressMessage {
           KafkaProducerRecord.newBuilder().setTopicBytes(targetTopic).setValueBytes(value);
       if (keyBytes != null) {
         builder.setKeyBytes(keyBytes);
+      }
+      if (headers != null) {
+        builder.addAllHeaders(headers);
       }
       KafkaProducerRecord record = builder.build();
       TypedValue typedValue =

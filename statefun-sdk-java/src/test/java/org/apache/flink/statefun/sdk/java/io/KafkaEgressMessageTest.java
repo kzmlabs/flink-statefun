@@ -189,6 +189,59 @@ class KafkaEgressMessageTest {
   }
 
   @Test
+  void headersAreCarriedThroughInOrderIncludingDuplicateKeys()
+      throws InvalidProtocolBufferException {
+    EgressMessage message =
+        KafkaEgressMessage.forEgress(EGRESS_ID)
+            .withTopic("orders")
+            .withUtf8Value("hello")
+            .withUtf8Header("trace-id", "abc-123")
+            .withHeader("payload-hash", new byte[] {1, 2, 3})
+            .withHeader("trace-id", Slices.copyFromUtf8("def-456"))
+            .build();
+
+    KafkaProducerRecord record = unpack(message);
+    assertThat(record.getHeadersCount()).isEqualTo(3);
+    assertThat(record.getHeaders(0).getKey()).isEqualTo("trace-id");
+    assertThat(record.getHeaders(0).getValue().toStringUtf8()).isEqualTo("abc-123");
+    assertThat(record.getHeaders(1).getKey()).isEqualTo("payload-hash");
+    assertThat(record.getHeaders(1).getValue().toByteArray()).containsExactly(1, 2, 3);
+    assertThat(record.getHeaders(2).getKey()).isEqualTo("trace-id");
+    assertThat(record.getHeaders(2).getValue().toStringUtf8()).isEqualTo("def-456");
+  }
+
+  @Test
+  void recordWithoutHeadersHasEmptyHeaderList() throws InvalidProtocolBufferException {
+    EgressMessage message =
+        KafkaEgressMessage.forEgress(EGRESS_ID).withTopic("t").withUtf8Value("v").build();
+
+    KafkaProducerRecord record = unpack(message);
+    assertThat(record.getHeadersCount()).isZero();
+  }
+
+  @Test
+  void nullHeaderKeyIsRejected() {
+    KafkaEgressMessage.Builder builder = KafkaEgressMessage.forEgress(EGRESS_ID);
+    assertThatThrownBy(() -> builder.withUtf8Header(null, "v"))
+        .isInstanceOf(NullPointerException.class);
+    assertThatThrownBy(() -> builder.withHeader(null, new byte[0]))
+        .isInstanceOf(NullPointerException.class);
+    assertThatThrownBy(() -> builder.withHeader(null, Slices.copyFromUtf8("v")))
+        .isInstanceOf(NullPointerException.class);
+  }
+
+  @Test
+  void nullHeaderValueIsRejected() {
+    KafkaEgressMessage.Builder builder = KafkaEgressMessage.forEgress(EGRESS_ID);
+    assertThatThrownBy(() -> builder.withUtf8Header("k", null))
+        .isInstanceOf(NullPointerException.class);
+    assertThatThrownBy(() -> builder.withHeader("k", (byte[]) null))
+        .isInstanceOf(NullPointerException.class);
+    assertThatThrownBy(() -> builder.withHeader("k", (Slice) null))
+        .isInstanceOf(NullPointerException.class);
+  }
+
+  @Test
   void buildIsValidWithoutKey() throws InvalidProtocolBufferException {
     EgressMessage message =
         KafkaEgressMessage.forEgress(EGRESS_ID).withTopic("k-less").withUtf8Value("v").build();

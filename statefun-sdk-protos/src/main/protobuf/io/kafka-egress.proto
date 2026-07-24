@@ -13,4 +13,12 @@ message KafkaProducerRecord {
     string key = 1;
     bytes value_bytes = 2;
     string topic = 3;
+    // Kafka record headers to set on the produced record. Duplicate keys are
+    // allowed and insertion order is preserved, matching Kafka semantics.
+    repeated Header headers = 4;
+
+    message Header {
+        string key = 1;
+        bytes value = 2;
+    }
 }

@@ -11,6 +11,14 @@ message AutoRoutable {
     RoutingConfig config = 1;
     string id = 2;
     bytes payload_bytes = 3;
+    // Transport-level headers of the ingested record (e.g. Kafka record headers).
+    // Duplicate keys are allowed and order is preserved.
+    repeated Header headers = 4;
+}
+
+message Header {
+    string key = 1;
+    bytes value = 2;
 }
 
 message RoutingConfig {

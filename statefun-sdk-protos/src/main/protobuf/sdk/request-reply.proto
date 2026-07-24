@@ -29,6 +29,15 @@ message TypedValue {
     // or a non existing value.
     bool has_value = 2;
     bytes value = 3;
+    // Optional transport-level metadata attached to this value. For messages that
+    // originate from a Kafka ingress, the entries are the Kafka record headers.
+    // Duplicate keys are allowed and order is preserved.
+    repeated Metadata metadata = 4;
+
+    message Metadata {
+        string key = 1;
+        bytes value = 2;
+    }
 }
 
 // -------------------------------------------------------------------------------------------------------------------

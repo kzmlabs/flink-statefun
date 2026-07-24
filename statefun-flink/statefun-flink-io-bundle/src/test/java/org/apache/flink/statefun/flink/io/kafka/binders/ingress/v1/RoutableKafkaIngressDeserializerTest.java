@@ -59,6 +59,41 @@ class RoutableKafkaIngressDeserializerTest {
   }
 
   @Test
+  void capturesRecordHeadersInOrderIncludingNullValues() {
+    final ConsumerRecord<byte[], byte[]> record =
+        consumerRecord(
+            ORDERS_TOPIC,
+            "pk-7".getBytes(StandardCharsets.UTF_8),
+            "p".getBytes(StandardCharsets.UTF_8));
+    record.headers().add("trace-id", "abc-123".getBytes(StandardCharsets.UTF_8));
+    record.headers().add("empty-header", null);
+    record.headers().add("trace-id", "def-456".getBytes(StandardCharsets.UTF_8));
+
+    final AutoRoutable routable = (AutoRoutable) deserializer.deserialize(record);
+
+    assertThat(routable.getHeadersCount()).isEqualTo(3);
+    assertThat(routable.getHeaders(0).getKey()).isEqualTo("trace-id");
+    assertThat(routable.getHeaders(0).getValue().toStringUtf8()).isEqualTo("abc-123");
+    assertThat(routable.getHeaders(1).getKey()).isEqualTo("empty-header");
+    assertThat(routable.getHeaders(1).getValue().isEmpty()).isTrue();
+    assertThat(routable.getHeaders(2).getKey()).isEqualTo("trace-id");
+    assertThat(routable.getHeaders(2).getValue().toStringUtf8()).isEqualTo("def-456");
+  }
+
+  @Test
+  void recordWithoutHeadersProducesEmptyHeaderList() {
+    final ConsumerRecord<byte[], byte[]> record =
+        consumerRecord(
+            ORDERS_TOPIC,
+            "pk".getBytes(StandardCharsets.UTF_8),
+            "p".getBytes(StandardCharsets.UTF_8));
+
+    final AutoRoutable routable = (AutoRoutable) deserializer.deserialize(record);
+
+    assertThat(routable.getHeadersCount()).isZero();
+  }
+
+  @Test
   void throwsWhenTopicIsNotInRoutingMap() {
     final ConsumerRecord<byte[], byte[]> record =
         consumerRecord(
