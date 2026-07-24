@@ -1,6 +1,6 @@
 ---
 title: StateFun Actors by Kzmlabs
-description: Stateful actors on Apache Flink 2.x and Java 21 — durable per-key state, exactly-once messaging, Kafka and Kinesis I/O, Kubernetes-native deployment. Continues the Apache Stateful Functions programming model on the modern Flink line.
+description: Stateful actors on Apache Flink 2.x and Java 21 - durable per-key state, exactly-once messaging, Kafka and Kinesis I/O, Kubernetes-native deployment. Continues the Apache Stateful Functions programming model on the modern Flink line.
 hide:
   - navigation
   - toc
@@ -8,7 +8,7 @@ hide:
 
 ## What is StateFun Actors?
 
-You write a function keyed by a logical id. The runtime gives it per-key durable state, routes messages to it, replays on failure, and connects it to Kafka and Kinesis. **Actor programming on top of Apache Flink — without writing a Flink job by hand.**
+You write a function keyed by a logical id. The runtime gives it per-key durable state, routes messages to it, replays on failure, and connects it to Kafka and Kinesis. **Actor programming on top of Apache Flink - without writing a Flink job by hand.**
 
 This is the actively maintained continuation of [Apache Stateful Functions](https://github.com/apache/flink-statefun): same programming model, current Flink, current Java, restored Kinesis I/O, and a real Kubernetes end-to-end gate before every release.
 
@@ -92,7 +92,7 @@ public class Counter implements StatefulFunction {
 
 </div>
 
-More patterns work the same way — order workflows, payment sagas, polyglot microservices, real-time scoring. The model in [Architecture overview](architecture/index.md) is the same in every case: durable per-key state plus exactly-once messaging.
+More patterns work the same way - order workflows, payment sagas, polyglot microservices, real-time scoring. The model in [Architecture overview](architecture/index.md) is the same in every case: durable per-key state plus exactly-once messaging.
 
 ## Polyglot SDKs and pluggable I/O
 
@@ -114,7 +114,7 @@ Write functions in whichever language fits the team. Plug into the streaming and
 
 ## Why this continuation exists
 
-Apache Stateful Functions stopped releasing in **October 2024** at version 3.4.0, locked to **Flink 1.16** and **Java 11**. Anyone wanting to run it against modern Flink either pinned old dependencies or vendored their own patches. StateFun Actors is the public, actively maintained continuation — same code, modern stack, no vendor lock-in.
+Apache Stateful Functions stopped releasing in **October 2024** at version 3.4.0, locked to **Flink 1.16** and **Java 11**. Anyone wanting to run it against modern Flink either pinned old dependencies or vendored their own patches. StateFun Actors is the public, actively maintained continuation - same code, modern stack, no vendor lock-in.
 
 | | Apache StateFun 3.4.0 | StateFun Actors KZM-3.4 |
 |---|---|---|
@@ -130,12 +130,12 @@ Apache Stateful Functions stopped releasing in **October 2024** at version 3.4.0
 
 ## What you get
 
--   **Per-key durable state** — read and write your function's own state without manually wiring Flink keyed-state primitives.
+-   **Per-key durable state** - read and write your function's own state without manually wiring Flink keyed-state primitives.
 -   **Exactly-once messaging** between functions and to/from external systems, riding Flink's checkpointing.
--   **Polyglot remote functions** — write functions as HTTP endpoints in any language; the runtime owns state and routing.
--   **Kafka record headers, end-to-end** *(new in KZM-3.4)* — functions read the headers of the record that triggered them and set headers on egress records, with Kafka-exact null semantics and per-topic opt-in. [Guide →](guides/kafka-headers.md)
--   **Deployment flexibility** — embedded in Flink, co-located with the JobManager, or remote HTTP services scaled independently.
--   **Production-grade releases** — every version is gated on a real K8s end-to-end run with the Flink Operator, Kafka, S3 checkpoints, and the actual remote-function pod.
+-   **Polyglot remote functions** - write functions as HTTP endpoints in any language; the runtime owns state and routing.
+-   **Kafka record headers, end-to-end** *(new in KZM-3.4)* - functions read the headers of the record that triggered them and set headers on egress records, with Kafka-exact null semantics and per-topic opt-in. [Guide →](guides/kafka-headers.md)
+-   **Deployment flexibility** - embedded in Flink, co-located with the JobManager, or remote HTTP services scaled independently.
+-   **Production-grade releases** - every version is gated on a real K8s end-to-end run with the Flink Operator, Kafka, S3 checkpoints, and the actual remote-function pod.
 
 ## At a glance
 
