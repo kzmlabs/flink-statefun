@@ -9,12 +9,13 @@ description: Migration guide from Apache Stateful Functions 3.4.0 to StateFun Ac
 
 ## At a glance
 
-| | Apache StateFun 3.4.0 | StateFun Actors KZM-3.3 |
+| | Apache StateFun 3.4.0 | StateFun Actors KZM-3.4 |
 |---|---|---|
 | **Flink runtime** | 1.16.2 | **2.2.1** |
 | **Java baseline** | 11 | **21** |
 | **Maven group** | `org.apache.flink` | `io.github.kzmlabs.flinkstatefun` |
 | **Kinesis I/O** | Built for Flink 1.x Kinesis source | **Restored** on Flink 2.x's `KinesisStreamsSource`/`KinesisStreamsSink` |
+| **Kafka record headers** | Not supported | **End-to-end round-trip** — `Message#headers()` on ingress, egress builder on write, [opt-in per topic](guides/kafka-headers.md) |
 | **Active CI** | Inactive after 3.4.0 | Ongoing — Dependabot, CodeQL, Scorecard, Trivy |
 | **K8s deployment** | Examples in docs | **K8s-native E2E gate** via Flink Operator + LocalStack |
 | **Docker image** | `apache/flink-statefun:3.4.0` (Flink 1.16) | `ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.3` (Flink 2.2) |

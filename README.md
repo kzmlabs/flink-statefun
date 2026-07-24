@@ -36,12 +36,13 @@ Apache Stateful Functions stopped releasing in October 2024 at 3.4.0, locked to 
 
 > **Update — May 2026:** Apache has filed [FLIP-569: Sunset the Stateful Functions sub-project](https://cwiki.apache.org/confluence/display/FLINK/FLIP-569%3A+Sunset+the+Stateful+Functions+%28StateFun%29+Sub-project), formalising the end of upstream maintenance and naming "fork the repository" as one of the migration paths. This fork was already active before the proposal landed; FLIP-569 confirms the read from October 2024 that picking the project up was worth doing.
 
-| | Apache StateFun 3.4.0 | StateFun Actors KZM-3.3 |
+| | Apache StateFun 3.4.0 | StateFun Actors KZM-3.4 |
 |---|---|---|
 | **Flink runtime** | 1.16.2 | **2.2.1** |
 | **Java baseline** | 11 | **21** |
 | **Maven group** | `org.apache.flink` | `io.github.kzmlabs.flinkstatefun` |
 | **Kinesis I/O** | Flink 1.x consumer | **Restored** on Flink 2.x source/sink |
+| **Kafka record headers** | Not supported | **End-to-end** — read on ingress, write on egress, opt-in per topic |
 | **K8s release gate** | None | **Mandatory** kind + Flink Operator + LocalStack |
 | **Active CI** | Inactive after 3.4.0 | Dependabot, CodeQL, Scorecard, Trivy |
 | **Release cadence** | Dormant | Active (Maven Central + GHCR) |

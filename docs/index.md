@@ -133,6 +133,7 @@ Apache Stateful Functions stopped releasing in **October 2024** at version 3.4.0
 -   **Per-key durable state** — read and write your function's own state without manually wiring Flink keyed-state primitives.
 -   **Exactly-once messaging** between functions and to/from external systems, riding Flink's checkpointing.
 -   **Polyglot remote functions** — write functions as HTTP endpoints in any language; the runtime owns state and routing.
+-   **Kafka record headers, end-to-end** *(new in KZM-3.4)* — functions read the headers of the record that triggered them and set headers on egress records, with Kafka-exact null semantics and per-topic opt-in. [Guide →](guides/kafka-headers.md)
 -   **Deployment flexibility** — embedded in Flink, co-located with the JobManager, or remote HTTP services scaled independently.
 -   **Production-grade releases** — every version is gated on a real K8s end-to-end run with the Flink Operator, Kafka, S3 checkpoints, and the actual remote-function pod.
 

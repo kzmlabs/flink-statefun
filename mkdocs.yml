@@ -83,6 +83,7 @@ nav:
       - End-to-end tests: architecture/e2e-tests.md
   - Articles:
       - Overview: articles/index.md
+      - Kafka record headers in Stateful Functions: articles/kafka-record-headers.md
       - We forked Apache Stateful Functions for Flink 2.x: articles/forking-statefun.md
   - Differences from Apache StateFun: upstream-vs-kzm.md
   - Release process: release-process.md
