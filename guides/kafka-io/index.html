@@ -16,7 +16,7 @@
         <link rel="prev" href="../../examples/iot-fleet/">
       
       
-        <link rel="next" href="../kafka-egress-tuning/">
+        <link rel="next" href="../kafka-headers/">
       
       
         
@@ -803,6 +803,8 @@
       
         
       
+        
+      
     
     
     
@@ -985,6 +987,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#record-headers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Record headers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#patterns" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1049,6 +1062,34 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../kafka-headers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Kafka record headers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -1559,6 +1600,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#record-headers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Record headers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#patterns" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1745,6 +1797,14 @@
 <p class="admonition-title">Transaction timeout</p>
 <p>For <code>exactly-once</code>, set <code>transactionTimeoutMillis</code> higher than your Flink checkpoint interval, but lower than the Kafka broker's <code>transaction.max.timeout.ms</code> (default 15 min). 60 s is a good starting point for sub-minute checkpoint intervals.</p>
 </div>
+<h2 id="record-headers">Record headers<a class="headerlink" href="#record-headers" title="Permanent link">&para;</a></h2>
+<p>Kafka record headers travel in both directions: functions read the headers of the record that
+triggered them via <code>Message#headers()</code> and attach headers to egress records via the
+<code>KafkaEgressMessage</code> builder. Ingress header forwarding is opt-in per topic through the
+<code>forwardHeaders</code> spec property (default <code>false</code>, settable at ingress level with per-topic
+overrides). Semantics match Kafka's own — duplicate keys, ordering, and the null-vs-empty value
+distinction are all preserved, and header operations never throw on null input.</p>
+<p>See the dedicated guide: <strong><a href="../kafka-headers/">Kafka record headers</a></strong>.</p>
 <h2 id="patterns">Patterns<a class="headerlink" href="#patterns" title="Permanent link">&para;</a></h2>
 <h3 id="routing-to-multiple-namespaces">Routing to multiple namespaces<a class="headerlink" href="#routing-to-multiple-namespaces" title="Permanent link">&para;</a></h3>
 <p><code>TargetFunctions.fromPatternString</code> accepts <code>&lt;namespace&gt;/&lt;name&gt;</code> or <code>&lt;namespace&gt;/*</code>. Comma-lists and wildcard namespaces (<code>*/foo</code>) are not supported. To target multiple namespaces, declare one entry per namespace:</p>
