@@ -6,6 +6,50 @@ All notable changes to **StateFun Actors by Kzmlabs** are documented in this fil
 
 ## [Unreleased]
 
+## [3.4.0-KZM-3.4] - 2026-07-24
+
+Feature release. Headline: **Kafka record headers, end-to-end** — the
+Stateful Functions programming model can finally read and write Kafka
+headers, a gap upstream never closed. Also carries the accumulated
+security and platform work since KZM-3.3.
+
+### Added
+
+- **Kafka record header support for remote functions** (`statefun-sdk-java`):
+  - **Read**: `Message#headers()` exposes the headers of the Kafka record
+    that invoked the function — order and duplicate keys preserved; values
+    accessible as zero-copy `Slice`, UTF-8 text, SDK-typed primitives
+    (`valueAsInt()`/`valueAsLong()`/`valueAsFloat()`/`valueAsDouble()`/
+    `valueAsBoolean()`), or any `Type<T>` via `valueAs`.
+  - **Write**: `KafkaEgressMessage.Builder` gains the full header overload
+    family — `withUtf8Header`, raw `byte[]`/`Slice`, `Type<T>`, and binary
+    primitive shorthands (`withHeader("retry-count", 10)` transfers a real
+    binary int, not text).
+  - **Kafka-exact null semantics**: a null header value — which Kafka
+    distinguishes from an empty one — survives the full
+    ingress → function → egress round-trip as null, carried by an explicit
+    `has_value` flag (the `TypedValue` idiom). Header operations never
+    throw on production paths: null values are preserved, null keys degrade
+    to empty keys, undecodable values read as `null`.
+  - **Opt-in per topic**: ingress header forwarding is off by default;
+    enable with `forwardHeaders` at ingress level and/or per topic
+    (per-topic overrides win). Topics that have not opted in never capture
+    header bytes; header-less records add zero overhead on any path.
+  - **Function-to-function headers**: `MessageBuilder` carries the same
+    header API, and `MessageBuilder.fromMessage` now preserves headers
+    when forwarding.
+  - **Testing toolkit**: construct header-carrying messages with
+    `MessageBuilder`, assert egress output with the new
+    `testing.KafkaEgressCapture` (topic/key/value/headers, Kafka last-wins
+    `lastHeader`).
+  - **Protocol**: strictly additive protobuf fields
+    (`KafkaProducerRecord.headers`, `TypedValue.metadata`, ingress envelope
+    headers). Old SDKs interoperate with the new runtime and vice versa —
+    no lockstep upgrade, no savepoint impact. Validated by ~60 unit tests
+    and a K8s E2E round-trip asserting byte-exact UTF-8, binary, and
+    null-valued headers through a real cluster.
+  - New docs: [Kafka record headers guide](https://kzmlabs.github.io/flink-statefun/guides/kafka-headers/).
+
 ### Changed
 
 - **Flink Kubernetes Operator 1.11 → 1.15** — the K8s E2E release gate, the

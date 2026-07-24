@@ -116,7 +116,7 @@ Write functions in whichever language fits the team. Plug into the streaming and
 
 Apache Stateful Functions stopped releasing in **October 2024** at version 3.4.0, locked to **Flink 1.16** and **Java 11**. Anyone wanting to run it against modern Flink either pinned old dependencies or vendored their own patches. StateFun Actors is the public, actively maintained continuation — same code, modern stack, no vendor lock-in.
 
-| | Apache StateFun 3.4.0 | StateFun Actors KZM-3.3 |
+| | Apache StateFun 3.4.0 | StateFun Actors KZM-3.4 |
 |---|---|---|
 | **Flink runtime** | 1.16.2 | **2.2.1** |
 | **Java baseline** | 11 | **21** |
@@ -165,7 +165,7 @@ Releases are signed via Sigstore keyless attestation, scanned with Trivy, and tr
 Verify a release artifact with the GitHub CLI:
 
 ```bash
-gh attestation verify oci://ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.3 --owner kzmlabs
+gh attestation verify oci://ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.4 --owner kzmlabs
 ```
 
 ## Where next

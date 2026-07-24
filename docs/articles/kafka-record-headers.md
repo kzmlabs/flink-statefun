@@ -9,7 +9,7 @@ description: StateFun Actors 3.4.0-KZM-3.4 adds end-to-end Kafka record header s
 
 Apache Stateful Functions never supported Kafka record headers. Not on the way in — a function had no way to see the headers of the record that invoked it. Not on the way out — the egress builder had topic, key, and value, and nothing else. If your platform standardized on header-borne trace context, tenant tags, or schema hints, StateFun was a black hole in the middle of your pipeline: headers went in, and they never came out.
 
-[StateFun Actors 3.4.0-KZM-3.4](https://github.com/kzmlabs/flink-statefun/releases/tag/v3.4.0-KZM-3.4) closes that gap end-to-end for remote functions built with the Java SDK. This post covers what shipped, the design decisions worth knowing about — including one protocol trick that made the whole thing possible without touching the runtime's hot path — and how to adopt it in a running deployment.
+[StateFun Actors 3.4.0-KZM-3.4](https://github.com/kzmlabs/flink-statefun/releases/tag/v3.4.0-KZM-3.4) finally closes that gap for remote functions built with the Java SDK. Here's what shipped, a couple of design decisions we sweated over more than expected (null handling took three iterations), and how to adopt it in a running deployment.
 
 ## What can StateFun functions do with Kafka headers now?
 
@@ -59,7 +59,7 @@ Every read accessor shares one production-safety contract: a null or undecodable
 
 They stay null. This detail is easy to get wrong: Kafka's wire format distinguishes a header whose value is **null** from one whose value is **empty** (a null value encodes as length `-1`), and `Header#value()` in the Kafka client legitimately returns `null`. Protobuf — which carries StateFun's remote-function protocol — cannot represent null bytes.
 
-We bridged that with the same idiom StateFun's protocol already used for exactly this problem: an explicit `has_value` flag, mirroring `TypedValue.has_value`. A null-valued header goes in as null and comes out as null, byte-for-byte verified in the Kubernetes end-to-end suite. Echoing headers is therefore lossless:
+Our first cut coerced null to empty bytes. It worked, and it was wrong — we only caught it after actually checking what `kafka-clients` does (null header values are legal and preserved; null *keys* are rejected). The fix borrows the idiom StateFun's protocol already uses for exactly this problem: an explicit `has_value` flag, same as `TypedValue.has_value`. A null-valued header now goes in as null and comes out as null, which also means echoing headers is lossless:
 
 ```java
 message.headers().forEach(h -> egress.withHeader(h.key(), h.value()));
@@ -119,7 +119,7 @@ assertThat(record.lastHeader("traceparent").orElseThrow().valueAsUtf8String())
 
 ## How is this tested?
 
-Three layers. Unit tests pin the contract at every seam — around sixty header-focused cases covering duplicate keys, ordering, all six value encodings, null-vs-empty at each boundary, and garbage bytes decoding to `null` instead of throwing. The Kubernetes end-to-end gate — the same one every release must pass — produces a record with UTF-8, binary, *and* null-valued headers into a kind cluster running the Flink Operator, has a remote function echo them, and asserts byte-exact results on the output topic. And the null-handling semantics were verified against `kafka-clients` itself before the design was fixed, not assumed from documentation.
+Around sixty unit tests pin the contract at each seam: duplicate keys, ordering, all six value encodings, null-vs-empty at every boundary, garbage bytes decoding to `null` instead of throwing. On top of that sits the Kubernetes end-to-end gate every release has to pass anyway — it now produces a record with UTF-8, binary, *and* null-valued headers into a kind cluster running the Flink Operator, has a remote function echo them, and asserts byte-exact results on the output topic.
 
 ## How do I get it?
 

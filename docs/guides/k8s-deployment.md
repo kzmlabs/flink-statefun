@@ -37,7 +37,7 @@ metadata:
   name: my-statefun
   namespace: my-app
 spec:
-  image: ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.3
+  image: ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.4
   flinkVersion: v2_2
   flinkConfiguration:
     state.backend.type: rocksdb
