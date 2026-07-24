@@ -75,6 +75,61 @@ public final class MessageBuilder {
     return withTargetAddress(new Address(typeName, id));
   }
 
+  /**
+   * Attaches a transport-level header to the built message, readable via {@link
+   * Message#headers()} — the primary way to construct header-carrying messages in tests. Same
+   * never-throw contract as the Kafka egress builder: a null value is preserved as a null-valued
+   * header, a null key degrades to an empty key.
+   */
+  public MessageBuilder withUtf8Header(String key, String value) {
+    return addHeader(key, value == null ? null : ByteString.copyFromUtf8(value));
+  }
+
+  public MessageBuilder withHeader(String key, byte[] value) {
+    return addHeader(key, value == null ? null : ByteString.copyFrom(value));
+  }
+
+  public MessageBuilder withHeader(String key, Slice value) {
+    return addHeader(key, value == null ? null : SliceProtobufUtil.asByteString(value));
+  }
+
+  public <T> MessageBuilder withHeader(String key, Type<T> type, T value) {
+    if (type == null || value == null) {
+      return addHeader(key, null);
+    }
+    return withHeader(key, type.typeSerializer().serialize(value));
+  }
+
+  public MessageBuilder withHeader(String key, int value) {
+    return withHeader(key, Types.integerType(), value);
+  }
+
+  public MessageBuilder withHeader(String key, long value) {
+    return withHeader(key, Types.longType(), value);
+  }
+
+  public MessageBuilder withHeader(String key, float value) {
+    return withHeader(key, Types.floatType(), value);
+  }
+
+  public MessageBuilder withHeader(String key, double value) {
+    return withHeader(key, Types.doubleType(), value);
+  }
+
+  public MessageBuilder withHeader(String key, boolean value) {
+    return withHeader(key, Types.booleanType(), value);
+  }
+
+  private MessageBuilder addHeader(String key, ByteString valueOrNull) {
+    TypedValue.Metadata.Builder metadata =
+        TypedValue.Metadata.newBuilder().setKey(key == null ? "" : key);
+    if (valueOrNull != null) {
+      metadata.setValue(valueOrNull).setHasValue(true);
+    }
+    builder.addMetadata(metadata);
+    return this;
+  }
+
   public <T> MessageBuilder withCustomType(Type<T> customType, T element) {
     Objects.requireNonNull(customType);
     Objects.requireNonNull(element);
@@ -94,9 +149,20 @@ public final class MessageBuilder {
   private static TypedValue.Builder typedValueBuilder(Message message) {
     ByteString typenameBytes = ApiExtension.typeNameByteString(message.valueTypeName());
     ByteString valueBytes = SliceProtobufUtil.asByteString(message.rawValue());
-    return TypedValue.newBuilder()
-        .setTypenameBytes(typenameBytes)
-        .setHasValue(true)
-        .setValue(valueBytes);
+    TypedValue.Builder typedValue =
+        TypedValue.newBuilder()
+            .setTypenameBytes(typenameBytes)
+            .setHasValue(true)
+            .setValue(valueBytes);
+    message.headers().forEach(header -> typedValue.addMetadata(asMetadata(header)));
+    return typedValue;
+  }
+
+  private static TypedValue.Metadata asMetadata(MessageHeader header) {
+    TypedValue.Metadata.Builder metadata = TypedValue.Metadata.newBuilder().setKey(header.key());
+    if (header.hasValue()) {
+      metadata.setValue(SliceProtobufUtil.asByteString(header.value())).setHasValue(true);
+    }
+    return metadata.build();
   }
 }

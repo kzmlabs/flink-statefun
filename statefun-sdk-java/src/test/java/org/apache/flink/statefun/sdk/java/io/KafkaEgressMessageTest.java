@@ -260,6 +260,66 @@ class KafkaEgressMessageTest {
   }
 
   @Test
+  void floatHeaderTransfersBinaryFloat() throws InvalidProtocolBufferException {
+    EgressMessage message =
+        KafkaEgressMessage.forEgress(EGRESS_ID)
+            .withTopic("t")
+            .withUtf8Value("v")
+            .withHeader("ratio", 0.25f)
+            .build();
+
+    KafkaProducerRecord record = unpack(message);
+    assertThat(record.getHeaders(0).getValue().toByteArray())
+        .isEqualTo(Types.floatType().typeSerializer().serialize(0.25f).toByteArray());
+  }
+
+  @Test
+  void zeroIntHeaderIsPresentButEmptyBytesDistinctFromNull() throws InvalidProtocolBufferException {
+    // The SDK int encoding serializes 0 to zero bytes — has_value is what separates a real 0
+    // from a null-valued header on the wire.
+    EgressMessage message =
+        KafkaEgressMessage.forEgress(EGRESS_ID)
+            .withTopic("t")
+            .withUtf8Value("v")
+            .withHeader("zero", 0)
+            .withHeader("absent", (byte[]) null)
+            .build();
+
+    KafkaProducerRecord record = unpack(message);
+    assertThat(record.getHeaders(0).getHasValue()).isTrue();
+    assertThat(record.getHeaders(0).getValue().isEmpty()).isTrue();
+    assertThat(record.getHeaders(1).getHasValue()).isFalse();
+  }
+
+  @Test
+  void nullTypeObjectDegradesToNullValuedHeaderInsteadOfThrowing()
+      throws InvalidProtocolBufferException {
+    EgressMessage message =
+        KafkaEgressMessage.forEgress(EGRESS_ID)
+            .withTopic("t")
+            .withUtf8Value("v")
+            .withHeader("k", null, "value-with-null-type")
+            .build();
+
+    KafkaProducerRecord record = unpack(message);
+    assertThat(record.getHeaders(0).getHasValue()).isFalse();
+  }
+
+  @Test
+  void emptyStringHeaderKeyIsLegal() throws InvalidProtocolBufferException {
+    EgressMessage message =
+        KafkaEgressMessage.forEgress(EGRESS_ID)
+            .withTopic("t")
+            .withUtf8Value("v")
+            .withUtf8Header("", "anonymous")
+            .build();
+
+    KafkaProducerRecord record = unpack(message);
+    assertThat(record.getHeaders(0).getKey()).isEmpty();
+    assertThat(record.getHeaders(0).getValue().toStringUtf8()).isEqualTo("anonymous");
+  }
+
+  @Test
   void recordWithoutHeadersHasEmptyHeaderList() throws InvalidProtocolBufferException {
     EgressMessage message =
         KafkaEgressMessage.forEgress(EGRESS_ID).withTopic("t").withUtf8Value("v").build();

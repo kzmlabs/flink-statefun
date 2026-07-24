@@ -93,16 +93,34 @@ class MessageHeadersTest {
         plainStringValue()
             .addMetadata(typedMetadata("retry-count", Types.integerType(), 10))
             .addMetadata(typedMetadata("offset", Types.longType(), 42_000_000_000L))
-            .addMetadata(typedMetadata("ratio", Types.doubleType(), 0.5d))
+            .addMetadata(typedMetadata("ratio-f", Types.floatType(), 0.25f))
+            .addMetadata(typedMetadata("ratio-d", Types.doubleType(), 0.5d))
             .addMetadata(typedMetadata("replayed", Types.booleanType(), true))
+            .addMetadata(typedMetadata("negative", Types.integerType(), -1))
             .build();
 
     List<MessageHeader> headers = new MessageWrapper(TARGET, typedValue).headers();
 
     assertThat(headers.get(0).valueAsInt()).isEqualTo(10);
     assertThat(headers.get(1).valueAsLong()).isEqualTo(42_000_000_000L);
-    assertThat(headers.get(2).valueAsDouble()).isEqualTo(0.5d);
-    assertThat(headers.get(3).valueAsBoolean()).isTrue();
+    assertThat(headers.get(2).valueAsFloat()).isEqualTo(0.25f);
+    assertThat(headers.get(3).valueAsDouble()).isEqualTo(0.5d);
+    assertThat(headers.get(4).valueAsBoolean()).isTrue();
+    assertThat(headers.get(5).valueAsInt()).isEqualTo(-1);
+  }
+
+  @Test
+  void zeroIntDecodesToZeroWhilePresentAndToNullWhileAbsent() {
+    TypedValue typedValue =
+        plainStringValue()
+            .addMetadata(typedMetadata("zero", Types.integerType(), 0))
+            .addMetadata(TypedValue.Metadata.newBuilder().setKey("absent"))
+            .build();
+
+    List<MessageHeader> headers = new MessageWrapper(TARGET, typedValue).headers();
+
+    assertThat(headers.get(0).valueAsInt()).isZero();
+    assertThat(headers.get(1).valueAsInt()).isNull();
   }
 
   @Test
@@ -121,8 +139,12 @@ class MessageHeadersTest {
 
     assertThat(headers.get(0).valueAsInt()).isNull();
     assertThat(headers.get(0).valueAsLong()).isNull();
+    assertThat(headers.get(0).valueAsFloat()).isNull();
     assertThat(headers.get(0).valueAsDouble()).isNull();
+    assertThat(headers.get(0).valueAsBoolean()).isNull();
     assertThat(headers.get(0).valueAs(Types.integerType())).isNull();
+    Integer decodedWithNullType = headers.get(0).valueAs(null);
+    assertThat(decodedWithNullType).isNull();
     assertThat(headers.get(1).valueAsInt()).isNull();
     assertThat(headers.get(1).valueAsBoolean()).isNull();
   }

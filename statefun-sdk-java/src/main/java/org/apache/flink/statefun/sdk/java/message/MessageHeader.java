@@ -74,6 +74,10 @@ public final class MessageHeader {
     return valueAs(Types.longType());
   }
 
+  public Float valueAsFloat() {
+    return valueAs(Types.floatType());
+  }
+
   public Double valueAsDouble() {
     return valueAs(Types.doubleType());
   }

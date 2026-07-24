@@ -136,6 +136,10 @@ public final class KafkaEgressMessage {
       return withHeader(key, Types.longType(), value);
     }
 
+    public Builder withHeader(String key, float value) {
+      return withHeader(key, Types.floatType(), value);
+    }
+
     public Builder withHeader(String key, double value) {
       return withHeader(key, Types.doubleType(), value);
     }
