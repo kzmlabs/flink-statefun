@@ -2,7 +2,6 @@
 // Copyright 2014 The Apache Software Foundation
 package org.apache.flink.statefun.sdk.java.message;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -46,16 +45,14 @@ public final class MessageWrapper implements Message {
   }
 
   private static List<MessageHeader> extractHeaders(TypedValue typedValue) {
-    final int count = typedValue.getMetadataCount();
-    if (count == 0) {
+    if (typedValue.getMetadataCount() == 0) {
       return Collections.emptyList();
     }
-    List<MessageHeader> extracted = new ArrayList<>(count);
-    for (TypedValue.Metadata metadata : typedValue.getMetadataList()) {
-      extracted.add(
-          new MessageHeader(metadata.getKey(), SliceProtobufUtil.asSlice(metadata.getValue())));
-    }
-    return Collections.unmodifiableList(extracted);
+    return typedValue.getMetadataList().stream()
+        .map(
+            metadata ->
+                new MessageHeader(metadata.getKey(), SliceProtobufUtil.asSlice(metadata.getValue())))
+        .toList();
   }
 
   @Override

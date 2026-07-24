@@ -54,9 +54,10 @@ public final class GenericKafkaEgressSerializer implements KafkaEgressSerializer
       producerRecord =
           new ProducerRecord<>(topic, key.getBytes(StandardCharsets.UTF_8), valueBytes);
     }
-    for (KafkaProducerRecord.Header header : protobufProducerRecord.getHeadersList()) {
-      producerRecord.headers().add(header.getKey(), header.getValue().toByteArray());
-    }
+    protobufProducerRecord
+        .getHeadersList()
+        .forEach(
+            header -> producerRecord.headers().add(header.getKey(), header.getValue().toByteArray()));
     return producerRecord;
   }
 }

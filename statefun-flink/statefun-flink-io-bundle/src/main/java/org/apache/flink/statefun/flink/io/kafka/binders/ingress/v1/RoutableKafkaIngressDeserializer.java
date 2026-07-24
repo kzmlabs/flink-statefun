@@ -7,6 +7,7 @@ import com.google.protobuf.Message;
 import com.google.protobuf.MoreByteStrings;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.stream.StreamSupport;
 import org.apache.flink.statefun.flink.io.generated.AutoRoutable;
 import org.apache.flink.statefun.flink.io.generated.Header;
 import org.apache.flink.statefun.flink.io.generated.RoutingConfig;
@@ -40,20 +41,23 @@ public final class RoutableKafkaIngressDeserializer
       throw new IllegalStateException(
           "Consumed a record from topic [" + topic + "], but no routing config was specified.");
     }
-    final AutoRoutable.Builder routable =
-        AutoRoutable.newBuilder()
-            .setConfig(routingConfig)
-            .setId(id)
-            .setPayloadBytes(MoreByteStrings.wrap(payload));
-    for (org.apache.kafka.common.header.Header header : input.headers()) {
-      final byte[] headerValue = header.value();
-      routable.addHeaders(
-          Header.newBuilder()
-              .setKey(header.key())
-              .setValue(
-                  headerValue == null ? ByteString.EMPTY : MoreByteStrings.wrap(headerValue)));
-    }
-    return routable.build();
+    return AutoRoutable.newBuilder()
+        .setConfig(routingConfig)
+        .setId(id)
+        .setPayloadBytes(MoreByteStrings.wrap(payload))
+        .addAllHeaders(
+            StreamSupport.stream(input.headers().spliterator(), false)
+                .map(RoutableKafkaIngressDeserializer::toProtoHeader)
+                .toList())
+        .build();
+  }
+
+  private static Header toProtoHeader(org.apache.kafka.common.header.Header header) {
+    final byte[] value = header.value();
+    return Header.newBuilder()
+        .setKey(header.key())
+        .setValue(value == null ? ByteString.EMPTY : MoreByteStrings.wrap(value))
+        .build();
   }
 
   private byte[] requireNonNullKey(byte[] key) {

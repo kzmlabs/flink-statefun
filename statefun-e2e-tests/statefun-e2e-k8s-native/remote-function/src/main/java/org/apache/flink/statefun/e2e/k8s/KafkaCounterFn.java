@@ -58,9 +58,7 @@ public final class KafkaCounterFn implements StatefulFunction {
             .withTopic(RESULTS_TOPIC)
             .withUtf8Key(cmd.getId())
             .withValue(result.toByteArray());
-    for (MessageHeader header : message.headers()) {
-      egress.withHeader(header.key(), header.value());
-    }
+    message.headers().forEach(header -> egress.withHeader(header.key(), header.value()));
     egress.withUtf8Header(PROCESSED_BY_HEADER, PROCESSED_BY_VALUE);
     context.send(egress.build());
 

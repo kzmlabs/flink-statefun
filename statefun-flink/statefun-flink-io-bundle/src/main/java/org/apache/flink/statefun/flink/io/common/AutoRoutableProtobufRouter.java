@@ -30,9 +30,9 @@ public final class AutoRoutableProtobufRouter implements Router<Message> {
     final AutoRoutable routable = asAutoRoutable(message);
     final RoutingConfig config = routable.getConfig();
     final TypedValue payload = typedValuePayload(config.getTypeUrl(), routable);
-    for (TargetFunctionType targetFunction : config.getTargetFunctionTypesList()) {
-      downstream.forward(sdkFunctionType(targetFunction), routable.getId(), payload);
-    }
+    config
+        .getTargetFunctionTypesList()
+        .forEach(target -> downstream.forward(sdkFunctionType(target), routable.getId(), payload));
   }
 
   private static AutoRoutable asAutoRoutable(Message message) {
@@ -49,15 +49,21 @@ public final class AutoRoutableProtobufRouter implements Router<Message> {
   }
 
   private static TypedValue typedValuePayload(String typeUrl, AutoRoutable routable) {
-    final TypedValue.Builder payload =
-        TypedValue.newBuilder()
-            .setTypename(typeUrl)
-            .setHasValue(true)
-            .setValue(routable.getPayloadBytes());
-    for (Header header : routable.getHeadersList()) {
-      payload.addMetadata(
-          TypedValue.Metadata.newBuilder().setKey(header.getKey()).setValue(header.getValue()));
-    }
-    return payload.build();
+    return TypedValue.newBuilder()
+        .setTypename(typeUrl)
+        .setHasValue(true)
+        .setValue(routable.getPayloadBytes())
+        .addAllMetadata(
+            routable.getHeadersList().stream()
+                .map(AutoRoutableProtobufRouter::toMetadata)
+                .toList())
+        .build();
+  }
+
+  private static TypedValue.Metadata toMetadata(Header header) {
+    return TypedValue.Metadata.newBuilder()
+        .setKey(header.getKey())
+        .setValue(header.getValue())
+        .build();
   }
 }
