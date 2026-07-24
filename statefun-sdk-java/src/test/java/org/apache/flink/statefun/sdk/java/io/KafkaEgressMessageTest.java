@@ -255,14 +255,22 @@ class KafkaEgressMessageTest {
   }
 
   @Test
-  void nullHeaderValueIsRejected() {
-    KafkaEgressMessage.Builder builder = KafkaEgressMessage.forEgress(EGRESS_ID);
-    assertThatThrownBy(() -> builder.withUtf8Header("k", null))
-        .isInstanceOf(NullPointerException.class);
-    assertThatThrownBy(() -> builder.withHeader("k", (byte[]) null))
-        .isInstanceOf(NullPointerException.class);
-    assertThatThrownBy(() -> builder.withHeader("k", (Slice) null))
-        .isInstanceOf(NullPointerException.class);
+  void nullHeaderValuesAreCarriedAsEmptyBytesLikeKafkaAllows()
+      throws InvalidProtocolBufferException {
+    EgressMessage message =
+        KafkaEgressMessage.forEgress(EGRESS_ID)
+            .withTopic("t")
+            .withUtf8Value("v")
+            .withUtf8Header("a", null)
+            .withHeader("b", (byte[]) null)
+            .withHeader("c", (Slice) null)
+            .withHeader("d", Types.stringType(), null)
+            .build();
+
+    KafkaProducerRecord record = unpack(message);
+    assertThat(record.getHeadersList())
+        .hasSize(4)
+        .allMatch(header -> header.getValue().isEmpty());
   }
 
   @Test

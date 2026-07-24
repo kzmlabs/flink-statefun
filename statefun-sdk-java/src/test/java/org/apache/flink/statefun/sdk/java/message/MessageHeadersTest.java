@@ -103,6 +103,15 @@ class MessageHeadersTest {
   }
 
   @Test
+  void messageHeaderDegradesNullsToEmptyInsteadOfThrowing() {
+    MessageHeader header = new MessageHeader(null, null);
+
+    assertThat(header.key()).isEmpty();
+    assertThat(header.value().readableBytes()).isZero();
+    assertThat(header.valueAsUtf8String()).isEmpty();
+  }
+
+  @Test
   void headersAreComputedOnceAndCached() {
     TypedValue typedValue = plainStringValue().addMetadata(metadata("k", "v")).build();
     Message message = new MessageWrapper(TARGET, typedValue);

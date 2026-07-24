@@ -3,8 +3,8 @@
 package org.apache.flink.statefun.sdk.java.message;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Objects;
 import org.apache.flink.statefun.sdk.java.slice.Slice;
+import org.apache.flink.statefun.sdk.java.slice.Slices;
 import org.apache.flink.statefun.sdk.java.types.Type;
 
 /**
@@ -13,12 +13,19 @@ import org.apache.flink.statefun.sdk.java.types.Type;
  * may share the same key, and their original order is preserved.
  */
 public final class MessageHeader {
+  private static final Slice EMPTY_VALUE = Slices.wrap(new byte[0]);
+
   private final String key;
   private final Slice value;
 
+  /**
+   * Deliberately null-tolerant: this type materializes on the message read path inside function
+   * invocations, where throwing on unexpected input would fail live traffic. A null key or value
+   * degrades to an empty one instead.
+   */
   public MessageHeader(String key, Slice value) {
-    this.key = Objects.requireNonNull(key);
-    this.value = Objects.requireNonNull(value);
+    this.key = key == null ? "" : key;
+    this.value = value == null ? EMPTY_VALUE : value;
   }
 
   public String key() {

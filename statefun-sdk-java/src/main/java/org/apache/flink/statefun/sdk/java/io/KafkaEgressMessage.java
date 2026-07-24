@@ -95,22 +95,27 @@ public final class KafkaEgressMessage {
       return this;
     }
 
+    /**
+     * Header values are null-tolerant: Kafka permits headers without a value, so a {@code null}
+     * value is carried as empty bytes (protobuf cannot represent null) instead of failing the
+     * build. Header keys must be non-null, matching Kafka's own contract.
+     */
     public Builder withUtf8Header(String key, String value) {
-      Objects.requireNonNull(value);
-      return addHeader(key, ByteString.copyFromUtf8(value));
+      return addHeader(key, value == null ? ByteString.EMPTY : ByteString.copyFromUtf8(value));
     }
 
     public Builder withHeader(String key, byte[] value) {
-      Objects.requireNonNull(value);
-      return addHeader(key, ByteString.copyFrom(value));
+      return addHeader(key, value == null ? ByteString.EMPTY : ByteString.copyFrom(value));
     }
 
     public Builder withHeader(String key, Slice value) {
-      Objects.requireNonNull(value);
-      return addHeader(key, SliceProtobufUtil.asByteString(value));
+      return addHeader(key, value == null ? ByteString.EMPTY : SliceProtobufUtil.asByteString(value));
     }
 
     public <T> Builder withHeader(String key, Type<T> type, T value) {
+      if (value == null) {
+        return addHeader(key, ByteString.EMPTY);
+      }
       TypeSerializer<T> serializer = type.typeSerializer();
       return withHeader(key, serializer.serialize(value));
     }
