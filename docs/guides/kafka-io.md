@@ -71,51 +71,6 @@ ctx.send(outbound);
 
 The runtime uses Flink transactions to deliver exactly once when paired with a transactional Kafka client and exactly-once Flink checkpointing.
 
-## Record headers
-
-Kafka record headers travel in both directions.
-
-**Reading ingress headers** — a function invoked by a record from a Kafka ingress can read the
-record's headers through `Message#headers()`. Duplicate keys are allowed and the original order is
-preserved; messages that did not originate from Kafka (e.g. function-to-function sends) return an
-empty list:
-
-```java
-for (MessageHeader header : message.headers()) {
-    if (header.key().equals("trace-id")) {
-        String traceId = header.valueAsUtf8String();
-    }
-}
-```
-
-**Setting egress headers** — attach headers when building a `KafkaEgressMessage`; the runtime
-copies them onto the produced Kafka record:
-
-```java
-KafkaEgressMessage.forEgress(TypeName.typeNameFromString("example/notifications"))
-    .withTopic("example.notifications")
-    .withKey(orderId)
-    .withValue(notificationPayload)
-    .withUtf8Header("trace-id", traceId)   // UTF-8 text, readable by any Kafka tool
-    .withHeader("payload-hash", hashBytes) // raw bytes
-    .withHeader("retry-count", 10)         // binary int (SDK Types encoding)
-    .build();
-```
-
-Primitive header values travel as real binary numbers and decode symmetrically on the read side —
-`header.valueAsInt()`, `valueAsLong()`, `valueAsDouble()`, `valueAsBoolean()` — returning `null`
-(never throwing) for null or undecodable values.
-
-Header semantics match Kafka's own: duplicate keys and ordering are preserved, and a **null**
-header value — which Kafka distinguishes from an empty one — stays null end-to-end
-(`MessageHeader#value()` returns `null`, mirroring Kafka's `Header#value()` contract). Header
-operations never throw on null input: a null value is carried as a null-valued header and a null
-key degrades to an empty key, so malformed metadata can never fail a production send or a
-function invocation.
-
-Header support is additive at the protocol level: remote functions built against older SDKs keep
-working unchanged, they simply do not see headers.
-
 ### At-least-once vs exactly-once
 
 | `deliverySemantic.type` | Trade-off |
@@ -126,6 +81,16 @@ working unchanged, they simply do not see headers.
 !!! warning "Transaction timeout"
 
     For `exactly-once`, set `transactionTimeoutMillis` higher than your Flink checkpoint interval, but lower than the Kafka broker's `transaction.max.timeout.ms` (default 15 min). 60 s is a good starting point for sub-minute checkpoint intervals.
+
+## Record headers
+
+Kafka record headers travel in both directions: functions read the headers of the record that
+triggered them via `Message#headers()` and attach headers to egress records via the
+`KafkaEgressMessage` builder. Semantics match Kafka's own — duplicate keys, ordering, and the
+null-vs-empty value distinction are all preserved, and header operations never throw on null
+input.
+
+See the dedicated guide: **[Kafka record headers](kafka-headers.md)**.
 
 ## Patterns
 
