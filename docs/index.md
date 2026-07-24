@@ -116,7 +116,7 @@ Write functions in whichever language fits the team. Plug into the streaming and
 
 Apache Stateful Functions stopped releasing in **October 2024** at version 3.4.0, locked to **Flink 1.16** and **Java 11**. Anyone wanting to run it against modern Flink either pinned old dependencies or vendored their own patches. StateFun Actors is the public, actively maintained continuation — same code, modern stack, no vendor lock-in.
 
-| | Apache StateFun 3.4.0 | StateFun Actors KZM-3.3 |
+| | Apache StateFun 3.4.0 | StateFun Actors KZM-3.4 |
 |---|---|---|
 | **Flink runtime** | 1.16.2 | **2.2.1** |
 | **Java baseline** | 11 | **21** |
@@ -133,6 +133,7 @@ Apache Stateful Functions stopped releasing in **October 2024** at version 3.4.0
 -   **Per-key durable state** — read and write your function's own state without manually wiring Flink keyed-state primitives.
 -   **Exactly-once messaging** between functions and to/from external systems, riding Flink's checkpointing.
 -   **Polyglot remote functions** — write functions as HTTP endpoints in any language; the runtime owns state and routing.
+-   **Kafka record headers, end-to-end** *(new in KZM-3.4)* — functions read the headers of the record that triggered them and set headers on egress records, with Kafka-exact null semantics and per-topic opt-in. [Guide →](guides/kafka-headers.md)
 -   **Deployment flexibility** — embedded in Flink, co-located with the JobManager, or remote HTTP services scaled independently.
 -   **Production-grade releases** — every version is gated on a real K8s end-to-end run with the Flink Operator, Kafka, S3 checkpoints, and the actual remote-function pod.
 
@@ -164,7 +165,7 @@ Releases are signed via Sigstore keyless attestation, scanned with Trivy, and tr
 Verify a release artifact with the GitHub CLI:
 
 ```bash
-gh attestation verify oci://ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.3 --owner kzmlabs
+gh attestation verify oci://ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.4 --owner kzmlabs
 ```
 
 ## Where next

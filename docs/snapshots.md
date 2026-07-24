@@ -63,7 +63,7 @@ The `<id>` in `settings.xml` must match the `<id>` of the `<repository>` block i
 <dependency>
     <groupId>io.github.kzmlabs.flinkstatefun</groupId>
     <artifactId>statefun-sdk-java</artifactId>
-    <version>3.4.0-KZM-3.3-SNAPSHOT</version>
+    <version>3.4.0-KZM-3.4-SNAPSHOT</version>
 </dependency>
 ```
 
