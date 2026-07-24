@@ -41,6 +41,58 @@ class GenericKafkaEgressSerializerTest {
   }
 
   @Test
+  void copiesProtoHeadersOntoProducerRecordInOrder() {
+    KafkaProducerRecord rec =
+        KafkaProducerRecord.newBuilder()
+            .setTopic("topic-A")
+            .setKey("key-1")
+            .setValueBytes(ByteString.copyFromUtf8("v"))
+            .addHeaders(header("trace-id", "abc-123"))
+            .addHeaders(header("origin", "fn"))
+            .addHeaders(header("trace-id", "def-456"))
+            .build();
+
+    ProducerRecord<byte[], byte[]> record =
+        serializer.serialize(TypedValueUtil.packProtobufMessage(rec));
+
+    org.apache.kafka.common.header.Header[] headers = record.headers().toArray();
+    assertThat(headers).hasSize(3);
+    assertThat(headers[0].key()).isEqualTo("trace-id");
+    assertThat(headers[0].value()).isEqualTo("abc-123".getBytes(StandardCharsets.UTF_8));
+    assertThat(headers[1].key()).isEqualTo("origin");
+    assertThat(headers[1].value()).isEqualTo("fn".getBytes(StandardCharsets.UTF_8));
+    assertThat(headers[2].key()).isEqualTo("trace-id");
+    assertThat(headers[2].value()).isEqualTo("def-456".getBytes(StandardCharsets.UTF_8));
+  }
+
+  @Test
+  void nullValuedProtoHeaderIsProducedAsNullKafkaHeaderValue() {
+    KafkaProducerRecord rec =
+        KafkaProducerRecord.newBuilder()
+            .setTopic("topic-A")
+            .setValueBytes(ByteString.copyFromUtf8("v"))
+            .addHeaders(KafkaProducerRecord.Header.newBuilder().setKey("null-valued"))
+            .addHeaders(
+                KafkaProducerRecord.Header.newBuilder().setKey("explicit-empty").setHasValue(true))
+            .build();
+
+    ProducerRecord<byte[], byte[]> record =
+        serializer.serialize(TypedValueUtil.packProtobufMessage(rec));
+
+    assertThat(record.headers().lastHeader("null-valued").value()).isNull();
+    assertThat(record.headers().lastHeader("explicit-empty").value()).isEmpty();
+  }
+
+  @Test
+  void recordWithoutProtoHeadersProducesNoKafkaHeaders() {
+    TypedValue input = packAsKafkaRecord("topic-A", "k", "v".getBytes(StandardCharsets.UTF_8));
+
+    ProducerRecord<byte[], byte[]> record = serializer.serialize(input);
+
+    assertThat(record.headers().toArray()).isEmpty();
+  }
+
+  @Test
   void rejectsTypedValueOfWrongProtobufType() {
     // TypedValue carrying a message that is NOT a KafkaProducerRecord.
     TypedValue notAKafkaRecord =
@@ -78,6 +130,14 @@ class GenericKafkaEgressSerializerTest {
             .readObject();
 
     assertThat(copy).isInstanceOf(GenericKafkaEgressSerializer.class);
+  }
+
+  private static KafkaProducerRecord.Header header(String key, String utf8Value) {
+    return KafkaProducerRecord.Header.newBuilder()
+        .setKey(key)
+        .setValue(ByteString.copyFromUtf8(utf8Value))
+        .setHasValue(true)
+        .build();
   }
 
   private static TypedValue packAsKafkaRecord(String topic, String key, byte[] value) {

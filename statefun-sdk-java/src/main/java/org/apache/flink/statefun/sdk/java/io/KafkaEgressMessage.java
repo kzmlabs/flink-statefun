@@ -2,6 +2,8 @@
 // Copyright 2014 The Apache Software Foundation
 package org.apache.flink.statefun.sdk.java.io;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import org.apache.flink.statefun.sdk.egress.generated.KafkaProducerRecord;
 import org.apache.flink.statefun.sdk.java.ApiExtension;
@@ -12,6 +14,7 @@ import org.apache.flink.statefun.sdk.java.slice.Slice;
 import org.apache.flink.statefun.sdk.java.slice.SliceProtobufUtil;
 import org.apache.flink.statefun.sdk.java.types.Type;
 import org.apache.flink.statefun.sdk.java.types.TypeSerializer;
+import org.apache.flink.statefun.sdk.java.types.Types;
 import org.apache.flink.statefun.sdk.reqreply.generated.TypedValue;
 import org.apache.flink.statefun.sdk.shaded.com.google.protobuf.ByteString;
 
@@ -31,6 +34,7 @@ public final class KafkaEgressMessage {
     private ByteString targetTopic;
     private ByteString keyBytes;
     private ByteString value;
+    private List<KafkaProducerRecord.Header> headers;
 
     private Builder(TypeName targetEgressId) {
       this.targetEgressId = targetEgressId;
@@ -92,6 +96,71 @@ public final class KafkaEgressMessage {
       return this;
     }
 
+    /**
+     * Header inserts never fail: headers are metadata and must not corrupt a production send. A
+     * null value is preserved as a null-valued Kafka header ({@code has_value=false}), which Kafka
+     * legally supports; a null key degrades to an empty key (Kafka itself forbids null keys, so
+     * passing one through would fail at produce time inside the running job).
+     */
+    public Builder withUtf8Header(String key, String value) {
+      return addHeader(key, value == null ? null : ByteString.copyFromUtf8(value));
+    }
+
+    public Builder withHeader(String key, byte[] value) {
+      return addHeader(key, value == null ? null : ByteString.copyFrom(value));
+    }
+
+    public Builder withHeader(String key, Slice value) {
+      return addHeader(key, value == null ? null : SliceProtobufUtil.asByteString(value));
+    }
+
+    public <T> Builder withHeader(String key, Type<T> type, T value) {
+      if (type == null || value == null) {
+        return addHeader(key, null);
+      }
+      TypeSerializer<T> serializer = type.typeSerializer();
+      return withHeader(key, serializer.serialize(value));
+    }
+
+    /**
+     * Primitive convenience overloads transfer the actual binary number (the SDK {@code Types}
+     * encoding), equivalent to {@code withHeader(key, Types.integerType(), value)} — no text
+     * round-trip. Read back with the matching {@code MessageHeader#valueAsInt()}-style accessor.
+     * For text headers readable by generic Kafka tooling, use {@link #withUtf8Header}.
+     */
+    public Builder withHeader(String key, int value) {
+      return withHeader(key, Types.integerType(), value);
+    }
+
+    public Builder withHeader(String key, long value) {
+      return withHeader(key, Types.longType(), value);
+    }
+
+    public Builder withHeader(String key, float value) {
+      return withHeader(key, Types.floatType(), value);
+    }
+
+    public Builder withHeader(String key, double value) {
+      return withHeader(key, Types.doubleType(), value);
+    }
+
+    public Builder withHeader(String key, boolean value) {
+      return withHeader(key, Types.booleanType(), value);
+    }
+
+    private Builder addHeader(String key, ByteString valueOrNull) {
+      if (headers == null) {
+        headers = new ArrayList<>();
+      }
+      KafkaProducerRecord.Header.Builder header =
+          KafkaProducerRecord.Header.newBuilder().setKey(key == null ? "" : key);
+      if (valueOrNull != null) {
+        header.setValue(valueOrNull).setHasValue(true);
+      }
+      headers.add(header.build());
+      return this;
+    }
+
     public EgressMessage build() {
       if (targetTopic == null) {
         throw new IllegalStateException("A Kafka record requires a target topic.");
@@ -103,6 +172,9 @@ public final class KafkaEgressMessage {
           KafkaProducerRecord.newBuilder().setTopicBytes(targetTopic).setValueBytes(value);
       if (keyBytes != null) {
         builder.setKeyBytes(keyBytes);
+      }
+      if (headers != null) {
+        builder.addAllHeaders(headers);
       }
       KafkaProducerRecord record = builder.build();
       TypedValue typedValue =

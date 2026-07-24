@@ -2,6 +2,7 @@
 // Copyright 2014 The Apache Software Foundation
 package org.apache.flink.statefun.sdk.java.message;
 
+import java.util.List;
 import java.util.Objects;
 import org.apache.flink.statefun.sdk.java.Address;
 import org.apache.flink.statefun.sdk.java.TypeName;
@@ -17,6 +18,7 @@ import org.apache.flink.statefun.sdk.reqreply.generated.TypedValue;
 public final class MessageWrapper implements Message {
   private final TypedValue typedValue;
   private final Address targetAddress;
+  private List<MessageHeader> headers;
 
   public MessageWrapper(Address targetAddress, TypedValue typedValue) {
     this.targetAddress = Objects.requireNonNull(targetAddress);
@@ -30,6 +32,28 @@ public final class MessageWrapper implements Message {
   @Override
   public Address targetAddress() {
     return targetAddress;
+  }
+
+  @Override
+  public List<MessageHeader> headers() {
+    List<MessageHeader> headers = this.headers;
+    if (headers == null) {
+      this.headers = headers = extractHeaders(typedValue);
+    }
+    return headers;
+  }
+
+  private static List<MessageHeader> extractHeaders(TypedValue typedValue) {
+    if (typedValue.getMetadataCount() == 0) {
+      return List.of();
+    }
+    return typedValue.getMetadataList().stream()
+        .map(
+            metadata ->
+                new MessageHeader(
+                    metadata.getKey(),
+                    metadata.getHasValue() ? SliceProtobufUtil.asSlice(metadata.getValue()) : null))
+        .toList();
   }
 
   @Override

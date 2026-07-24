@@ -11,11 +11,19 @@ import org.apache.flink.statefun.sdk.java.TypeName;
 import org.apache.flink.statefun.sdk.java.ValueSpec;
 import org.apache.flink.statefun.sdk.java.io.KafkaEgressMessage;
 import org.apache.flink.statefun.sdk.java.message.Message;
+import org.apache.flink.statefun.sdk.java.message.MessageHeader;
 import org.apache.flink.statefun.sdk.java.types.SimpleType;
 import org.apache.flink.statefun.sdk.java.types.Type;
 
-/** Counter function: consumes CounterCommand from Kafka, emits CounterResult to Kafka. */
+/**
+ * Counter function: consumes CounterCommand from Kafka, emits CounterResult to Kafka. Echoes all
+ * headers of the triggering Kafka record onto the result record and stamps a {@code processed-by}
+ * header, so the E2E can verify the full ingress→egress header round-trip.
+ */
 public final class KafkaCounterFn implements StatefulFunction {
+
+  static final String PROCESSED_BY_HEADER = "processed-by";
+  static final String PROCESSED_BY_VALUE = "counter-fn";
 
   static final TypeName FN_TYPE = TypeName.typeNameOf("counter.kafka", "fn");
   static final TypeName EGRESS_ID = TypeName.typeNameOf("counter", "kafka-results");
@@ -45,12 +53,14 @@ public final class KafkaCounterFn implements StatefulFunction {
     CounterResult result =
         CounterResult.newBuilder().setId(cmd.getId()).setTotal(newTotal).build();
 
-    context.send(
+    KafkaEgressMessage.Builder egress =
         KafkaEgressMessage.forEgress(EGRESS_ID)
             .withTopic(RESULTS_TOPIC)
             .withUtf8Key(cmd.getId())
-            .withValue(result.toByteArray())
-            .build());
+            .withValue(result.toByteArray());
+    message.headers().forEach(header -> egress.withHeader(header.key(), header.value()));
+    egress.withUtf8Header(PROCESSED_BY_HEADER, PROCESSED_BY_VALUE);
+    context.send(egress.build());
 
     return context.done();
   }

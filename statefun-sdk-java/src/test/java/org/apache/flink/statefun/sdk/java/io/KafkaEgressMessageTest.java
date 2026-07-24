@@ -189,6 +189,196 @@ class KafkaEgressMessageTest {
   }
 
   @Test
+  void headersAreCarriedThroughInOrderIncludingDuplicateKeys()
+      throws InvalidProtocolBufferException {
+    EgressMessage message =
+        KafkaEgressMessage.forEgress(EGRESS_ID)
+            .withTopic("orders")
+            .withUtf8Value("hello")
+            .withUtf8Header("trace-id", "abc-123")
+            .withHeader("payload-hash", new byte[] {1, 2, 3})
+            .withHeader("trace-id", Slices.copyFromUtf8("def-456"))
+            .build();
+
+    KafkaProducerRecord record = unpack(message);
+    assertThat(record.getHeadersCount()).isEqualTo(3);
+    assertThat(record.getHeaders(0).getKey()).isEqualTo("trace-id");
+    assertThat(record.getHeaders(0).getValue().toStringUtf8()).isEqualTo("abc-123");
+    assertThat(record.getHeaders(1).getKey()).isEqualTo("payload-hash");
+    assertThat(record.getHeaders(1).getValue().toByteArray()).containsExactly(1, 2, 3);
+    assertThat(record.getHeaders(2).getKey()).isEqualTo("trace-id");
+    assertThat(record.getHeaders(2).getValue().toStringUtf8()).isEqualTo("def-456");
+  }
+
+  @Test
+  void headerValuesSupportBytesStringAndTypedPrimitives() throws InvalidProtocolBufferException {
+    EgressMessage message =
+        KafkaEgressMessage.forEgress(EGRESS_ID)
+            .withTopic("typed-headers")
+            .withUtf8Value("v")
+            .withHeader("raw-bytes", new byte[] {1, 2, 3})
+            .withUtf8Header("str", "hello")
+            .withHeader("int", Types.integerType(), 42)
+            .withHeader("long", Types.longType(), 42_000_000_000L)
+            .withHeader("double", Types.doubleType(), 3.14d)
+            .withHeader("bool", Types.booleanType(), true)
+            .build();
+
+    KafkaProducerRecord record = unpack(message);
+    assertThat(record.getHeadersCount()).isEqualTo(6);
+    assertThat(record.getHeaders(0).getValue().toByteArray()).containsExactly(1, 2, 3);
+    assertThat(record.getHeaders(1).getValue().toStringUtf8()).isEqualTo("hello");
+    assertThat(decode(record, 2, Types.integerType())).isEqualTo(42);
+    assertThat(decode(record, 3, Types.longType())).isEqualTo(42_000_000_000L);
+    assertThat(decode(record, 4, Types.doubleType())).isEqualTo(3.14d);
+    assertThat(decode(record, 5, Types.booleanType())).isTrue();
+  }
+
+  @Test
+  void primitiveHeaderOverloadsTransferBinaryNumbersNotText()
+      throws InvalidProtocolBufferException {
+    EgressMessage message =
+        KafkaEgressMessage.forEgress(EGRESS_ID)
+            .withTopic("t")
+            .withUtf8Value("v")
+            .withHeader("retry-count", 10)
+            .withHeader("offset", 42_000_000_000L)
+            .withHeader("ratio", 0.5d)
+            .withHeader("replayed", true)
+            .build();
+
+    KafkaProducerRecord record = unpack(message);
+    assertThat(record.getHeaders(0).getValue().toByteArray())
+        .isEqualTo(Types.integerType().typeSerializer().serialize(10).toByteArray());
+    assertThat(record.getHeaders(1).getValue().toByteArray())
+        .isEqualTo(Types.longType().typeSerializer().serialize(42_000_000_000L).toByteArray());
+    assertThat(record.getHeaders(2).getValue().toByteArray())
+        .isEqualTo(Types.doubleType().typeSerializer().serialize(0.5d).toByteArray());
+    assertThat(record.getHeaders(3).getValue().toByteArray())
+        .isEqualTo(Types.booleanType().typeSerializer().serialize(true).toByteArray());
+    assertThat(record.getHeadersList()).allMatch(KafkaProducerRecord.Header::getHasValue);
+  }
+
+  @Test
+  void floatHeaderTransfersBinaryFloat() throws InvalidProtocolBufferException {
+    EgressMessage message =
+        KafkaEgressMessage.forEgress(EGRESS_ID)
+            .withTopic("t")
+            .withUtf8Value("v")
+            .withHeader("ratio", 0.25f)
+            .build();
+
+    KafkaProducerRecord record = unpack(message);
+    assertThat(record.getHeaders(0).getValue().toByteArray())
+        .isEqualTo(Types.floatType().typeSerializer().serialize(0.25f).toByteArray());
+  }
+
+  @Test
+  void zeroIntHeaderIsPresentButEmptyBytesDistinctFromNull() throws InvalidProtocolBufferException {
+    // The SDK int encoding serializes 0 to zero bytes — has_value is what separates a real 0
+    // from a null-valued header on the wire.
+    EgressMessage message =
+        KafkaEgressMessage.forEgress(EGRESS_ID)
+            .withTopic("t")
+            .withUtf8Value("v")
+            .withHeader("zero", 0)
+            .withHeader("absent", (byte[]) null)
+            .build();
+
+    KafkaProducerRecord record = unpack(message);
+    assertThat(record.getHeaders(0).getHasValue()).isTrue();
+    assertThat(record.getHeaders(0).getValue().isEmpty()).isTrue();
+    assertThat(record.getHeaders(1).getHasValue()).isFalse();
+  }
+
+  @Test
+  void nullTypeObjectDegradesToNullValuedHeaderInsteadOfThrowing()
+      throws InvalidProtocolBufferException {
+    EgressMessage message =
+        KafkaEgressMessage.forEgress(EGRESS_ID)
+            .withTopic("t")
+            .withUtf8Value("v")
+            .withHeader("k", null, "value-with-null-type")
+            .build();
+
+    KafkaProducerRecord record = unpack(message);
+    assertThat(record.getHeaders(0).getHasValue()).isFalse();
+  }
+
+  @Test
+  void emptyStringHeaderKeyIsLegal() throws InvalidProtocolBufferException {
+    EgressMessage message =
+        KafkaEgressMessage.forEgress(EGRESS_ID)
+            .withTopic("t")
+            .withUtf8Value("v")
+            .withUtf8Header("", "anonymous")
+            .build();
+
+    KafkaProducerRecord record = unpack(message);
+    assertThat(record.getHeaders(0).getKey()).isEmpty();
+    assertThat(record.getHeaders(0).getValue().toStringUtf8()).isEqualTo("anonymous");
+  }
+
+  @Test
+  void recordWithoutHeadersHasEmptyHeaderList() throws InvalidProtocolBufferException {
+    EgressMessage message =
+        KafkaEgressMessage.forEgress(EGRESS_ID).withTopic("t").withUtf8Value("v").build();
+
+    KafkaProducerRecord record = unpack(message);
+    assertThat(record.getHeadersCount()).isZero();
+  }
+
+
+  @Test
+  void nullHeaderValuesArePreservedAsNullNotEmpty() throws InvalidProtocolBufferException {
+    EgressMessage message =
+        KafkaEgressMessage.forEgress(EGRESS_ID)
+            .withTopic("t")
+            .withUtf8Value("v")
+            .withUtf8Header("a", null)
+            .withHeader("b", (byte[]) null)
+            .withHeader("c", (Slice) null)
+            .withHeader("d", Types.stringType(), null)
+            .build();
+
+    KafkaProducerRecord record = unpack(message);
+    assertThat(record.getHeadersList())
+        .hasSize(4)
+        .allMatch(header -> !header.getHasValue() && header.getValue().isEmpty());
+  }
+
+  @Test
+  void presentHeaderValuesAreMarkedHasValueIncludingExplicitlyEmptyOnes()
+      throws InvalidProtocolBufferException {
+    EgressMessage message =
+        KafkaEgressMessage.forEgress(EGRESS_ID)
+            .withTopic("t")
+            .withUtf8Value("v")
+            .withHeader("explicit-empty", new byte[0])
+            .withUtf8Header("present", "x")
+            .build();
+
+    KafkaProducerRecord record = unpack(message);
+    assertThat(record.getHeadersList()).hasSize(2).allMatch(KafkaProducerRecord.Header::getHasValue);
+    assertThat(record.getHeaders(0).getValue().isEmpty()).isTrue();
+  }
+
+  @Test
+  void nullHeaderKeyDegradesToEmptyKeyInsteadOfFailingTheSend()
+      throws InvalidProtocolBufferException {
+    EgressMessage message =
+        KafkaEgressMessage.forEgress(EGRESS_ID)
+            .withTopic("t")
+            .withUtf8Value("v")
+            .withUtf8Header(null, "orphan")
+            .build();
+
+    KafkaProducerRecord record = unpack(message);
+    assertThat(record.getHeaders(0).getKey()).isEmpty();
+    assertThat(record.getHeaders(0).getValue().toStringUtf8()).isEqualTo("orphan");
+  }
+
+  @Test
   void buildIsValidWithoutKey() throws InvalidProtocolBufferException {
     EgressMessage message =
         KafkaEgressMessage.forEgress(EGRESS_ID).withTopic("k-less").withUtf8Value("v").build();
@@ -201,5 +391,11 @@ class KafkaEgressMessageTest {
       throws InvalidProtocolBufferException {
     EgressMessageWrapper wrapper = (EgressMessageWrapper) message;
     return KafkaProducerRecord.parseFrom(wrapper.typedValue().getValue());
+  }
+
+  private static <T> T decode(
+      KafkaProducerRecord record, int headerIndex, org.apache.flink.statefun.sdk.java.types.Type<T> type) {
+    return type.typeSerializer()
+        .deserialize(Slices.wrap(record.getHeaders(headerIndex).getValue().toByteArray()));
   }
 }

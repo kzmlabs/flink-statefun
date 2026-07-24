@@ -6,7 +6,10 @@ import com.google.protobuf.Message;
 import com.google.protobuf.MoreByteStrings;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.StreamSupport;
 import org.apache.flink.statefun.flink.io.generated.AutoRoutable;
+import org.apache.flink.statefun.flink.io.generated.Header;
 import org.apache.flink.statefun.flink.io.generated.RoutingConfig;
 import org.apache.flink.statefun.sdk.TypeName;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -17,13 +20,17 @@ public final class RoutableKafkaIngressDeserializer
   private static final long serialVersionUID = 1L;
 
   private final Map<String, RoutingConfig> routingConfigs;
+  private final Set<String> forwardHeaderTopics;
 
-  public RoutableKafkaIngressDeserializer(Map<String, RoutingConfig> routingConfigs) {
+  public RoutableKafkaIngressDeserializer(
+      Map<String, RoutingConfig> routingConfigs, Set<String> forwardHeaderTopics) {
     if (routingConfigs == null || routingConfigs.isEmpty()) {
       throw new IllegalArgumentException(
           "Routing config for routable Kafka ingress cannot be empty.");
     }
     this.routingConfigs = routingConfigs;
+    this.forwardHeaderTopics =
+        forwardHeaderTopics == null ? Set.of() : Set.copyOf(forwardHeaderTopics);
   }
 
   @Override
@@ -38,11 +45,30 @@ public final class RoutableKafkaIngressDeserializer
       throw new IllegalStateException(
           "Consumed a record from topic [" + topic + "], but no routing config was specified.");
     }
-    return AutoRoutable.newBuilder()
-        .setConfig(routingConfig)
-        .setId(id)
-        .setPayloadBytes(MoreByteStrings.wrap(payload))
-        .build();
+    final AutoRoutable.Builder routable =
+        AutoRoutable.newBuilder()
+            .setConfig(routingConfig)
+            .setId(id)
+            .setPayloadBytes(MoreByteStrings.wrap(payload));
+    // headers are captured only for topics that opted in via forwardHeaders; the second
+    // guard keeps the per-record hot path allocation-free for the common header-less case
+    if (forwardHeaderTopics.contains(topic) && input.headers().iterator().hasNext()) {
+      routable.addAllHeaders(
+          StreamSupport.stream(input.headers().spliterator(), false)
+              .map(RoutableKafkaIngressDeserializer::toProtoHeader)
+              .toList());
+    }
+    return routable.build();
+  }
+
+  private static Header toProtoHeader(org.apache.kafka.common.header.Header header) {
+    final String key = header.key();
+    final byte[] value = header.value();
+    final Header.Builder proto = Header.newBuilder().setKey(key == null ? "" : key);
+    if (value != null) {
+      proto.setValue(MoreByteStrings.wrap(value)).setHasValue(true);
+    }
+    return proto.build();
   }
 
   private byte[] requireNonNullKey(byte[] key) {

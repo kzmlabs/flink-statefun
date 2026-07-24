@@ -59,6 +59,7 @@ data:
       topics:
         - topic: counter.commands
           valueType: io.github.kzmlabs.statefun.e2e/CounterCommand
+          forwardHeaders: true
           targets:
             - counter.kafka/fn
     ---

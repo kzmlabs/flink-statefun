@@ -27,9 +27,11 @@ import org.apache.flink.statefun.sdk.spi.StatefulFunctionModule;
  *   id: com.foo.bar/my-ingress                                       (typename)
  *   address: kafka-broker:9092                                       (string, optional)
  *   consumerGroupId: my-group-id                                     (string, optional)
+ *   forwardHeaders: true                                             (boolean, optional, default false)
  *   topics:                                                          (array)
  *   - topic: topic-1                                                 (string)
  *     valueType: com.foo.bar/my-type-1                               (typename)
+ *     forwardHeaders: false                                          (boolean, optional, overrides ingress-level)
  *     targets:                                                       (array)
  *       - com.mycomp.foo/function-1                                  (typename)
  *       - ...

@@ -196,6 +196,52 @@ class StateFunK8sE2E {
 
   @Test
   @Order(4)
+  void kafkaHeadersRoundTripThroughIngressAndEgress() throws Exception {
+    String counterId = "counter-hdr-" + UUID.randomUUID();
+    byte[] binaryHeaderValue = new byte[] {0x00, 0x01, (byte) 0xFF};
+
+    CounterCommand cmd = CounterCommand.newBuilder().setId(counterId).setDelta(2).build();
+    ProducerRecord<String, byte[]> record =
+        new ProducerRecord<>(COUNTER_COMMANDS_TOPIC, counterId, cmd.toByteArray());
+    record.headers().add("trace-id", "trace-abc".getBytes(StandardCharsets.UTF_8));
+    record.headers().add("bin-header", binaryHeaderValue);
+    record.headers().add("null-header", null);
+    producer.send(record).get(10, TimeUnit.SECONDS);
+    producer.flush();
+    LOG.info("Sent CounterCommand with headers for id={}", counterId);
+
+    await()
+        .atMost(E2eContext.POLL_TIMEOUT)
+        .pollInterval(E2eContext.POLL_INTERVAL)
+        .untilAsserted(
+            () -> {
+              List<ConsumerRecord<String, byte[]>> results =
+                  StreamSupport.stream(
+                          counterResultsConsumer.poll(Duration.ofSeconds(1)).spliterator(), false)
+                      .filter(r -> counterId.equals(parseCounterResult(r.value()).getId()))
+                      .collect(Collectors.toList());
+              assertThat(results).as("result record for id=%s", counterId).isNotEmpty();
+
+              ConsumerRecord<String, byte[]> result = results.get(0);
+              assertThat(headerValue(result, "trace-id"))
+                  .as("ingress header echoed by the function")
+                  .isEqualTo("trace-abc".getBytes(StandardCharsets.UTF_8));
+              assertThat(headerValue(result, "bin-header"))
+                  .as("binary ingress header echoed byte-exact")
+                  .isEqualTo(binaryHeaderValue);
+              assertThat(headerValue(result, "processed-by"))
+                  .as("header set by the function itself")
+                  .isEqualTo("counter-fn".getBytes(StandardCharsets.UTF_8));
+
+              org.apache.kafka.common.header.Header nullEcho =
+                  result.headers().lastHeader("null-header");
+              assertThat(nullEcho).as("null-valued header is echoed, not dropped").isNotNull();
+              assertThat(nullEcho.value()).as("null header value stays null, not empty").isNull();
+            });
+  }
+
+  @Test
+  @Order(5)
   void checkpointsWrittenToS3() {
     await()
         .atMost(E2eContext.POLL_TIMEOUT)
@@ -248,6 +294,11 @@ class StateFunK8sE2E {
                   .extracting(CounterResult::getTotal)
                   .contains(expectedTotal);
             });
+  }
+
+  private static byte[] headerValue(ConsumerRecord<String, byte[]> record, String key) {
+    org.apache.kafka.common.header.Header header = record.headers().lastHeader(key);
+    return header == null ? null : header.value();
   }
 
   private static CounterResult parseCounterResult(byte[] bytes) {
