@@ -44,6 +44,9 @@ public final class MessageWrapper implements Message {
   }
 
   private static List<MessageHeader> extractHeaders(TypedValue typedValue) {
+    if (typedValue.getMetadataCount() == 0) {
+      return List.of();
+    }
     return typedValue.getMetadataList().stream()
         .map(
             metadata ->

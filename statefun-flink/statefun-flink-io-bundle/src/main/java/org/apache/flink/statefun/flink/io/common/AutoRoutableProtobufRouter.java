@@ -49,15 +49,18 @@ public final class AutoRoutableProtobufRouter implements Router<Message> {
   }
 
   private static TypedValue typedValuePayload(String typeUrl, AutoRoutable routable) {
-    return TypedValue.newBuilder()
-        .setTypename(typeUrl)
-        .setHasValue(true)
-        .setValue(routable.getPayloadBytes())
-        .addAllMetadata(
-            routable.getHeadersList().stream()
-                .map(AutoRoutableProtobufRouter::toMetadata)
-                .toList())
-        .build();
+    final TypedValue.Builder payload =
+        TypedValue.newBuilder()
+            .setTypename(typeUrl)
+            .setHasValue(true)
+            .setValue(routable.getPayloadBytes());
+    if (routable.getHeadersCount() > 0) {
+      payload.addAllMetadata(
+          routable.getHeadersList().stream()
+              .map(AutoRoutableProtobufRouter::toMetadata)
+              .toList());
+    }
+    return payload.build();
   }
 
   private static TypedValue.Metadata toMetadata(Header header) {

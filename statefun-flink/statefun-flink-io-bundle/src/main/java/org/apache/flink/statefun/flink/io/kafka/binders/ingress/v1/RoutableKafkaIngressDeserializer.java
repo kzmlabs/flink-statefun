@@ -40,15 +40,19 @@ public final class RoutableKafkaIngressDeserializer
       throw new IllegalStateException(
           "Consumed a record from topic [" + topic + "], but no routing config was specified.");
     }
-    return AutoRoutable.newBuilder()
-        .setConfig(routingConfig)
-        .setId(id)
-        .setPayloadBytes(MoreByteStrings.wrap(payload))
-        .addAllHeaders(
-            StreamSupport.stream(input.headers().spliterator(), false)
-                .map(RoutableKafkaIngressDeserializer::toProtoHeader)
-                .toList())
-        .build();
+    final AutoRoutable.Builder routable =
+        AutoRoutable.newBuilder()
+            .setConfig(routingConfig)
+            .setId(id)
+            .setPayloadBytes(MoreByteStrings.wrap(payload));
+    // guard keeps the per-record hot path allocation-free for the common header-less case
+    if (input.headers().iterator().hasNext()) {
+      routable.addAllHeaders(
+          StreamSupport.stream(input.headers().spliterator(), false)
+              .map(RoutableKafkaIngressDeserializer::toProtoHeader)
+              .toList());
+    }
+    return routable.build();
   }
 
   private static Header toProtoHeader(org.apache.kafka.common.header.Header header) {
