@@ -1696,7 +1696,7 @@
 
 
 <h1 id="kafka-record-headers">Kafka record headers<a class="headerlink" href="#kafka-record-headers" title="Permanent link">&para;</a></h1>
-<p>Kafka records carry headers — key/value metadata pairs alongside the payload, commonly used for
+<p>Kafka records carry headers - key/value metadata pairs alongside the payload, commonly used for
 trace IDs, correlation IDs, schema hints, retry counters, or routing tags. StateFun Actors
 supports headers in <strong>both directions</strong> for remote functions built with <code>statefun-sdk-java</code>:</p>
 <ul>
@@ -1728,13 +1728,13 @@ supports headers in <strong>both directions</strong> for remote functions built 
 </tr>
 <tr>
 <td>Headers are raw bytes on the wire</td>
-<td>Choose an encoding — see <a href="#choosing-an-encoding">Choosing an encoding</a></td>
+<td>Choose an encoding - see <a href="#choosing-an-encoding">Choosing an encoding</a></td>
 </tr>
 </tbody>
 </table>
 <p>Egress headers work out of the box. Ingress header <strong>forwarding is opt-in</strong>: headers cost payload
 bytes on every hop between the ingress and the remote function, so a topic only pays for them
-after opting in — see <a href="#enabling-header-forwarding">Enabling header forwarding</a>.</p>
+after opting in - see <a href="#enabling-header-forwarding">Enabling header forwarding</a>.</p>
 <h2 id="enabling-header-forwarding">Enabling header forwarding<a class="headerlink" href="#enabling-header-forwarding" title="Permanent link">&para;</a></h2>
 <p>Ingress headers are forwarded to remote functions only for topics that enable
 <code>forwardHeaders</code> (default <code>false</code>). The flag exists at two levels of the
@@ -1759,7 +1759,7 @@ after opting in — see <a href="#enabling-header-forwarding">Enabling header fo
 <p>The effective value per topic is resolved as: per-topic <code>forwardHeaders</code> if present, otherwise
 the ingress-level <code>forwardHeaders</code>, otherwise <code>false</code>. With a 20-topic ingress you set the policy
 once at ingress level and override individual topics in either direction.</p>
-<p>For a topic that has not opted in, record headers are never captured — no header bytes enter the
+<p>For a topic that has not opted in, record headers are never captured - no header bytes enter the
 runtime, the Flink shuffle, or the remote-function request, and <code>Message#headers()</code> returns an
 empty list. Records on opted-in topics without headers still add zero overhead.</p>
 <h2 id="reading-headers-in-a-function">Reading headers in a function<a class="headerlink" href="#reading-headers-in-a-function" title="Permanent link">&para;</a></h2>
@@ -1784,9 +1784,9 @@ empty list. Records on opted-in topics without headers still add zero overhead.<
 <li>headers appear in the order they were set on the Kafka record, duplicates included;</li>
 <li>messages from a topic that did not enable
   <a href="#enabling-header-forwarding"><code>forwardHeaders</code></a>, and messages that did not originate from a
-  Kafka ingress, return an empty list (unless the sender attached headers explicitly — see
+  Kafka ingress, return an empty list (unless the sender attached headers explicitly - see
   <a href="#forwarding-headers-between-functions">Forwarding headers</a>);</li>
-<li>the list is computed lazily and cached — untouched headers cost nothing.</li>
+<li>the list is computed lazily and cached - untouched headers cost nothing.</li>
 </ul>
 <h3 id="messageheader-accessors"><code>MessageHeader</code> accessors<a class="headerlink" href="#messageheader-accessors" title="Permanent link">&para;</a></h3>
 <table>
@@ -1801,12 +1801,12 @@ empty list. Records on opted-in topics without headers still add zero overhead.<
 <tr>
 <td><code>key()</code></td>
 <td><code>String</code> (never null)</td>
-<td>—</td>
+<td>-</td>
 </tr>
 <tr>
 <td><code>hasValue()</code></td>
 <td><code>false</code> when the Kafka header value was null</td>
-<td>—</td>
+<td>-</td>
 </tr>
 <tr>
 <td><code>value()</code></td>
@@ -1832,7 +1832,7 @@ empty list. Records on opted-in topics without headers still add zero overhead.<
 </table>
 <div class="admonition note">
 <p class="admonition-title">Never throws</p>
-<p>Every accessor is production-safe: a null or undecodable value returns <code>null</code> — an exception
+<p>Every accessor is production-safe: a null or undecodable value returns <code>null</code> - an exception
 is never thrown inside a live function invocation because of malformed header bytes.</p>
 </div>
 <h2 id="writing-headers-to-a-kafka-egress">Writing headers to a Kafka egress<a class="headerlink" href="#writing-headers-to-a-kafka-egress" title="Permanent link">&para;</a></h2>
@@ -1874,31 +1874,31 @@ is never thrown inside a live function invocation because of malformed header by
 </tr>
 <tr>
 <td><code>withHeader(String key, int / long / float / double / boolean value)</code></td>
-<td>binary SDK <code>Types</code> encoding — shorthand for the <code>Type&lt;T&gt;</code> overload</td>
+<td>binary SDK <code>Types</code> encoding - shorthand for the <code>Type&lt;T&gt;</code> overload</td>
 </tr>
 </tbody>
 </table>
 <p>Headers may repeat keys; they are written in call order.</p>
 <h2 id="choosing-an-encoding">Choosing an encoding<a class="headerlink" href="#choosing-an-encoding" title="Permanent link">&para;</a></h2>
-<p>Kafka headers are always raw bytes on the wire — there is no native "number" header type — so
+<p>Kafka headers are always raw bytes on the wire - there is no native "number" header type - so
 the choice is which encoding the <em>reader</em> expects:</p>
 <ul>
-<li><strong>Binary (<code>withHeader(key, 10)</code> / <code>Type&lt;T&gt;</code> overload)</strong> — a real binary number, decoded
+<li><strong>Binary (<code>withHeader(key, 10)</code> / <code>Type&lt;T&gt;</code> overload)</strong> - a real binary number, decoded
   losslessly by any StateFun SDK reader via <code>valueAsInt()</code> etc. Best between StateFun functions.</li>
-<li><strong>UTF-8 text (<code>withUtf8Header(key, "10")</code>)</strong> — readable by any Kafka consumer, <code>kcat</code>, Kafka
+<li><strong>UTF-8 text (<code>withUtf8Header(key, "10")</code>)</strong> - readable by any Kafka consumer, <code>kcat</code>, Kafka
   Connect, or UI tooling. Best when non-StateFun systems consume the topic.</li>
-<li><strong>Raw bytes (<code>byte[]</code>/<code>Slice</code>)</strong> — you own the encoding on both sides (e.g. hashes, protobuf).</li>
+<li><strong>Raw bytes (<code>byte[]</code>/<code>Slice</code>)</strong> - you own the encoding on both sides (e.g. hashes, protobuf).</li>
 </ul>
 <h2 id="null-semantics">Null semantics<a class="headerlink" href="#null-semantics" title="Permanent link">&para;</a></h2>
 <p>Kafka distinguishes a header with a <strong>null value</strong> from one with an <strong>empty value</strong>, and so does
-StateFun — a null value survives the full ingress → function → egress round-trip as null:</p>
+StateFun - a null value survives the full ingress → function → egress round-trip as null:</p>
 <div class="language-java highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1">// echoing headers preserves null-ness:</span>
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">message</span><span class="p">.</span><span class="na">headers</span><span class="p">().</span><span class="na">forEach</span><span class="p">(</span><span class="n">h</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">egress</span><span class="p">.</span><span class="na">withHeader</span><span class="p">(</span><span class="n">h</span><span class="p">.</span><span class="na">key</span><span class="p">(),</span><span class="w"> </span><span class="n">h</span><span class="p">.</span><span class="na">value</span><span class="p">()));</span><span class="w"> </span><span class="c1">// null value() → null header</span>
 </span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
 </span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1">// reading:</span>
 </span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="n">header</span><span class="p">.</span><span class="na">hasValue</span><span class="p">();</span><span class="w">   </span><span class="c1">// false for a null-valued header</span>
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="n">header</span><span class="p">.</span><span class="na">value</span><span class="p">();</span><span class="w">      </span><span class="c1">// null   — same contract as Kafka&#39;s own Header#value()</span>
-</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="n">header</span><span class="p">.</span><span class="na">valueAsInt</span><span class="p">();</span><span class="w"> </span><span class="c1">// null   — no exception</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="n">header</span><span class="p">.</span><span class="na">value</span><span class="p">();</span><span class="w">      </span><span class="c1">// null   - same contract as Kafka&#39;s own Header#value()</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="n">header</span><span class="p">.</span><span class="na">valueAsInt</span><span class="p">();</span><span class="w"> </span><span class="c1">// null   - no exception</span>
 </span></code></pre></div>
 <p>Write-side null handling (never fails a send):</p>
 <table>
@@ -1919,7 +1919,7 @@ StateFun — a null value survives the full ingress → function → egress roun
 </tr>
 <tr>
 <td>null header <em>key</em></td>
-<td>key degrades to <code>""</code> (Kafka forbids null keys — failing inside the running job would be worse)</td>
+<td>key degrades to <code>""</code> (Kafka forbids null keys - failing inside the running job would be worse)</td>
 </tr>
 <tr>
 <td>null <code>Type&lt;T&gt;</code> object</td>
@@ -1928,7 +1928,7 @@ StateFun — a null value survives the full ingress → function → egress roun
 </tbody>
 </table>
 <h2 id="forwarding-headers-between-functions">Forwarding headers between functions<a class="headerlink" href="#forwarding-headers-between-functions" title="Permanent link">&para;</a></h2>
-<p>Function-to-function messages can carry headers too — <code>MessageBuilder</code> has the same overload
+<p>Function-to-function messages can carry headers too - <code>MessageBuilder</code> has the same overload
 family, and the receiving function reads them with the same <code>Message#headers()</code> API:</p>
 <div class="language-java highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">context</span><span class="p">.</span><span class="na">send</span><span class="p">(</span>
 </span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">    </span><span class="n">MessageBuilder</span><span class="p">.</span><span class="na">forAddress</span><span class="p">(</span><span class="n">TARGET_FN</span><span class="p">,</span><span class="w"> </span><span class="n">id</span><span class="p">)</span>
@@ -1939,7 +1939,7 @@ family, and the receiving function reads them with the same <code>Message#header
 <p><code>MessageBuilder.fromMessage(message)</code> preserves the original message's headers when re-targeting
 or forwarding, including null-valued ones.</p>
 <h2 id="testing-header-aware-functions">Testing header-aware functions<a class="headerlink" href="#testing-header-aware-functions" title="Permanent link">&para;</a></h2>
-<p>The SDK testing toolkit covers headers end-to-end — construct incoming messages with headers via
+<p>The SDK testing toolkit covers headers end-to-end - construct incoming messages with headers via
 <code>MessageBuilder</code>, and assert egress headers with <code>KafkaEgressCapture</code> (no protobuf hand-parsing):</p>
 <div class="language-java highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nd">@Test</span>
 </span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="kt">void</span><span class="w"> </span><span class="nf">echoesTraceHeader</span><span class="p">()</span><span class="w"> </span><span class="kd">throws</span><span class="w"> </span><span class="n">Exception</span><span class="w"> </span><span class="p">{</span>
@@ -1969,15 +1969,15 @@ production paths it fails loudly: passing a non-Kafka egress message throws
 <p>Header support is strictly additive at the protocol level:</p>
 <ul>
 <li><code>KafkaProducerRecord</code> (egress), <code>TypedValue.Metadata</code> (request-reply), and the internal ingress
-  envelope each gained a repeated header field with a <code>has_value</code> flag — the same idiom
+  envelope each gained a repeated header field with a <code>has_value</code> flag - the same idiom
   <code>TypedValue</code> itself uses to distinguish empty from absent.</li>
 <li>Remote functions built against <strong>older SDKs</strong> keep working against a runtime with header
-  support — they simply do not see headers.</li>
-<li>A <strong>new SDK</strong> talking to an <strong>older runtime</strong> also keeps working — headers set on egress
+  support - they simply do not see headers.</li>
+<li>A <strong>new SDK</strong> talking to an <strong>older runtime</strong> also keeps working - headers set on egress
   messages are ignored by the old runtime, nothing fails.</li>
-<li><code>forwardHeaders</code> is an additive YAML property — existing <code>module.yaml</code> files parse unchanged
+<li><code>forwardHeaders</code> is an additive YAML property - existing <code>module.yaml</code> files parse unchanged
   and keep the default (off).</li>
-<li>Records without headers — and all records on topics that did not opt in — have unchanged wire
+<li>Records without headers - and all records on topics that did not opt in - have unchanged wire
   size and no extra allocations on any path.</li>
 </ul>
 <div class="admonition info">

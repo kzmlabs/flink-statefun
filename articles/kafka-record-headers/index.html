@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="StateFun Actors 3.4.0-KZM-3.4 adds end-to-end Kafka record header support to the Stateful Functions programming model — trace propagation, typed values, Kafka-exact null semantics, and per-topic opt-in.">
+        <meta name="description" content="StateFun Actors 3.4.0-KZM-3.4 adds end-to-end Kafka record header support to the Stateful Functions programming model - trace propagation, typed values, Kafka-exact null semantics, and per-topic opt-in.">
       
       
       
@@ -27,7 +27,7 @@
     
     
       
-        <title>Kafka record headers in Stateful Functions — closing a five-year-old gap - StateFun Actors by Kzmlabs</title>
+        <title>Kafka record headers in Stateful Functions: closing a five-year-old gap - StateFun Actors by Kzmlabs</title>
       
     
     
@@ -77,7 +77,7 @@
   <!-- OpenGraph -->
   <meta property="og:type" content="website">
   <meta property="og:title" content="Kafka record headers in Stateful Functions">
-  <meta property="og:description" content="StateFun Actors 3.4.0-KZM-3.4 adds end-to-end Kafka record header support to the Stateful Functions programming model — trace propagation, typed values, Kafka-exact null semantics, and per-topic opt-in.">
+  <meta property="og:description" content="StateFun Actors 3.4.0-KZM-3.4 adds end-to-end Kafka record header support to the Stateful Functions programming model - trace propagation, typed values, Kafka-exact null semantics, and per-topic opt-in.">
   <meta property="og:image" content="https://kzmlabs.github.io/flink-statefun/assets/social-preview.png">
   <meta property="og:image:width" content="1280">
   <meta property="og:image:height" content="640">
@@ -88,7 +88,7 @@
   <!-- Twitter card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Kafka record headers in Stateful Functions">
-  <meta name="twitter:description" content="StateFun Actors 3.4.0-KZM-3.4 adds end-to-end Kafka record header support to the Stateful Functions programming model — trace propagation, typed values, Kafka-exact null semantics, and per-topic opt-in.">
+  <meta name="twitter:description" content="StateFun Actors 3.4.0-KZM-3.4 adds end-to-end Kafka record header support to the Stateful Functions programming model - trace propagation, typed values, Kafka-exact null semantics, and per-topic opt-in.">
   <meta name="twitter:image" content="https://kzmlabs.github.io/flink-statefun/assets/social-preview.png">
 
   
@@ -147,7 +147,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Kafka record headers in Stateful Functions — closing a five-year-old gap
+              Kafka record headers in Stateful Functions: closing a five-year-old gap
             
           </span>
         </div>
@@ -1627,13 +1627,13 @@
   
 
 
-<h1 id="kafka-record-headers-in-stateful-functions-closing-a-five-year-old-gap">Kafka record headers in Stateful Functions — closing a five-year-old gap<a class="headerlink" href="#kafka-record-headers-in-stateful-functions-closing-a-five-year-old-gap" title="Permanent link">&para;</a></h1>
-<p><em>Published 2026-07-24 · by the kzmlabs maintainers</em></p>
-<p>Apache Stateful Functions never supported Kafka record headers. Not on the way in — a function had no way to see the headers of the record that invoked it. Not on the way out — the egress builder had topic, key, and value, and nothing else. If your platform standardized on header-borne trace context, tenant tags, or schema hints, StateFun was a black hole in the middle of your pipeline: headers went in, and they never came out.</p>
+<h1 id="kafka-record-headers-in-stateful-functions-closing-a-five-year-old-gap">Kafka record headers in Stateful Functions: closing a five-year-old gap<a class="headerlink" href="#kafka-record-headers-in-stateful-functions-closing-a-five-year-old-gap" title="Permanent link">&para;</a></h1>
+<p><em>Published 2026-07-24 · by the kzmlabs maintainers · <a href="https://dev.to/okazimirov/kafka-record-headers-in-stateful-functions-closing-a-five-year-old-gap-5bon">Read on dev.to</a></em></p>
+<p>Apache Stateful Functions never supported Kafka record headers. Not on the way in: a function had no way to see the headers of the record that invoked it. Not on the way out: the egress builder had topic, key, and value, and nothing else. If your platform standardized on header-borne trace context, tenant tags, or schema hints, StateFun was a black hole in the middle of your pipeline. Headers went in, and they never came out.</p>
 <p><a href="https://github.com/kzmlabs/flink-statefun/releases/tag/v3.4.0-KZM-3.4">StateFun Actors 3.4.0-KZM-3.4</a> finally closes that gap for remote functions built with the Java SDK. Here's what shipped, a couple of design decisions we sweated over more than expected (null handling took three iterations), and how to adopt it in a running deployment.</p>
 <h2 id="what-can-statefun-functions-do-with-kafka-headers-now">What can StateFun functions do with Kafka headers now?<a class="headerlink" href="#what-can-statefun-functions-do-with-kafka-headers-now" title="Permanent link">&para;</a></h2>
 <p>Both directions, symmetric API.</p>
-<p><strong>Reading</strong> — a function invoked by a Kafka record sees that record's headers:</p>
+<p><strong>Reading</strong>: a function invoked by a Kafka record sees that record's headers.</p>
 <div class="language-java highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kd">public</span><span class="w"> </span><span class="n">CompletableFuture</span><span class="o">&lt;</span><span class="n">Void</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">apply</span><span class="p">(</span><span class="n">Context</span><span class="w"> </span><span class="n">context</span><span class="p">,</span><span class="w"> </span><span class="n">Message</span><span class="w"> </span><span class="n">message</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">MessageHeader</span><span class="w"> </span><span class="n">header</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">message</span><span class="p">.</span><span class="na">headers</span><span class="p">())</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">        </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">header</span><span class="p">.</span><span class="na">key</span><span class="p">())</span><span class="w"> </span><span class="p">{</span>
@@ -1644,7 +1644,7 @@
 </span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">    </span><span class="p">...</span>
 </span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="p">}</span>
 </span></code></pre></div>
-<p><strong>Writing</strong> — the egress builder attaches headers to the produced record:</p>
+<p><strong>Writing</strong>: the egress builder attaches headers to the produced record.</p>
 <div class="language-java highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">context</span><span class="p">.</span><span class="na">send</span><span class="p">(</span>
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span><span class="n">KafkaEgressMessage</span><span class="p">.</span><span class="na">forEgress</span><span class="p">(</span><span class="n">NOTIFICATIONS</span><span class="p">)</span>
 </span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">        </span><span class="p">.</span><span class="na">withTopic</span><span class="p">(</span><span class="s">&quot;notifications&quot;</span><span class="p">)</span>
@@ -1652,29 +1652,29 @@
 </span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">        </span><span class="p">.</span><span class="na">withValue</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
 </span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">        </span><span class="p">.</span><span class="na">withUtf8Header</span><span class="p">(</span><span class="s">&quot;traceparent&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">traceContext</span><span class="p">)</span><span class="w">  </span><span class="c1">// UTF-8 text</span>
 </span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">        </span><span class="p">.</span><span class="na">withHeader</span><span class="p">(</span><span class="s">&quot;payload-hash&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">hashBytes</span><span class="p">)</span><span class="w">        </span><span class="c1">// raw bytes</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">        </span><span class="p">.</span><span class="na">withHeader</span><span class="p">(</span><span class="s">&quot;retry-count&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">)</span><span class="w">                </span><span class="c1">// binary int — 10, not &quot;10&quot;</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">        </span><span class="p">.</span><span class="na">withHeader</span><span class="p">(</span><span class="s">&quot;retry-count&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">)</span><span class="w">                </span><span class="c1">// binary int, 10, not &quot;10&quot;</span>
 </span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">        </span><span class="p">.</span><span class="na">build</span><span class="p">());</span>
 </span></code></pre></div>
-<p>The obvious first use case is distributed tracing: a W3C <code>traceparent</code> header can now ride a record from your edge producer, through a StateFun function graph, and out to downstream consumers — the thing that was previously impossible without smuggling trace context inside every payload schema.</p>
+<p>The obvious first use case is distributed tracing: a W3C <code>traceparent</code> header can now ride a record from your edge producer, through a StateFun function graph, and out to downstream consumers. That was previously impossible without smuggling trace context inside every payload schema.</p>
 <h2 id="why-is-10-not-10-worth-a-bullet-point">Why is "10, not \"10\"" worth a bullet point?<a class="headerlink" href="#why-is-10-not-10-worth-a-bullet-point" title="Permanent link">&para;</a></h2>
-<p>Kafka headers are raw bytes on the wire — Kafka has no typed headers. Most frameworks make you pick between hand-stringifying numbers or hand-packing byte buffers. The SDK gives you three explicit encodings and never guesses:</p>
+<p>Kafka headers are raw bytes on the wire; Kafka has no typed headers. Most frameworks make you pick between hand-stringifying numbers or hand-packing byte buffers. The SDK gives you three explicit encodings and never guesses:</p>
 <ul>
-<li><code>withUtf8Header(key, text)</code> — plain text, readable by any Kafka consumer, <code>kcat</code>, or Connect.</li>
-<li><code>withHeader(key, bytes)</code> — raw bytes, you own the format.</li>
-<li><code>withHeader(key, 10)</code> / <code>withHeader(key, type, value)</code> — the SDK's binary type encodings, decoded losslessly on the read side by <code>valueAsInt()</code>, <code>valueAsLong()</code>, <code>valueAsFloat()</code>, <code>valueAsDouble()</code>, <code>valueAsBoolean()</code>, or <code>valueAs(Type&lt;T&gt;)</code>.</li>
+<li><code>withUtf8Header(key, text)</code>: plain text, readable by any Kafka consumer, <code>kcat</code>, or Connect.</li>
+<li><code>withHeader(key, bytes)</code>: raw bytes, you own the format.</li>
+<li><code>withHeader(key, 10)</code> / <code>withHeader(key, type, value)</code>: the SDK's binary type encodings, decoded losslessly on the read side by <code>valueAsInt()</code>, <code>valueAsLong()</code>, <code>valueAsFloat()</code>, <code>valueAsDouble()</code>, <code>valueAsBoolean()</code>, or <code>valueAs(Type&lt;T&gt;)</code>.</li>
 </ul>
-<p>Every read accessor shares one production-safety contract: a null or undecodable value returns <code>null</code> — never an exception inside a live function invocation.</p>
+<p>Every read accessor shares one production-safety contract: a null or undecodable value returns <code>null</code>, never an exception inside a live function invocation.</p>
 <h2 id="what-happens-to-null-header-values">What happens to null header values?<a class="headerlink" href="#what-happens-to-null-header-values" title="Permanent link">&para;</a></h2>
-<p>They stay null. This detail is easy to get wrong: Kafka's wire format distinguishes a header whose value is <strong>null</strong> from one whose value is <strong>empty</strong> (a null value encodes as length <code>-1</code>), and <code>Header#value()</code> in the Kafka client legitimately returns <code>null</code>. Protobuf — which carries StateFun's remote-function protocol — cannot represent null bytes.</p>
-<p>Our first cut coerced null to empty bytes. It worked, and it was wrong — we only caught it after actually checking what <code>kafka-clients</code> does (null header values are legal and preserved; null <em>keys</em> are rejected). The fix borrows the idiom StateFun's protocol already uses for exactly this problem: an explicit <code>has_value</code> flag, same as <code>TypedValue.has_value</code>. A null-valued header now goes in as null and comes out as null, which also means echoing headers is lossless:</p>
+<p>They stay null. This detail is easy to get wrong: Kafka's wire format distinguishes a header whose value is <strong>null</strong> from one whose value is <strong>empty</strong> (a null value encodes as length <code>-1</code>), and <code>Header#value()</code> in the Kafka client legitimately returns <code>null</code>. Protobuf, which carries StateFun's remote-function protocol, cannot represent null bytes.</p>
+<p>Our first cut coerced null to empty bytes. It worked, and it was wrong. We only caught it after actually checking what <code>kafka-clients</code> does (null header values are legal and preserved; null <em>keys</em> are rejected). The fix borrows the idiom StateFun's protocol already uses for exactly this problem: an explicit <code>has_value</code> flag, same as <code>TypedValue.has_value</code>. A null-valued header now goes in as null and comes out as null, which also means echoing headers is lossless:</p>
 <div class="language-java highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">message</span><span class="p">.</span><span class="na">headers</span><span class="p">().</span><span class="na">forEach</span><span class="p">(</span><span class="n">h</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">egress</span><span class="p">.</span><span class="na">withHeader</span><span class="p">(</span><span class="n">h</span><span class="p">.</span><span class="na">key</span><span class="p">(),</span><span class="w"> </span><span class="n">h</span><span class="p">.</span><span class="na">value</span><span class="p">()));</span>
 </span></code></pre></div>
 <h2 id="how-did-this-land-without-touching-the-runtimes-hot-path">How did this land without touching the runtime's hot path?<a class="headerlink" href="#how-did-this-land-without-touching-the-runtimes-hot-path" title="Permanent link">&para;</a></h2>
-<p>The interesting design constraint: an ingress record's payload crosses the whole Flink runtime — router, internal message envelope, feedback loop, request-reply dispatcher — as a single <code>TypedValue</code> protobuf, which the dispatcher copies verbatim into the remote function invocation. There is no side channel.</p>
+<p>The interesting design constraint: an ingress record's payload crosses the whole Flink runtime (router, internal message envelope, feedback loop, request-reply dispatcher) as a single <code>TypedValue</code> protobuf, which the dispatcher copies verbatim into the remote function invocation. There is no side channel.</p>
 <p>So the headers ride the <code>TypedValue</code> itself, as a new repeated <code>metadata</code> field. Additive protobuf, preserved by every serialization boundary in between, delivered to the SDK with <strong>zero changes to flink-core</strong>. Old SDKs parse and ignore the field; new SDKs against old runtimes simply see no metadata. No lockstep upgrade, no savepoint migration, no protocol version bump.</p>
-<p>A pleasant side effect: function-to-function messages can carry headers too — <code>MessageBuilder</code> has the same header API, and forwarding via <code>MessageBuilder.fromMessage(...)</code> preserves them.</p>
+<p>A pleasant side effect: function-to-function messages can carry headers too. <code>MessageBuilder</code> has the same header API, and forwarding via <code>MessageBuilder.fromMessage(...)</code> preserves them.</p>
 <h2 id="doesnt-this-bloat-every-record">Doesn't this bloat every record?<a class="headerlink" href="#doesnt-this-bloat-every-record" title="Permanent link">&para;</a></h2>
-<p>Only if you ask for it. Ingress header forwarding is <strong>opt-in per topic</strong>, because captured headers cost bytes on every hop — the routable envelope, the Flink shuffle, the HTTP request to your function:</p>
+<p>Only if you ask for it. Ingress header forwarding is <strong>opt-in per topic</strong>, because captured headers cost bytes on every hop: the routable envelope, the Flink shuffle, the HTTP request to your function.</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">io.statefun.kafka.v1/ingress</span>
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="nt">spec</span><span class="p">:</span>
 </span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example/orders-in</span>
@@ -1688,7 +1688,7 @@
 </span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="w">      </span><span class="nt">valueType</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example/Event</span>
 </span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="w">      </span><span class="nt">targets</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">example/event-fn</span><span class="p p-Indicator">]</span>
 </span></code></pre></div>
-<p>Topics that have not opted in never capture headers — nothing enters the runtime, and <code>Message#headers()</code> returns an empty list. Records on opted-in topics that happen to carry no headers add zero overhead: the hot path guards every allocation behind a header-count check. Egress headers are always available since they are explicit builder calls.</p>
+<p>Topics that have not opted in never capture headers. Nothing enters the runtime, and <code>Message#headers()</code> returns an empty list. Records on opted-in topics that happen to carry no headers add zero overhead: the hot path guards every allocation behind a header-count check. Egress headers are always available since they are explicit builder calls.</p>
 <h2 id="can-i-unit-test-functions-that-use-headers">Can I unit-test functions that use headers?<a class="headerlink" href="#can-i-unit-test-functions-that-use-headers" title="Permanent link">&para;</a></h2>
 <p>Yes, without touching protobuf. The SDK testing toolkit grew alongside the feature:</p>
 <div class="language-java highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">Message</span><span class="w"> </span><span class="n">message</span><span class="w"> </span><span class="o">=</span>
@@ -1706,9 +1706,9 @@
 </span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="n">assertThat</span><span class="p">(</span><span class="n">record</span><span class="p">.</span><span class="na">lastHeader</span><span class="p">(</span><span class="s">&quot;traceparent&quot;</span><span class="p">).</span><span class="na">orElseThrow</span><span class="p">().</span><span class="na">valueAsUtf8String</span><span class="p">())</span>
 </span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="w">    </span><span class="p">.</span><span class="na">startsWith</span><span class="p">(</span><span class="s">&quot;00-&quot;</span><span class="p">);</span>
 </span></code></pre></div>
-<p><code>KafkaEgressCapture</code> unpacks a captured egress message into topic, key, value, and headers — with <code>lastHeader</code> following Kafka's own last-wins semantics.</p>
+<p><code>KafkaEgressCapture</code> unpacks a captured egress message into topic, key, value, and headers, with <code>lastHeader</code> following Kafka's own last-wins semantics.</p>
 <h2 id="how-is-this-tested">How is this tested?<a class="headerlink" href="#how-is-this-tested" title="Permanent link">&para;</a></h2>
-<p>Around sixty unit tests pin the contract at each seam: duplicate keys, ordering, all six value encodings, null-vs-empty at every boundary, garbage bytes decoding to <code>null</code> instead of throwing. On top of that sits the Kubernetes end-to-end gate every release has to pass anyway — it now produces a record with UTF-8, binary, <em>and</em> null-valued headers into a kind cluster running the Flink Operator, has a remote function echo them, and asserts byte-exact results on the output topic.</p>
+<p>Around sixty unit tests pin the contract at each seam: duplicate keys, ordering, all six value encodings, null-vs-empty at every boundary, garbage bytes decoding to <code>null</code> instead of throwing. On top of that sits the Kubernetes end-to-end gate every release has to pass anyway. It now produces a record with UTF-8, binary, <em>and</em> null-valued headers into a kind cluster running the Flink Operator, has a remote function echo them, and asserts byte-exact results on the output topic.</p>
 <h2 id="how-do-i-get-it">How do I get it?<a class="headerlink" href="#how-do-i-get-it" title="Permanent link">&para;</a></h2>
 <p><code>3.4.0-KZM-3.4</code> on <a href="https://central.sonatype.com/artifact/io.github.kzmlabs.flinkstatefun/statefun-sdk-java">Maven Central</a> and <a href="https://github.com/kzmlabs/flink-statefun/pkgs/container/flink-statefun">GHCR</a>:</p>
 <div class="language-xml highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nt">&lt;dependency&gt;</span>
@@ -1717,8 +1717,8 @@
 </span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">    </span><span class="nt">&lt;version&gt;</span>3.4.0-KZM-3.4<span class="nt">&lt;/version&gt;</span>
 </span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="nt">&lt;/dependency&gt;</span>
 </span></code></pre></div>
-<p>Existing deployments upgrade in place — the protocol change is strictly additive, and header forwarding stays off until a topic opts in, so nothing changes behavior until you say so.</p>
-<p>Full reference: <strong><a href="https://kzmlabs.github.io/flink-statefun/guides/kafka-headers/">the Kafka record headers guide</a></strong>. Background on the fork itself: <strong><a href="../forking-statefun/">We forked Apache Stateful Functions for Flink 2.x — here's why</a></strong>.</p>
+<p>Existing deployments upgrade in place. The protocol change is strictly additive, and header forwarding stays off until a topic opts in, so nothing changes behavior until you say so.</p>
+<p>Full reference: <strong><a href="../../guides/kafka-headers/">the Kafka record headers guide</a></strong>. Background on the fork itself: <strong><a href="../forking-statefun/">We forked Apache Stateful Functions for Flink 2.x</a></strong>.</p>
 
 
 

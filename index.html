@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Stateful actors on Apache Flink 2.x and Java 21 — durable per-key state, exactly-once messaging, Kafka and Kinesis I/O, Kubernetes-native deployment. Continues the Apache Stateful Functions programming model on the modern Flink line.">
+        <meta name="description" content="Stateful actors on Apache Flink 2.x and Java 21 - durable per-key state, exactly-once messaging, Kafka and Kinesis I/O, Kubernetes-native deployment. Continues the Apache Stateful Functions programming model on the modern Flink line.">
       
       
       
@@ -75,7 +75,7 @@
   <!-- OpenGraph -->
   <meta property="og:type" content="website">
   <meta property="og:title" content="Home">
-  <meta property="og:description" content="Stateful actors on Apache Flink 2.x and Java 21 — durable per-key state, exactly-once messaging, Kafka and Kinesis I/O, Kubernetes-native deployment. Continues the Apache Stateful Functions programming model on the modern Flink line.">
+  <meta property="og:description" content="Stateful actors on Apache Flink 2.x and Java 21 - durable per-key state, exactly-once messaging, Kafka and Kinesis I/O, Kubernetes-native deployment. Continues the Apache Stateful Functions programming model on the modern Flink line.">
   <meta property="og:image" content="https://kzmlabs.github.io/flink-statefun/assets/social-preview.png">
   <meta property="og:image:width" content="1280">
   <meta property="og:image:height" content="640">
@@ -86,7 +86,7 @@
   <!-- Twitter card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Home">
-  <meta name="twitter:description" content="Stateful actors on Apache Flink 2.x and Java 21 — durable per-key state, exactly-once messaging, Kafka and Kinesis I/O, Kubernetes-native deployment. Continues the Apache Stateful Functions programming model on the modern Flink line.">
+  <meta name="twitter:description" content="Stateful actors on Apache Flink 2.x and Java 21 - durable per-key state, exactly-once messaging, Kafka and Kinesis I/O, Kubernetes-native deployment. Continues the Apache Stateful Functions programming model on the modern Flink line.">
   <meta name="twitter:image" content="https://kzmlabs.github.io/flink-statefun/assets/social-preview.png">
 
   
@@ -1753,7 +1753,7 @@
   
   <article class="md-content__inner md-typeset">
     <h2 id="what-is-statefun-actors">What is StateFun Actors?<a class="headerlink" href="#what-is-statefun-actors" title="Permanent link">&para;</a></h2>
-<p>You write a function keyed by a logical id. The runtime gives it per-key durable state, routes messages to it, replays on failure, and connects it to Kafka and Kinesis. <strong>Actor programming on top of Apache Flink — without writing a Flink job by hand.</strong></p>
+<p>You write a function keyed by a logical id. The runtime gives it per-key durable state, routes messages to it, replays on failure, and connects it to Kafka and Kinesis. <strong>Actor programming on top of Apache Flink - without writing a Flink job by hand.</strong></p>
 <p>This is the actively maintained continuation of <a href="https://github.com/apache/flink-statefun">Apache Stateful Functions</a>: same programming model, current Flink, current Java, restored Kinesis I/O, and a real Kubernetes end-to-end gate before every release.</p>
 <h2 id="focus-on-logic-not-on-flink-plumbing">Focus on logic, not on Flink plumbing<a class="headerlink" href="#focus-on-logic-not-on-flink-plumbing" title="Permanent link">&para;</a></h2>
 <div class="kzm-compare">
@@ -1820,7 +1820,7 @@
 </li>
 </ul>
 </div>
-<p>More patterns work the same way — order workflows, payment sagas, polyglot microservices, real-time scoring. The model in <a href="architecture/">Architecture overview</a> is the same in every case: durable per-key state plus exactly-once messaging.</p>
+<p>More patterns work the same way - order workflows, payment sagas, polyglot microservices, real-time scoring. The model in <a href="architecture/">Architecture overview</a> is the same in every case: durable per-key state plus exactly-once messaging.</p>
 <h2 id="polyglot-sdks-and-pluggable-io">Polyglot SDKs and pluggable I/O<a class="headerlink" href="#polyglot-sdks-and-pluggable-io" title="Permanent link">&para;</a></h2>
 <p>Write functions in whichever language fits the team. Plug into the streaming and storage substrate you already run.</p>
 <div class="kzm-logo-grid">
@@ -1836,7 +1836,7 @@
 <div><span class="twemoji twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 3C7.58 3 4 4.79 4 7s3.58 4 8 4 8-1.79 8-4-3.58-4-8-4M4 9v3c0 2.21 3.58 4 8 4s8-1.79 8-4V9c0 2.21-3.58 4-8 4s-8-1.79-8-4m0 5v3c0 2.21 3.58 4 8 4s8-1.79 8-4v-3c0 2.21-3.58 4-8 4s-8-1.79-8-4"/></svg></span> &nbsp; S3 checkpoints</div>
 </div>
 <h2 id="why-this-continuation-exists">Why this continuation exists<a class="headerlink" href="#why-this-continuation-exists" title="Permanent link">&para;</a></h2>
-<p>Apache Stateful Functions stopped releasing in <strong>October 2024</strong> at version 3.4.0, locked to <strong>Flink 1.16</strong> and <strong>Java 11</strong>. Anyone wanting to run it against modern Flink either pinned old dependencies or vendored their own patches. StateFun Actors is the public, actively maintained continuation — same code, modern stack, no vendor lock-in.</p>
+<p>Apache Stateful Functions stopped releasing in <strong>October 2024</strong> at version 3.4.0, locked to <strong>Flink 1.16</strong> and <strong>Java 11</strong>. Anyone wanting to run it against modern Flink either pinned old dependencies or vendored their own patches. StateFun Actors is the public, actively maintained continuation - same code, modern stack, no vendor lock-in.</p>
 <table>
 <thead>
 <tr>
@@ -1886,12 +1886,12 @@
 <p><a href="upstream-vs-kzm/">Full migration notes →</a></p>
 <h2 id="what-you-get">What you get<a class="headerlink" href="#what-you-get" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>Per-key durable state</strong> — read and write your function's own state without manually wiring Flink keyed-state primitives.</li>
+<li><strong>Per-key durable state</strong> - read and write your function's own state without manually wiring Flink keyed-state primitives.</li>
 <li><strong>Exactly-once messaging</strong> between functions and to/from external systems, riding Flink's checkpointing.</li>
-<li><strong>Polyglot remote functions</strong> — write functions as HTTP endpoints in any language; the runtime owns state and routing.</li>
-<li><strong>Kafka record headers, end-to-end</strong> <em>(new in KZM-3.4)</em> — functions read the headers of the record that triggered them and set headers on egress records, with Kafka-exact null semantics and per-topic opt-in. <a href="guides/kafka-headers/">Guide →</a></li>
-<li><strong>Deployment flexibility</strong> — embedded in Flink, co-located with the JobManager, or remote HTTP services scaled independently.</li>
-<li><strong>Production-grade releases</strong> — every version is gated on a real K8s end-to-end run with the Flink Operator, Kafka, S3 checkpoints, and the actual remote-function pod.</li>
+<li><strong>Polyglot remote functions</strong> - write functions as HTTP endpoints in any language; the runtime owns state and routing.</li>
+<li><strong>Kafka record headers, end-to-end</strong> <em>(new in KZM-3.4)</em> - functions read the headers of the record that triggered them and set headers on egress records, with Kafka-exact null semantics and per-topic opt-in. <a href="guides/kafka-headers/">Guide →</a></li>
+<li><strong>Deployment flexibility</strong> - embedded in Flink, co-located with the JobManager, or remote HTTP services scaled independently.</li>
+<li><strong>Production-grade releases</strong> - every version is gated on a real K8s end-to-end run with the Flink Operator, Kafka, S3 checkpoints, and the actual remote-function pod.</li>
 </ul>
 <h2 id="at-a-glance">At a glance<a class="headerlink" href="#at-a-glance" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>flowchart LR
