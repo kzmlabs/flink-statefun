@@ -20,5 +20,9 @@ message KafkaProducerRecord {
     message Header {
         string key = 1;
         bytes value = 2;
+        // Kafka distinguishes a null header value from an empty one; protobuf cannot.
+        // has_value=true means the value bytes are present (possibly empty),
+        // has_value=false means the Kafka header value is null.
+        bool has_value = 3;
     }
 }

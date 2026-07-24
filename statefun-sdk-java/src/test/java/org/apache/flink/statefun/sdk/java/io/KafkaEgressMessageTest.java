@@ -243,20 +243,9 @@ class KafkaEgressMessageTest {
     assertThat(record.getHeadersCount()).isZero();
   }
 
-  @Test
-  void nullHeaderKeyIsRejected() {
-    KafkaEgressMessage.Builder builder = KafkaEgressMessage.forEgress(EGRESS_ID);
-    assertThatThrownBy(() -> builder.withUtf8Header(null, "v"))
-        .isInstanceOf(NullPointerException.class);
-    assertThatThrownBy(() -> builder.withHeader(null, new byte[0]))
-        .isInstanceOf(NullPointerException.class);
-    assertThatThrownBy(() -> builder.withHeader(null, Slices.copyFromUtf8("v")))
-        .isInstanceOf(NullPointerException.class);
-  }
 
   @Test
-  void nullHeaderValuesAreCarriedAsEmptyBytesLikeKafkaAllows()
-      throws InvalidProtocolBufferException {
+  void nullHeaderValuesArePreservedAsNullNotEmpty() throws InvalidProtocolBufferException {
     EgressMessage message =
         KafkaEgressMessage.forEgress(EGRESS_ID)
             .withTopic("t")
@@ -270,7 +259,38 @@ class KafkaEgressMessageTest {
     KafkaProducerRecord record = unpack(message);
     assertThat(record.getHeadersList())
         .hasSize(4)
-        .allMatch(header -> header.getValue().isEmpty());
+        .allMatch(header -> !header.getHasValue() && header.getValue().isEmpty());
+  }
+
+  @Test
+  void presentHeaderValuesAreMarkedHasValueIncludingExplicitlyEmptyOnes()
+      throws InvalidProtocolBufferException {
+    EgressMessage message =
+        KafkaEgressMessage.forEgress(EGRESS_ID)
+            .withTopic("t")
+            .withUtf8Value("v")
+            .withHeader("explicit-empty", new byte[0])
+            .withUtf8Header("present", "x")
+            .build();
+
+    KafkaProducerRecord record = unpack(message);
+    assertThat(record.getHeadersList()).hasSize(2).allMatch(KafkaProducerRecord.Header::getHasValue);
+    assertThat(record.getHeaders(0).getValue().isEmpty()).isTrue();
+  }
+
+  @Test
+  void nullHeaderKeyDegradesToEmptyKeyInsteadOfFailingTheSend()
+      throws InvalidProtocolBufferException {
+    EgressMessage message =
+        KafkaEgressMessage.forEgress(EGRESS_ID)
+            .withTopic("t")
+            .withUtf8Value("v")
+            .withUtf8Header(null, "orphan")
+            .build();
+
+    KafkaProducerRecord record = unpack(message);
+    assertThat(record.getHeaders(0).getKey()).isEmpty();
+    assertThat(record.getHeaders(0).getValue().toStringUtf8()).isEqualTo("orphan");
   }
 
   @Test

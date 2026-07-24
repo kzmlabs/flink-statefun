@@ -37,6 +37,9 @@ message TypedValue {
     message Metadata {
         string key = 1;
         bytes value = 2;
+        // Mirrors TypedValue.has_value: distinguishes an explicitly empty value
+        // from an absent (null) one, e.g. a Kafka header with a null value.
+        bool has_value = 3;
     }
 }
 

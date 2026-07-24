@@ -57,6 +57,7 @@ class AutoRoutableProtobufRouterTest {
     AutoRoutable routable =
         routableBuilder(TARGET_A)
             .addHeaders(header("trace-id", "abc-123"))
+            .addHeaders(Header.newBuilder().setKey("null-valued"))
             .addHeaders(header("trace-id", "def-456"))
             .build();
     CapturingDownstream downstream = new CapturingDownstream();
@@ -64,11 +65,15 @@ class AutoRoutableProtobufRouterTest {
     router.route(routable, downstream);
 
     TypedValue typedValue = (TypedValue) downstream.payloads.get(0);
-    assertThat(typedValue.getMetadataCount()).isEqualTo(2);
+    assertThat(typedValue.getMetadataCount()).isEqualTo(3);
     assertThat(typedValue.getMetadata(0).getKey()).isEqualTo("trace-id");
+    assertThat(typedValue.getMetadata(0).getHasValue()).isTrue();
     assertThat(typedValue.getMetadata(0).getValue().toStringUtf8()).isEqualTo("abc-123");
-    assertThat(typedValue.getMetadata(1).getKey()).isEqualTo("trace-id");
-    assertThat(typedValue.getMetadata(1).getValue().toStringUtf8()).isEqualTo("def-456");
+    assertThat(typedValue.getMetadata(1).getKey()).isEqualTo("null-valued");
+    assertThat(typedValue.getMetadata(1).getHasValue()).isFalse();
+    assertThat(typedValue.getMetadata(2).getKey()).isEqualTo("trace-id");
+    assertThat(typedValue.getMetadata(2).getHasValue()).isTrue();
+    assertThat(typedValue.getMetadata(2).getValue().toStringUtf8()).isEqualTo("def-456");
   }
 
   @Test
@@ -93,7 +98,11 @@ class AutoRoutableProtobufRouterTest {
   }
 
   private static Header header(String key, String utf8Value) {
-    return Header.newBuilder().setKey(key).setValue(ByteString.copyFromUtf8(utf8Value)).build();
+    return Header.newBuilder()
+        .setKey(key)
+        .setValue(ByteString.copyFromUtf8(utf8Value))
+        .setHasValue(true)
+        .build();
   }
 
   private static final class CapturingDownstream implements Router.Downstream<Message> {

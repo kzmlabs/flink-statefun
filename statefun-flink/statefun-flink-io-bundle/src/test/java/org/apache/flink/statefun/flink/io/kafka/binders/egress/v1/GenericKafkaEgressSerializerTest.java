@@ -66,6 +66,24 @@ class GenericKafkaEgressSerializerTest {
   }
 
   @Test
+  void nullValuedProtoHeaderIsProducedAsNullKafkaHeaderValue() {
+    KafkaProducerRecord rec =
+        KafkaProducerRecord.newBuilder()
+            .setTopic("topic-A")
+            .setValueBytes(ByteString.copyFromUtf8("v"))
+            .addHeaders(KafkaProducerRecord.Header.newBuilder().setKey("null-valued"))
+            .addHeaders(
+                KafkaProducerRecord.Header.newBuilder().setKey("explicit-empty").setHasValue(true))
+            .build();
+
+    ProducerRecord<byte[], byte[]> record =
+        serializer.serialize(TypedValueUtil.packProtobufMessage(rec));
+
+    assertThat(record.headers().lastHeader("null-valued").value()).isNull();
+    assertThat(record.headers().lastHeader("explicit-empty").value()).isEmpty();
+  }
+
+  @Test
   void recordWithoutProtoHeadersProducesNoKafkaHeaders() {
     TypedValue input = packAsKafkaRecord("topic-A", "k", "v".getBytes(StandardCharsets.UTF_8));
 
@@ -118,6 +136,7 @@ class GenericKafkaEgressSerializerTest {
     return KafkaProducerRecord.Header.newBuilder()
         .setKey(key)
         .setValue(ByteString.copyFromUtf8(utf8Value))
+        .setHasValue(true)
         .build();
   }
 

@@ -101,6 +101,13 @@ KafkaEgressMessage.forEgress(TypeName.typeNameFromString("example/notifications"
     .build();
 ```
 
+Header semantics match Kafka's own: duplicate keys and ordering are preserved, and a **null**
+header value — which Kafka distinguishes from an empty one — stays null end-to-end
+(`MessageHeader#value()` returns `null`, mirroring Kafka's `Header#value()` contract). Header
+operations never throw on null input: a null value is carried as a null-valued header and a null
+key degrades to an empty key, so malformed metadata can never fail a production send or a
+function invocation.
+
 Header support is additive at the protocol level: remote functions built against older SDKs keep
 working unchanged, they simply do not see headers.
 

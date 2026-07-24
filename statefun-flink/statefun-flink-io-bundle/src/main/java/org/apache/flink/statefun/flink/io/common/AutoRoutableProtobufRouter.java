@@ -64,6 +64,7 @@ public final class AutoRoutableProtobufRouter implements Router<Message> {
     return TypedValue.Metadata.newBuilder()
         .setKey(header.getKey())
         .setValue(header.getValue())
+        .setHasValue(header.getHasValue())
         .build();
   }
 }

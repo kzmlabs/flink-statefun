@@ -19,6 +19,9 @@ message AutoRoutable {
 message Header {
     string key = 1;
     bytes value = 2;
+    // has_value=false means the ingested transport header had a null value
+    // (legal in Kafka), as opposed to an explicitly empty one.
+    bool has_value = 3;
 }
 
 message RoutingConfig {

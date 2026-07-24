@@ -96,36 +96,41 @@ public final class KafkaEgressMessage {
     }
 
     /**
-     * Header values are null-tolerant: Kafka permits headers without a value, so a {@code null}
-     * value is carried as empty bytes (protobuf cannot represent null) instead of failing the
-     * build. Header keys must be non-null, matching Kafka's own contract.
+     * Header inserts never fail: headers are metadata and must not corrupt a production send. A
+     * null value is preserved as a null-valued Kafka header ({@code has_value=false}), which Kafka
+     * legally supports; a null key degrades to an empty key (Kafka itself forbids null keys, so
+     * passing one through would fail at produce time inside the running job).
      */
     public Builder withUtf8Header(String key, String value) {
-      return addHeader(key, value == null ? ByteString.EMPTY : ByteString.copyFromUtf8(value));
+      return addHeader(key, value == null ? null : ByteString.copyFromUtf8(value));
     }
 
     public Builder withHeader(String key, byte[] value) {
-      return addHeader(key, value == null ? ByteString.EMPTY : ByteString.copyFrom(value));
+      return addHeader(key, value == null ? null : ByteString.copyFrom(value));
     }
 
     public Builder withHeader(String key, Slice value) {
-      return addHeader(key, value == null ? ByteString.EMPTY : SliceProtobufUtil.asByteString(value));
+      return addHeader(key, value == null ? null : SliceProtobufUtil.asByteString(value));
     }
 
     public <T> Builder withHeader(String key, Type<T> type, T value) {
-      if (value == null) {
-        return addHeader(key, ByteString.EMPTY);
+      if (type == null || value == null) {
+        return addHeader(key, null);
       }
       TypeSerializer<T> serializer = type.typeSerializer();
       return withHeader(key, serializer.serialize(value));
     }
 
-    private Builder addHeader(String key, ByteString value) {
-      Objects.requireNonNull(key);
+    private Builder addHeader(String key, ByteString valueOrNull) {
       if (headers == null) {
         headers = new ArrayList<>();
       }
-      headers.add(KafkaProducerRecord.Header.newBuilder().setKey(key).setValue(value).build());
+      KafkaProducerRecord.Header.Builder header =
+          KafkaProducerRecord.Header.newBuilder().setKey(key == null ? "" : key);
+      if (valueOrNull != null) {
+        header.setValue(valueOrNull).setHasValue(true);
+      }
+      headers.add(header.build());
       return this;
     }
 

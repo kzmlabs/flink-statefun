@@ -2,7 +2,6 @@
 // Copyright 2014 The Apache Software Foundation
 package org.apache.flink.statefun.flink.io.kafka.binders.ingress.v1;
 
-import com.google.protobuf.ByteString;
 import com.google.protobuf.Message;
 import com.google.protobuf.MoreByteStrings;
 import java.nio.charset.StandardCharsets;
@@ -53,11 +52,13 @@ public final class RoutableKafkaIngressDeserializer
   }
 
   private static Header toProtoHeader(org.apache.kafka.common.header.Header header) {
+    final String key = header.key();
     final byte[] value = header.value();
-    return Header.newBuilder()
-        .setKey(header.key())
-        .setValue(value == null ? ByteString.EMPTY : MoreByteStrings.wrap(value))
-        .build();
+    final Header.Builder proto = Header.newBuilder().setKey(key == null ? "" : key);
+    if (value != null) {
+      proto.setValue(MoreByteStrings.wrap(value)).setHasValue(true);
+    }
+    return proto.build();
   }
 
   private byte[] requireNonNullKey(byte[] key) {

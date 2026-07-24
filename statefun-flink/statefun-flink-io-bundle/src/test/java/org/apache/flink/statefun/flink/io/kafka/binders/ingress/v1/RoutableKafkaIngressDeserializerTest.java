@@ -73,10 +73,13 @@ class RoutableKafkaIngressDeserializerTest {
 
     assertThat(routable.getHeadersCount()).isEqualTo(3);
     assertThat(routable.getHeaders(0).getKey()).isEqualTo("trace-id");
+    assertThat(routable.getHeaders(0).getHasValue()).isTrue();
     assertThat(routable.getHeaders(0).getValue().toStringUtf8()).isEqualTo("abc-123");
     assertThat(routable.getHeaders(1).getKey()).isEqualTo("empty-header");
+    assertThat(routable.getHeaders(1).getHasValue()).isFalse();
     assertThat(routable.getHeaders(1).getValue().isEmpty()).isTrue();
     assertThat(routable.getHeaders(2).getKey()).isEqualTo("trace-id");
+    assertThat(routable.getHeaders(2).getHasValue()).isTrue();
     assertThat(routable.getHeaders(2).getValue().toStringUtf8()).isEqualTo("def-456");
   }
 

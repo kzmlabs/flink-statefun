@@ -4,52 +4,61 @@ package org.apache.flink.statefun.sdk.java.message;
 
 import java.nio.charset.StandardCharsets;
 import org.apache.flink.statefun.sdk.java.slice.Slice;
-import org.apache.flink.statefun.sdk.java.slice.Slices;
 import org.apache.flink.statefun.sdk.java.types.Type;
 
 /**
  * A single transport-level header attached to an incoming {@link Message}, e.g. a Kafka record
  * header of the record that produced this message. Header keys are not unique: multiple headers
  * may share the same key, and their original order is preserved.
+ *
+ * <p>Never throws on degenerate input: this type materializes on the message read path inside
+ * live function invocations, so a null key degrades to an empty key, and a null value — legal in
+ * Kafka, see {@code org.apache.kafka.common.header.Header#value()} — is preserved as {@code
+ * null}.
  */
 public final class MessageHeader {
-  private static final Slice EMPTY_VALUE = Slices.wrap(new byte[0]);
-
   private final String key;
   private final Slice value;
 
-  /**
-   * Deliberately null-tolerant: this type materializes on the message read path inside function
-   * invocations, where throwing on unexpected input would fail live traffic. A null key or value
-   * degrades to an empty one instead.
-   */
   public MessageHeader(String key, Slice value) {
     this.key = key == null ? "" : key;
-    this.value = value == null ? EMPTY_VALUE : value;
+    this.value = value;
   }
 
   public String key() {
     return key;
   }
 
+  /** True when the header carries a value; false when the Kafka header value was null. */
+  public boolean hasValue() {
+    return value != null;
+  }
+
+  /** The header value, or {@code null} when the Kafka header value was null. */
   public Slice value() {
     return value;
   }
 
+  /** The header value decoded as UTF-8, or {@code null} when the header value was null. */
   public String valueAsUtf8String() {
-    return new String(value.toByteArray(), StandardCharsets.UTF_8);
+    return value == null ? null : new String(value.toByteArray(), StandardCharsets.UTF_8);
   }
 
   /**
    * Decodes the header value with the given SDK {@link Type}, the read-side counterpart of {@code
-   * KafkaEgressMessage.Builder#withHeader(String, Type, Object)}.
+   * KafkaEgressMessage.Builder#withHeader(String, Type, Object)}. Returns {@code null} when the
+   * header value was null.
    */
   public <T> T valueAs(Type<T> type) {
-    return type.typeSerializer().deserialize(value);
+    return value == null ? null : type.typeSerializer().deserialize(value);
   }
 
   @Override
   public String toString() {
-    return "MessageHeader{key='" + key + "', value=" + value.readableBytes() + " bytes}";
+    return "MessageHeader{key='"
+        + key
+        + "', value="
+        + (value == null ? "null" : value.readableBytes() + " bytes")
+        + '}';
   }
 }

@@ -205,6 +205,7 @@ class StateFunK8sE2E {
         new ProducerRecord<>(COUNTER_COMMANDS_TOPIC, counterId, cmd.toByteArray());
     record.headers().add("trace-id", "trace-abc".getBytes(StandardCharsets.UTF_8));
     record.headers().add("bin-header", binaryHeaderValue);
+    record.headers().add("null-header", null);
     producer.send(record).get(10, TimeUnit.SECONDS);
     producer.flush();
     LOG.info("Sent CounterCommand with headers for id={}", counterId);
@@ -231,6 +232,11 @@ class StateFunK8sE2E {
               assertThat(headerValue(result, "processed-by"))
                   .as("header set by the function itself")
                   .isEqualTo("counter-fn".getBytes(StandardCharsets.UTF_8));
+
+              org.apache.kafka.common.header.Header nullEcho =
+                  result.headers().lastHeader("null-header");
+              assertThat(nullEcho).as("null-valued header is echoed, not dropped").isNotNull();
+              assertThat(nullEcho.value()).as("null header value stays null, not empty").isNull();
             });
   }
 

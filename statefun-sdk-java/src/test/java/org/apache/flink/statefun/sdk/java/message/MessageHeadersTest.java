@@ -52,7 +52,8 @@ class MessageHeadersTest {
             .addMetadata(
                 TypedValue.Metadata.newBuilder()
                     .setKey("bin")
-                    .setValue(ByteString.copyFrom(raw)))
+                    .setValue(ByteString.copyFrom(raw))
+                    .setHasValue(true))
             .build();
 
     Message message = new MessageWrapper(TARGET, typedValue);
@@ -67,7 +68,8 @@ class MessageHeadersTest {
             .addMetadata(
                 TypedValue.Metadata.newBuilder()
                     .setKey("raw-bytes")
-                    .setValue(ByteString.copyFrom(new byte[] {1, 2, 3})))
+                    .setValue(ByteString.copyFrom(new byte[] {1, 2, 3}))
+                    .setHasValue(true))
             .addMetadata(metadata("str", "hello"))
             .addMetadata(typedMetadata("int", Types.integerType(), 42))
             .addMetadata(typedMetadata("long", Types.longType(), 42_000_000_000L))
@@ -103,12 +105,31 @@ class MessageHeadersTest {
   }
 
   @Test
-  void messageHeaderDegradesNullsToEmptyInsteadOfThrowing() {
+  void messageHeaderNeverThrowsOnDegenerateInput() {
     MessageHeader header = new MessageHeader(null, null);
 
     assertThat(header.key()).isEmpty();
-    assertThat(header.value().readableBytes()).isZero();
-    assertThat(header.valueAsUtf8String()).isEmpty();
+    assertThat(header.hasValue()).isFalse();
+    assertThat(header.value()).isNull();
+    assertThat(header.valueAsUtf8String()).isNull();
+    assertThat(header.valueAs(Types.integerType())).isNull();
+  }
+
+  @Test
+  void nullValuedKafkaHeaderIsPreservedAsNullValue() {
+    TypedValue typedValue =
+        plainStringValue()
+            .addMetadata(TypedValue.Metadata.newBuilder().setKey("null-header"))
+            .addMetadata(metadata("present", "x"))
+            .build();
+
+    List<MessageHeader> headers = new MessageWrapper(TARGET, typedValue).headers();
+
+    assertThat(headers.get(0).key()).isEqualTo("null-header");
+    assertThat(headers.get(0).hasValue()).isFalse();
+    assertThat(headers.get(0).value()).isNull();
+    assertThat(headers.get(1).hasValue()).isTrue();
+    assertThat(headers.get(1).valueAsUtf8String()).isEqualTo("x");
   }
 
   @Test
@@ -129,13 +150,15 @@ class MessageHeadersTest {
   private static TypedValue.Metadata.Builder metadata(String key, String utf8Value) {
     return TypedValue.Metadata.newBuilder()
         .setKey(key)
-        .setValue(ByteString.copyFromUtf8(utf8Value));
+        .setValue(ByteString.copyFromUtf8(utf8Value))
+        .setHasValue(true);
   }
 
   private static <T> TypedValue.Metadata.Builder typedMetadata(
       String key, org.apache.flink.statefun.sdk.java.types.Type<T> type, T value) {
     return TypedValue.Metadata.newBuilder()
         .setKey(key)
-        .setValue(ByteString.copyFrom(type.typeSerializer().serialize(value).toByteArray()));
+        .setValue(ByteString.copyFrom(type.typeSerializer().serialize(value).toByteArray()))
+        .setHasValue(true);
   }
 }
