@@ -6,9 +6,11 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Stateful actors on Apache Flink — durable per-key state, exactly-once Kafka/Kinesis I/O, Kubernetes-native. Flink 2.2 + Java 21.">
+        <meta name="description" content="A practical walkthrough of upgrading the Apache Flink Kubernetes Operator from 1.11 to 1.15 to run Flink 2.2 — version compatibility, what changed across releases, the flinkVersion change, a conservative configuration audit, and validation.">
       
       
+      
+        <link rel="canonical" href="https://kzmlabs.github.io/flink-statefun/articles/flink-operator-1.15-upgrade/">
       
       
       
@@ -16,19 +18,19 @@
         
       
       
-      <link rel="icon" href="/flink-statefun/assets/favicon-32.png">
+      <link rel="icon" href="../../assets/favicon-32.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
-        <title>StateFun Actors by Kzmlabs</title>
+        <title>Upgrading the Apache Flink Kubernetes Operator from 1.11 to 1.15 for Flink 2.2 - StateFun Actors by Kzmlabs</title>
       
     
     
-      <link rel="stylesheet" href="/flink-statefun/assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
-        <link rel="stylesheet" href="/flink-statefun/assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -47,9 +49,9 @@
       
     
     
-      <link rel="stylesheet" href="/flink-statefun/assets/css/theme.css">
+      <link rel="stylesheet" href="../../assets/css/theme.css">
     
-    <script>__md_scope=new URL("/flink-statefun/",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -62,27 +64,27 @@
   
 
   <!-- App icons (PWA + iOS) -->
-  <link rel="icon" type="image/png" sizes="32x32" href="/flink-statefun/assets/favicon-32.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="/flink-statefun/assets/favicon-192.png">
-  <link rel="icon" type="image/png" sizes="512x512" href="/flink-statefun/assets/favicon-512.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="/flink-statefun/assets/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="../../assets/favicon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="../../assets/favicon-512.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="../../assets/apple-touch-icon.png">
   <meta name="theme-color" content="#0a0e27">
 
   <!-- OpenGraph -->
   <meta property="og:type" content="website">
-  <meta property="og:title" content="StateFun Actors by Kzmlabs">
-  <meta property="og:description" content="Stateful actors on Apache Flink — durable per-key state, exactly-once Kafka/Kinesis I/O, Kubernetes-native. Flink 2.2 + Java 21.">
+  <meta property="og:title" content="Upgrading the Apache Flink Kubernetes Operator from 1.11 to 1.15 for Flink 2.2">
+  <meta property="og:description" content="A practical walkthrough of upgrading the Apache Flink Kubernetes Operator from 1.11 to 1.15 to run Flink 2.2 — version compatibility, what changed across releases, the flinkVersion change, a conservative configuration audit, and validation.">
   <meta property="og:image" content="https://kzmlabs.github.io/flink-statefun/assets/social-preview.png">
   <meta property="og:image:width" content="1280">
   <meta property="og:image:height" content="640">
-  <meta property="og:url" content="https://kzmlabs.github.io/flink-statefun/">
+  <meta property="og:url" content="https://kzmlabs.github.io/flink-statefun/articles/flink-operator-1.15-upgrade/">
   <meta property="og:site_name" content="StateFun Actors by Kzmlabs">
   <meta property="og:locale" content="en_US">
 
   <!-- Twitter card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="StateFun Actors by Kzmlabs">
-  <meta name="twitter:description" content="Stateful actors on Apache Flink — durable per-key state, exactly-once Kafka/Kinesis I/O, Kubernetes-native. Flink 2.2 + Java 21.">
+  <meta name="twitter:title" content="Upgrading the Apache Flink Kubernetes Operator from 1.11 to 1.15 for Flink 2.2">
+  <meta name="twitter:description" content="A practical walkthrough of upgrading the Apache Flink Kubernetes Operator from 1.11 to 1.15 to run Flink 2.2 — version compatibility, what changed across releases, the flinkVersion change, a conservative configuration audit, and validation.">
   <meta name="twitter:image" content="https://kzmlabs.github.io/flink-statefun/assets/social-preview.png">
 
   
@@ -107,6 +109,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#upgrading-the-apache-flink-kubernetes-operator-from-111-to-115-for-flink-22" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -117,9 +124,9 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="/flink-statefun/." title="StateFun Actors by Kzmlabs" class="md-header__button md-logo" aria-label="StateFun Actors by Kzmlabs" data-md-component="logo">
+    <a href="../.." title="StateFun Actors by Kzmlabs" class="md-header__button md-logo" aria-label="StateFun Actors by Kzmlabs" data-md-component="logo">
       
-  <img src="/flink-statefun/assets/logo-horizontal.png" alt="logo">
+  <img src="../../assets/logo-horizontal.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -136,7 +143,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              
+              Upgrading the Apache Flink Kubernetes Operator from 1.11 to 1.15 for Flink 2.2
             
           </span>
         </div>
@@ -250,7 +257,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="/flink-statefun/." class="md-tabs__link">
+      <a href="../.." class="md-tabs__link">
         
   
   
@@ -271,7 +278,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="/flink-statefun/quickstart/" class="md-tabs__link">
+        <a href="../../quickstart/" class="md-tabs__link">
           
   
   
@@ -293,7 +300,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="/flink-statefun/examples/" class="md-tabs__link">
+        <a href="../../examples/" class="md-tabs__link">
           
   
   
@@ -315,7 +322,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="/flink-statefun/guides/kafka-io/" class="md-tabs__link">
+        <a href="../../guides/kafka-io/" class="md-tabs__link">
           
   
   
@@ -337,7 +344,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="/flink-statefun/architecture/" class="md-tabs__link">
+        <a href="../../architecture/" class="md-tabs__link">
           
   
   
@@ -359,7 +366,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="/flink-statefun/articles/" class="md-tabs__link">
+        <a href="../" class="md-tabs__link">
           
   
   
@@ -379,7 +386,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="/flink-statefun/upstream-vs-kzm/" class="md-tabs__link">
+      <a href="../../upstream-vs-kzm/" class="md-tabs__link">
         
   
   
@@ -398,7 +405,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="/flink-statefun/release-process/" class="md-tabs__link">
+      <a href="../../release-process/" class="md-tabs__link">
         
   
   
@@ -435,9 +442,9 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="/flink-statefun/." title="StateFun Actors by Kzmlabs" class="md-nav__button md-logo" aria-label="StateFun Actors by Kzmlabs" data-md-component="logo">
+    <a href="../.." title="StateFun Actors by Kzmlabs" class="md-nav__button md-logo" aria-label="StateFun Actors by Kzmlabs" data-md-component="logo">
       
-  <img src="/flink-statefun/assets/logo-horizontal.png" alt="logo">
+  <img src="../../assets/logo-horizontal.png" alt="logo">
 
     </a>
     StateFun Actors by Kzmlabs
@@ -464,7 +471,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/flink-statefun/." class="md-nav__link">
+      <a href="../.." class="md-nav__link">
         
   
   
@@ -551,7 +558,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/flink-statefun/quickstart/" class="md-nav__link">
+      <a href="../../quickstart/" class="md-nav__link">
         
   
   
@@ -579,7 +586,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/flink-statefun/install/" class="md-nav__link">
+      <a href="../../install/" class="md-nav__link">
         
   
   
@@ -607,7 +614,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/flink-statefun/build/" class="md-nav__link">
+      <a href="../../build/" class="md-nav__link">
         
   
   
@@ -669,7 +676,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="/flink-statefun/examples/" class="md-nav__link ">
+            <a href="../../examples/" class="md-nav__link ">
               
   
   
@@ -713,7 +720,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/flink-statefun/examples/fraud-detection/" class="md-nav__link">
+      <a href="../../examples/fraud-detection/" class="md-nav__link">
         
   
   
@@ -741,7 +748,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/flink-statefun/examples/iot-fleet/" class="md-nav__link">
+      <a href="../../examples/iot-fleet/" class="md-nav__link">
         
   
   
@@ -842,7 +849,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/flink-statefun/guides/kafka-io/" class="md-nav__link">
+      <a href="../../guides/kafka-io/" class="md-nav__link">
         
   
   
@@ -870,7 +877,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/flink-statefun/guides/kafka-headers/" class="md-nav__link">
+      <a href="../../guides/kafka-headers/" class="md-nav__link">
         
   
   
@@ -898,7 +905,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/flink-statefun/guides/kafka-egress-tuning/" class="md-nav__link">
+      <a href="../../guides/kafka-egress-tuning/" class="md-nav__link">
         
   
   
@@ -926,7 +933,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/flink-statefun/guides/kinesis-io/" class="md-nav__link">
+      <a href="../../guides/kinesis-io/" class="md-nav__link">
         
   
   
@@ -954,7 +961,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/flink-statefun/guides/k8s-deployment/" class="md-nav__link">
+      <a href="../../guides/k8s-deployment/" class="md-nav__link">
         
   
   
@@ -982,7 +989,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/flink-statefun/guides/logging/" class="md-nav__link">
+      <a href="../../guides/logging/" class="md-nav__link">
         
   
   
@@ -1044,7 +1051,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="/flink-statefun/architecture/" class="md-nav__link ">
+            <a href="../../architecture/" class="md-nav__link ">
               
   
   
@@ -1088,7 +1095,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/flink-statefun/architecture/shading/" class="md-nav__link">
+      <a href="../../architecture/shading/" class="md-nav__link">
         
   
   
@@ -1116,7 +1123,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/flink-statefun/architecture/e2e-tests/" class="md-nav__link">
+      <a href="../../architecture/e2e-tests/" class="md-nav__link">
         
   
   
@@ -1178,7 +1185,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="/flink-statefun/articles/" class="md-nav__link ">
+            <a href="../" class="md-nav__link ">
               
   
   
@@ -1222,7 +1229,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/flink-statefun/articles/kafka-record-headers/" class="md-nav__link">
+      <a href="../kafka-record-headers/" class="md-nav__link">
         
   
   
@@ -1250,7 +1257,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/flink-statefun/articles/forking-statefun/" class="md-nav__link">
+      <a href="../forking-statefun/" class="md-nav__link">
         
   
   
@@ -1285,7 +1292,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/flink-statefun/upstream-vs-kzm/" class="md-nav__link">
+      <a href="../../upstream-vs-kzm/" class="md-nav__link">
         
   
   
@@ -1312,7 +1319,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/flink-statefun/release-process/" class="md-nav__link">
+      <a href="../../release-process/" class="md-nav__link">
         
   
   
@@ -1349,6 +1356,104 @@
   
   
   
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-operator-gates-your-flink-version" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The operator gates your Flink version
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-changed-between-111-and-115" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What changed between 1.11 and 1.15
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-upgrade" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The upgrade
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#auditing-flinkconfiguration-conservatively" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Auditing flinkConfiguration conservatively
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#logging-the-operator-pod-wont-emit-json-without-a-custom-image" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logging: the operator pod won't emit JSON without a custom image
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#verifying-the-upgrade" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verifying the upgrade
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-to-remember" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What to remember
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#where-to-find-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where to find it
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
   
 </nav>
                   </div>
@@ -1361,7 +1466,158 @@
               
               <article class="md-content__inner md-typeset">
                 
-  <h1>404 - Not found</h1>
+  
+  
+  
+                  
+
+
+  
+    <a href="https://github.com/kzmlabs/flink-statefun/edit/release/docs/articles/flink-operator-1.15-upgrade.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+
+
+<h1 id="upgrading-the-apache-flink-kubernetes-operator-from-111-to-115-for-flink-22">Upgrading the Apache Flink Kubernetes Operator from 1.11 to 1.15 for Flink 2.2<a class="headerlink" href="#upgrading-the-apache-flink-kubernetes-operator-from-111-to-115-for-flink-22" title="Permanent link">&para;</a></h1>
+<p><em>Published 2026-06-17 · by the kzmlabs maintainers</em></p>
+<p>If you run Flink on Kubernetes through the <a href="https://nightlies.apache.org/flink/flink-kubernetes-operator-docs-stable/">Flink Kubernetes Operator</a>, the operator — not your image — decides which Flink version you can declare. You can ship a <code>flink:2.2.0</code> image, but if the operator is too old it won't accept <code>flinkVersion: v2_2</code>, so you pin down to whatever it knows and run a version mismatch on purpose.</p>
+<p>This is what it took to close that gap: moving the operator from <strong>1.11 to 1.15</strong>, switching <code>flinkVersion</code> to <code>v2_2</code>, and doing it without rewriting config that didn't need to change. The worked example is our own migration of <a href="https://github.com/kzmlabs/flink-statefun"><code>kzmlabs/flink-statefun</code></a>, the Stateful Functions continuation on Flink 2.x, but none of it is StateFun-specific — it applies to any Flink app deployed through the operator.</p>
+<h2 id="the-operator-gates-your-flink-version">The operator gates your Flink version<a class="headerlink" href="#the-operator-gates-your-flink-version" title="Permanent link">&para;</a></h2>
+<p>The operator validates the <code>flinkVersion</code> field on a <code>FlinkDeployment</code> against the versions it knows how to reconcile. Too old an operator and the newer value isn't recognized, so you pin down and run a mismatch.</p>
+<p>Support for each Flink version lands in a specific operator release, and each operator supports a rolling window of recent Flink minors. The releases between 1.11 and 1.15:</p>
+<table>
+<thead>
+<tr>
+<th>Operator</th>
+<th>Released</th>
+<th>Supported Flink versions</th>
+<th>Notable additions</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1.11</td>
+<td>Mar 2025</td>
+<td>1.17–1.20, 2.0</td>
+<td>Flink 2.0 (preview); <code>v1_18+</code> version-range config</td>
+</tr>
+<tr>
+<td>1.12</td>
+<td>Jun 2025</td>
+<td>1.17–1.20, 2.0</td>
+<td><code>config.yaml</code> support; Flink 2.x config validation</td>
+</tr>
+<tr>
+<td>1.13</td>
+<td>Sep 2025</td>
+<td>1.19, 1.20, 2.0, 2.1</td>
+<td><strong>Flink 2.1</strong>; structured-YAML <code>flinkConfiguration</code></td>
+</tr>
+<tr>
+<td>1.14</td>
+<td>Feb 2026</td>
+<td>1.19, 1.20, 2.0, 2.1</td>
+<td><code>FlinkBlueGreenDeployment</code> CRD (native blue/green)</td>
+</tr>
+<tr>
+<td>1.15</td>
+<td>May 2026</td>
+<td>1.19, 1.20, 2.0, 2.1, 2.2</td>
+<td><strong>Flink 2.2</strong>; Logback option; bundled metric reporters</td>
+</tr>
+</tbody>
+</table>
+<p>The <em>supported</em> column lists the actively supported (non-deprecated) <code>flinkVersion</code> values each release accepts — older versions stay accepted but deprecated. The gating facts: Flink 2.0 needs operator 1.11+, Flink 2.1 needs 1.13+, and Flink 2.2 needs 1.15+.</p>
+<p>Before 1.15, a Flink 2.2.0 image had to be declared <code>flinkVersion: v2_0</code>. That was the workaround being carried, and the reason for the upgrade.</p>
+<h2 id="what-changed-between-111-and-115">What changed between 1.11 and 1.15<a class="headerlink" href="#what-changed-between-111-and-115" title="Permanent link">&para;</a></h2>
+<p>Jumping from 1.11 to 1.15 crosses four releases. The changes most relevant to an upgrade:</p>
+<ul>
+<li><strong>1.12</strong> — the operator emits Kubernetes events when a job enters <code>FAILED</code> or restarts unexpectedly, controller errors are reported with more context, and Flink's <code>config.yaml</code> format is supported alongside validation of Flink 2.x configuration.</li>
+<li><strong>1.13</strong> — Flink 2.1 support, plus the option to write <code>flinkConfiguration</code> as structured YAML rather than flat strings; also a fix for a job-failure bug when upgrading from 1.12.</li>
+<li><strong>1.14</strong> — native blue/green deployments through a new <code>FlinkBlueGreenDeployment</code> custom resource: zero-downtime upgrades, savepoint-based state hand-off, and rollback. This introduces new cluster-scoped CRDs and RBAC, which a clean Helm chart install picks up automatically.</li>
+<li><strong>1.15</strong> — Flink 2.2 support, an optional Logback logging framework, metric reporters bundled into the Helm chart, and Kubernetes-native status <code>Conditions</code> on <code>FlinkDeployment</code>.</li>
+</ul>
+<h2 id="the-upgrade">The upgrade<a class="headerlink" href="#the-upgrade" title="Permanent link">&para;</a></h2>
+<p>The mechanical part is small. Bump the Helm release:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>helm<span class="w"> </span>repo<span class="w"> </span>add<span class="w"> </span>--force-update<span class="w"> </span>flink-operator-repo<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="s2">&quot;https://archive.apache.org/dist/flink/flink-kubernetes-operator-1.15.0/&quot;</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>helm<span class="w"> </span>repo<span class="w"> </span>update<span class="w"> </span>flink-operator-repo
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>helm<span class="w"> </span>install<span class="w"> </span>flink-kubernetes-operator<span class="w"> </span>flink-operator-repo/flink-kubernetes-operator<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">  </span>--namespace<span class="w"> </span>flink-operator<span class="w"> </span>--create-namespace<span class="w"> </span>--wait<span class="w"> </span>--timeout<span class="w"> </span>5m<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">  </span>--version<span class="w"> </span><span class="s2">&quot;1.15.0&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">  </span>--set<span class="w"> </span>image.tag<span class="o">=</span><span class="s2">&quot;1.15.0&quot;</span>
+</span></code></pre></div>
+<p><code>--force-update</code> overwrites a stale version-specific repo URL left by an earlier run, and <code>--version</code> pins the chart so a repo/version mismatch fails loudly ("chart not found") instead of silently installing the wrong chart against your new <code>image.tag</code>.</p>
+<p>Then change the one field this is all about:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># before</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="nt">spec</span><span class="p">:</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ghcr.io/your-org/your-app:flink-2.2.0</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span><span class="nt">flinkVersion</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;v2_0&quot;</span><span class="w">   </span><span class="c1"># only because the operator capped here</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="c1"># after</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="nt">spec</span><span class="p">:</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">  </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ghcr.io/your-org/your-app:flink-2.2.0</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">  </span><span class="nt">flinkVersion</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;v2_2&quot;</span><span class="w">   </span><span class="c1"># now matches the runtime</span>
+</span></code></pre></div>
+<p>The CRD <code>apiVersion</code> is unchanged — operator 1.15 still serves <code>flink.apache.org/v1beta1</code>, so there's no group/version rewrite in your manifests.</p>
+<h2 id="auditing-flinkconfiguration-conservatively">Auditing <code>flinkConfiguration</code> conservatively<a class="headerlink" href="#auditing-flinkconfiguration-conservatively" title="Permanent link">&para;</a></h2>
+<p>This is where upgrades go sideways. The temptation is to rewrite every <code>flinkConfiguration</code> key to match the latest docs. That's usually a mistake.</p>
+<p><code>flinkVersion</code> drives the operator's reconciler behaviour, not the runtime's config parsing. Your <code>flinkConfiguration</code> map is handed to a Flink 2.2.0 process whether the operator label says <code>v2_0</code> or <code>v2_2</code>. If the job already ran on a 2.2.0 image, those keys were already being parsed by Flink 2.2, and they worked. Bumping <code>flinkVersion</code> doesn't change how the runtime reads them.</p>
+<p>That gives a low-risk rule: only remove or rename a key when you can prove it was removed, renamed, or rejected on the target Flink version. Keys that merely look redundant with defaults stay. Anything ambiguous stays and gets a note instead of a deletion.</p>
+<p>The asymmetry is the argument. Flink warns on unknown config keys and moves on, so a stale key is cosmetic — but a wrongly deleted key is a behaviour change. In our migration the audit changed exactly one thing of substance: <code>flinkVersion</code>. The checkpointing, state-backend, HA, and restart-strategy blocks already ran clean on 2.2.0, so they stayed — verified, not assumed.</p>
+<h2 id="logging-the-operator-pod-wont-emit-json-without-a-custom-image">Logging: the operator pod won't emit JSON without a custom image<a class="headerlink" href="#logging-the-operator-pod-wont-emit-json-without-a-custom-image" title="Permanent link">&para;</a></h2>
+<p>The JobManager and TaskManager can emit JSON cleanly, because they run your application image — you ship the encoder (for example <code>logstash-logback-encoder</code>) and point <code>spec.logConfiguration</code> at a JSON <code>logback-console.xml</code>. The operator upgrade doesn't touch that.</p>
+<p>The operator pod is different. Operator 1.15 can run on Logback through a new <code>logging.framework=logback</code> Helm value, but its base image ships Logback 1.2.x with no JSON encoder on the classpath, and Logback's built-in <code>JsonEncoder</code> only arrived in 1.5.x. JSON logs from the operator pod would mean building a custom operator image to add the encoder.</p>
+<p>We didn't. The operator is an infrastructure controller, not application output, and a custom image to reformat its logs is maintenance you pay again at every operator bump. We left it on the Log4j2 default and kept the application logs as JSON. If your log pipeline genuinely requires JSON from every pod, the custom-image route exists.</p>
+<h2 id="verifying-the-upgrade">Verifying the upgrade<a class="headerlink" href="#verifying-the-upgrade" title="Permanent link">&para;</a></h2>
+<p>Two checks, in order.</p>
+<p>The operator is healthy when the pod is fully ready and the chart and app versions agree — the latter being the detail that catches version skew:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>flink-operator
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="c1"># flink-kubernetes-operator-…  2/2  Running  0  …</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>helm<span class="w"> </span>list<span class="w"> </span>-n<span class="w"> </span>flink-operator
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1"># CHART flink-kubernetes-operator-1.15.0   APP VERSION 1.15.0   STATUS deployed</span>
+</span></code></pre></div>
+<p>The migration is real when a <code>FlinkDeployment</code> on <code>flinkVersion: v2_2</code> reaches <code>READY</code>:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>flinkdeployment<span class="w"> </span>-n<span class="w"> </span>my-app<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.items[*].status.jobManagerDeploymentStatus}&#39;</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="c1"># READY</span>
+</span></code></pre></div>
+<p>Validate on a real cluster, not only in CI. Our end-to-end gate — operator 1.15.0, <code>flinkVersion: v2_2</code>, Kafka and Kinesis I/O against a kind cluster — passed 4/4.</p>
+<h2 id="what-to-remember">What to remember<a class="headerlink" href="#what-to-remember" title="Permanent link">&para;</a></h2>
+<ul>
+<li>The operator gates <code>flinkVersion</code>. Running Flink 2.2 needs operator 1.15+; the image alone isn't enough.</li>
+<li>The functional change is small: a Helm version bump and <code>flinkVersion: v2_0 → v2_2</code>. The CRD <code>apiVersion</code> (<code>v1beta1</code>) is unchanged.</li>
+<li>Audit <code>flinkConfiguration</code> conservatively. <code>flinkVersion</code> is operator-side; the runtime already parses your keys. Don't delete what you can't prove is gone.</li>
+<li>Pin and force-update the Helm install (<code>--version</code> and <code>--force-update</code>) so a stale repo can't install the wrong chart against your new image.</li>
+<li>The operator pod won't give you JSON logs without a custom image; the JM/TM will.</li>
+<li>Validate on a real cluster, not only in CI.</li>
+</ul>
+<h2 id="where-to-find-it">Where to find it<a class="headerlink" href="#where-to-find-it" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Source:</strong> <a href="https://github.com/kzmlabs/flink-statefun">github.com/kzmlabs/flink-statefun</a></li>
+<li><strong>Docs:</strong> <a href="https://kzmlabs.github.io/flink-statefun/">kzmlabs.github.io/flink-statefun</a> — including the <a href="../../guides/k8s-deployment/">Kubernetes deployment guide</a></li>
+<li><strong>Flink Kubernetes Operator:</strong> <a href="https://nightlies.apache.org/flink/flink-kubernetes-operator-docs-stable/">official docs</a></li>
+</ul>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+  
 
               </article>
             </div>
@@ -1429,14 +1685,14 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "/flink-statefun/", "features": ["navigation.tabs", "navigation.sections", "navigation.indexes", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate", "content.action.edit", "toc.follow"], "search": "/flink-statefun/assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.indexes", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate", "content.action.edit", "toc.follow"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="/flink-statefun/assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="https://unpkg.com/mermaid@11/dist/mermaid.min.js"></script>
       
-        <script src="/flink-statefun/assets/js/mermaid-init.js"></script>
+        <script src="../../assets/js/mermaid-init.js"></script>
       
     
   </body>

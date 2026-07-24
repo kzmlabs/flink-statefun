@@ -6,17 +6,17 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="AWS Kinesis ingress and egress configuration for StateFun Actors on Flink 2.x — ARN-keyed routing, LocalStack development, IAM credential modes.">
+        <meta name="description" content="StateFun Actors 3.4.0-KZM-3.4 adds end-to-end Kafka record header support to the Stateful Functions programming model — trace propagation, typed values, Kafka-exact null semantics, and per-topic opt-in.">
       
       
       
-        <link rel="canonical" href="https://kzmlabs.github.io/flink-statefun/guides/kinesis-io/">
+        <link rel="canonical" href="https://kzmlabs.github.io/flink-statefun/articles/kafka-record-headers/">
       
       
-        <link rel="prev" href="../kafka-egress-tuning/">
+        <link rel="prev" href="../">
       
       
-        <link rel="next" href="../k8s-deployment/">
+        <link rel="next" href="../forking-statefun/">
       
       
         
@@ -27,7 +27,7 @@
     
     
       
-        <title>Kinesis I/O - StateFun Actors by Kzmlabs</title>
+        <title>Kafka record headers in Stateful Functions — closing a five-year-old gap - StateFun Actors by Kzmlabs</title>
       
     
     
@@ -76,19 +76,19 @@
 
   <!-- OpenGraph -->
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Kinesis I/O">
-  <meta property="og:description" content="AWS Kinesis ingress and egress configuration for StateFun Actors on Flink 2.x — ARN-keyed routing, LocalStack development, IAM credential modes.">
+  <meta property="og:title" content="Kafka record headers in Stateful Functions">
+  <meta property="og:description" content="StateFun Actors 3.4.0-KZM-3.4 adds end-to-end Kafka record header support to the Stateful Functions programming model — trace propagation, typed values, Kafka-exact null semantics, and per-topic opt-in.">
   <meta property="og:image" content="https://kzmlabs.github.io/flink-statefun/assets/social-preview.png">
   <meta property="og:image:width" content="1280">
   <meta property="og:image:height" content="640">
-  <meta property="og:url" content="https://kzmlabs.github.io/flink-statefun/guides/kinesis-io/">
+  <meta property="og:url" content="https://kzmlabs.github.io/flink-statefun/articles/kafka-record-headers/">
   <meta property="og:site_name" content="StateFun Actors by Kzmlabs">
   <meta property="og:locale" content="en_US">
 
   <!-- Twitter card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Kinesis I/O">
-  <meta name="twitter:description" content="AWS Kinesis ingress and egress configuration for StateFun Actors on Flink 2.x — ARN-keyed routing, LocalStack development, IAM credential modes.">
+  <meta name="twitter:title" content="Kafka record headers in Stateful Functions">
+  <meta name="twitter:description" content="StateFun Actors 3.4.0-KZM-3.4 adds end-to-end Kafka record header support to the Stateful Functions programming model — trace propagation, typed values, Kafka-exact null semantics, and per-topic opt-in.">
   <meta name="twitter:image" content="https://kzmlabs.github.io/flink-statefun/assets/social-preview.png">
 
   
@@ -114,7 +114,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#kinesis-io" class="md-skip">
+        <a href="#kafka-record-headers-in-stateful-functions-closing-a-five-year-old-gap" class="md-skip">
           Skip to content
         </a>
       
@@ -147,7 +147,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Kinesis I/O
+              Kafka record headers in Stateful Functions — closing a five-year-old gap
             
           </span>
         </div>
@@ -322,13 +322,11 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../kafka-io/" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../../guides/kafka-io/" class="md-tabs__link">
           
   
   
@@ -368,11 +366,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../../articles/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
           
   
   
@@ -786,10 +786,8 @@
       
   
   
-    
   
   
-  
     
     
       
@@ -809,22 +807,19 @@
     
     
       
-        
-        
-      
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
         
           
-          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
             
   
   
@@ -842,7 +837,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             
@@ -860,7 +855,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../kafka-io/" class="md-nav__link">
+      <a href="../../guides/kafka-io/" class="md-nav__link">
         
   
   
@@ -888,7 +883,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../kafka-headers/" class="md-nav__link">
+      <a href="../../guides/kafka-headers/" class="md-nav__link">
         
   
   
@@ -916,7 +911,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../kafka-egress-tuning/" class="md-nav__link">
+      <a href="../../guides/kafka-egress-tuning/" class="md-nav__link">
         
   
   
@@ -941,37 +936,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Kinesis I/O
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../guides/kinesis-io/" class="md-nav__link">
         
   
   
@@ -987,109 +955,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#ingress" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Ingress
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Ingress">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#startup-position" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Startup position
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#egress" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Egress
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#aws-credential-modes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        AWS credential modes
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#localstack-development" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        LocalStack development
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#routing-details" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Routing details
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#next-steps" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Next steps
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1102,7 +967,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../k8s-deployment/" class="md-nav__link">
+      <a href="../../guides/k8s-deployment/" class="md-nav__link">
         
   
   
@@ -1130,7 +995,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../logging/" class="md-nav__link">
+      <a href="../../guides/logging/" class="md-nav__link">
         
   
   
@@ -1296,6 +1161,8 @@
       
   
   
+    
+  
   
   
     
@@ -1313,20 +1180,23 @@
     
     
       
+        
+        
+      
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../articles/" class="md-nav__link ">
+            <a href="../" class="md-nav__link ">
               
   
   
@@ -1344,13 +1214,13 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1367,10 +1237,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../articles/kafka-record-headers/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Kafka record headers in Stateful Functions
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1386,6 +1283,114 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-can-statefun-functions-do-with-kafka-headers-now" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What can StateFun functions do with Kafka headers now?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#why-is-10-not-10-worth-a-bullet-point" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why is "10, not \"10\"" worth a bullet point?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-happens-to-null-header-values" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What happens to null header values?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-did-this-land-without-touching-the-runtimes-hot-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How did this land without touching the runtime's hot path?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#doesnt-this-bloat-every-record" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Doesn't this bloat every record?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#can-i-unit-test-functions-that-use-headers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Can I unit-test functions that use headers?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-is-this-tested" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How is this tested?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-do-i-get-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How do I get it?
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1398,7 +1403,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../articles/forking-statefun/" class="md-nav__link">
+      <a href="../forking-statefun/" class="md-nav__link">
         
   
   
@@ -1507,38 +1512,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#ingress" class="md-nav__link">
+  <a href="#what-can-statefun-functions-do-with-kafka-headers-now" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Ingress
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Ingress">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#startup-position" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Startup position
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#egress" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Egress
+        What can StateFun functions do with Kafka headers now?
       
     </span>
   </a>
@@ -1546,10 +1523,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#aws-credential-modes" class="md-nav__link">
+  <a href="#why-is-10-not-10-worth-a-bullet-point" class="md-nav__link">
     <span class="md-ellipsis">
       
-        AWS credential modes
+        Why is "10, not \"10\"" worth a bullet point?
       
     </span>
   </a>
@@ -1557,10 +1534,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#localstack-development" class="md-nav__link">
+  <a href="#what-happens-to-null-header-values" class="md-nav__link">
     <span class="md-ellipsis">
       
-        LocalStack development
+        What happens to null header values?
       
     </span>
   </a>
@@ -1568,10 +1545,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#routing-details" class="md-nav__link">
+  <a href="#how-did-this-land-without-touching-the-runtimes-hot-path" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Routing details
+        How did this land without touching the runtime's hot path?
       
     </span>
   </a>
@@ -1579,10 +1556,43 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#next-steps" class="md-nav__link">
+  <a href="#doesnt-this-bloat-every-record" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Next steps
+        Doesn't this bloat every record?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#can-i-unit-test-functions-that-use-headers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Can I unit-test functions that use headers?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-is-this-tested" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How is this tested?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-do-i-get-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How do I get it?
       
     </span>
   </a>
@@ -1609,7 +1619,7 @@
 
 
   
-    <a href="https://github.com/kzmlabs/flink-statefun/edit/release/docs/guides/kinesis-io.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/kzmlabs/flink-statefun/edit/release/docs/articles/kafka-record-headers.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
     </a>
@@ -1617,127 +1627,98 @@
   
 
 
-<h1 id="kinesis-io">Kinesis I/O<a class="headerlink" href="#kinesis-io" title="Permanent link">&para;</a></h1>
-<blockquote>
-<p>AWS Kinesis Data Streams as ingress and egress, restored on Flink 2.x's <code>KinesisStreamsSource</code> and <code>KinesisStreamsSink</code>. Same routing model as Kafka, just AWS-specific configuration.</p>
-</blockquote>
-<h2 id="ingress">Ingress<a class="headerlink" href="#ingress" title="Permanent link">&para;</a></h2>
-<p>The Kinesis ingress is configured in <code>module.yaml</code> via <code>RoutableKinesisIngressSpec</code>. Routing is keyed by <strong>stream ARN</strong>, not the short name — a Flink 2.x change from the 1.x source.</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">io.statefun.kinesis.v1/ingress</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nt">spec</span><span class="p">:</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example/orders</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span><span class="nt">awsRegion</span><span class="p">:</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">specific</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">    </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-1</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">  </span><span class="nt">awsCredentials</span><span class="p">:</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">profile</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">    </span><span class="nt">profile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">  </span><span class="nt">startupPosition</span><span class="p">:</span>
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">at-timestamp</span>
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">    </span><span class="nt">timestamp</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;2026-04-23T00:00:00.000Z&quot;</span>
-</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">  </span><span class="nt">streams</span><span class="p">:</span>
-</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">stream</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">orders-stream</span>
-</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="w">      </span><span class="nt">streamArn</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arn:aws:kinesis:us-east-1:123456789012:stream/orders-stream</span>
-</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="w">      </span><span class="nt">valueType</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example/Order</span>
-</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="w">      </span><span class="nt">targets</span><span class="p">:</span>
-</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example/order-handler</span>
+<h1 id="kafka-record-headers-in-stateful-functions-closing-a-five-year-old-gap">Kafka record headers in Stateful Functions — closing a five-year-old gap<a class="headerlink" href="#kafka-record-headers-in-stateful-functions-closing-a-five-year-old-gap" title="Permanent link">&para;</a></h1>
+<p><em>Published 2026-07-24 · by the kzmlabs maintainers</em></p>
+<p>Apache Stateful Functions never supported Kafka record headers. Not on the way in — a function had no way to see the headers of the record that invoked it. Not on the way out — the egress builder had topic, key, and value, and nothing else. If your platform standardized on header-borne trace context, tenant tags, or schema hints, StateFun was a black hole in the middle of your pipeline: headers went in, and they never came out.</p>
+<p><a href="https://github.com/kzmlabs/flink-statefun/releases/tag/v3.4.0-KZM-3.4">StateFun Actors 3.4.0-KZM-3.4</a> finally closes that gap for remote functions built with the Java SDK. Here's what shipped, a couple of design decisions we sweated over more than expected (null handling took three iterations), and how to adopt it in a running deployment.</p>
+<h2 id="what-can-statefun-functions-do-with-kafka-headers-now">What can StateFun functions do with Kafka headers now?<a class="headerlink" href="#what-can-statefun-functions-do-with-kafka-headers-now" title="Permanent link">&para;</a></h2>
+<p>Both directions, symmetric API.</p>
+<p><strong>Reading</strong> — a function invoked by a Kafka record sees that record's headers:</p>
+<div class="language-java highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kd">public</span><span class="w"> </span><span class="n">CompletableFuture</span><span class="o">&lt;</span><span class="n">Void</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">apply</span><span class="p">(</span><span class="n">Context</span><span class="w"> </span><span class="n">context</span><span class="p">,</span><span class="w"> </span><span class="n">Message</span><span class="w"> </span><span class="n">message</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">MessageHeader</span><span class="w"> </span><span class="n">header</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">message</span><span class="p">.</span><span class="na">headers</span><span class="p">())</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">        </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">header</span><span class="p">.</span><span class="na">key</span><span class="p">())</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">            </span><span class="k">case</span><span class="w"> </span><span class="s">&quot;traceparent&quot;</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">span</span><span class="p">.</span><span class="na">setParent</span><span class="p">(</span><span class="n">header</span><span class="p">.</span><span class="na">valueAsUtf8String</span><span class="p">());</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">            </span><span class="k">case</span><span class="w"> </span><span class="s">&quot;retry-count&quot;</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">handleRetry</span><span class="p">(</span><span class="n">header</span><span class="p">.</span><span class="na">valueAsInt</span><span class="p">());</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">        </span><span class="p">}</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">    </span><span class="p">...</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="p">}</span>
 </span></code></pre></div>
-<div class="admonition note">
-<p class="admonition-title">ARN required</p>
-<p>The <code>streams:</code> array is required even when <code>streamArn</code> is set. The binder re-keys the routing map by ARN, but <code>valueType</code> and <code>targets</code> still come from the entry. The short <code>stream</code> field is preserved for symmetry with the egress and for human readability.</p>
-</div>
-<h3 id="startup-position">Startup position<a class="headerlink" href="#startup-position" title="Permanent link">&para;</a></h3>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">startupPosition</span><span class="p">:</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">at-timestamp</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">timestamp</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;2026-04-23T00:00:00.000Z&quot;</span><span class="w">     </span><span class="c1"># ISO-8601 string</span>
+<p><strong>Writing</strong> — the egress builder attaches headers to the produced record:</p>
+<div class="language-java highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">context</span><span class="p">.</span><span class="na">send</span><span class="p">(</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span><span class="n">KafkaEgressMessage</span><span class="p">.</span><span class="na">forEgress</span><span class="p">(</span><span class="n">NOTIFICATIONS</span><span class="p">)</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">        </span><span class="p">.</span><span class="na">withTopic</span><span class="p">(</span><span class="s">&quot;notifications&quot;</span><span class="p">)</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">        </span><span class="p">.</span><span class="na">withUtf8Key</span><span class="p">(</span><span class="n">orderId</span><span class="p">)</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">        </span><span class="p">.</span><span class="na">withValue</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">        </span><span class="p">.</span><span class="na">withUtf8Header</span><span class="p">(</span><span class="s">&quot;traceparent&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">traceContext</span><span class="p">)</span><span class="w">  </span><span class="c1">// UTF-8 text</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">        </span><span class="p">.</span><span class="na">withHeader</span><span class="p">(</span><span class="s">&quot;payload-hash&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">hashBytes</span><span class="p">)</span><span class="w">        </span><span class="c1">// raw bytes</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">        </span><span class="p">.</span><span class="na">withHeader</span><span class="p">(</span><span class="s">&quot;retry-count&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">)</span><span class="w">                </span><span class="c1">// binary int — 10, not &quot;10&quot;</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">        </span><span class="p">.</span><span class="na">build</span><span class="p">());</span>
 </span></code></pre></div>
-<table>
-<thead>
-<tr>
-<th><code>startupPosition.type</code></th>
-<th>Meaning</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>latest</code></td>
-<td>Consume from the latest record on each shard</td>
-</tr>
-<tr>
-<td><code>trim-horizon</code></td>
-<td>Consume from the oldest available record</td>
-</tr>
-<tr>
-<td><code>at-timestamp</code></td>
-<td>Consume from records published at or after <code>timestamp</code></td>
-</tr>
-</tbody>
-</table>
-<p><code>timestamp</code> is <strong>always an ISO-8601 string</strong> (<code>yyyy-MM-dd'T'HH:mm:ss.SSSXXX</code>), not a numeric epoch.</p>
-<h2 id="egress">Egress<a class="headerlink" href="#egress" title="Permanent link">&para;</a></h2>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">io.statefun.kinesis.v1/egress</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="nt">spec</span><span class="p">:</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example/notifications</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">  </span><span class="nt">awsRegion</span><span class="p">:</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">specific</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">    </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-1</span>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">  </span><span class="nt">awsCredentials</span><span class="p">:</span>
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">profile</span>
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">    </span><span class="nt">profile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span>
-</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">  </span><span class="nt">streamName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">notifications-stream</span>
-</span></code></pre></div>
-<p>The egress uses Flink 2.x's <code>KinesisStreamsSink.setStreamName()</code>, which takes the <strong>short stream name</strong> (not ARN). <code>streamName</code> is required.</p>
-<h2 id="aws-credential-modes">AWS credential modes<a class="headerlink" href="#aws-credential-modes" title="Permanent link">&para;</a></h2>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Profile (default)</label><label for="__tabbed_1_2">Static keys</label><label for="__tabbed_1_3">Custom</label></div>
-<div class="tabbed-content">
-<div class="tabbed-block">
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nt">awsCredentials</span><span class="p">:</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">profile</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span><span class="nt">profile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span>
-</span></code></pre></div>
-<p>Uses the default AWS SDK credential chain — <code>~/.aws/credentials</code>, env vars, EC2/EKS instance profile.</p>
-</div>
-<div class="tabbed-block">
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nt">awsCredentials</span><span class="p">:</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">basic</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span><span class="nt">accessKeyId</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AKIAIOSFODNN7EXAMPLE</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">  </span><span class="nt">secretAccessKey</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY</span>
-</span></code></pre></div>
-<p>For dev/test only. Don't commit these to a repo.</p>
-</div>
-<div class="tabbed-block">
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nt">awsCredentials</span><span class="p">:</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">custom</span>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">  </span><span class="nt">className</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">com.example.MyCredentialProvider</span>
-</span></code></pre></div>
-<p>Implement an <code>AwsCredentialsProviderFactory</code>; reference it by FQN. For SSO, IAM Roles Anywhere, or other proprietary chains.</p>
-</div>
-</div>
-</div>
-<h2 id="localstack-development">LocalStack development<a class="headerlink" href="#localstack-development" title="Permanent link">&para;</a></h2>
-<p>For local testing without AWS credentials, point at LocalStack via a custom endpoint:</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nt">awsRegion</span><span class="p">:</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">custom-endpoint</span>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">  </span><span class="nt">endpoint</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://localstack.svc:4566</span>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">  </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-1</span>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="nt">awsCredentials</span><span class="p">:</span>
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">basic</span>
-</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">  </span><span class="nt">accessKeyId</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test</span>
-</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="w">  </span><span class="nt">secretAccessKey</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test</span>
-</span></code></pre></div>
-<p><code>AwsRegion.CustomEndpointAwsRegion</code> accepts both <code>http://</code> and <code>https://</code> URIs (the previous HTTPS-only constraint was relaxed for LocalStack development).</p>
-<p>The Kzmlabs E2E gate uses LocalStack as its Kinesis backend — see <a href="../../architecture/e2e-tests/"><code>StateFunKinesisE2E</code></a> for a working reference.</p>
-<h2 id="routing-details">Routing details<a class="headerlink" href="#routing-details" title="Permanent link">&para;</a></h2>
-<p>The Flink 2.x <code>KinesisStreamsSource</code> invokes <code>KinesisDeserializationSchema.deserialize(record, stream, shardId, collector)</code> with the <strong>stream ARN</strong> as the <code>stream</code> argument. <code>RoutableKinesisIngressDeserializer</code> relies on this to look up the routing entry by ARN.</p>
-<p>If you bring a custom deserializer, expect the ARN here, not the short name — this is a Flink 2.x change from the 1.x consumer.</p>
-<h2 id="next-steps">Next steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
-<div class="grid cards">
+<p>The obvious first use case is distributed tracing: a W3C <code>traceparent</code> header can now ride a record from your edge producer, through a StateFun function graph, and out to downstream consumers — the thing that was previously impossible without smuggling trace context inside every payload schema.</p>
+<h2 id="why-is-10-not-10-worth-a-bullet-point">Why is "10, not \"10\"" worth a bullet point?<a class="headerlink" href="#why-is-10-not-10-worth-a-bullet-point" title="Permanent link">&para;</a></h2>
+<p>Kafka headers are raw bytes on the wire — Kafka has no typed headers. Most frameworks make you pick between hand-stringifying numbers or hand-packing byte buffers. The SDK gives you three explicit encodings and never guesses:</p>
 <ul>
-<li><span class="twemoji lg middle"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 19h1a1 1 0 0 1 1 1h7v2h-7a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1H2v-2h7a1 1 0 0 1 1-1h1v-2H4a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1h-7zM4 3h16a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1m5 4h1V5H9zm0 8h1v-2H9zM5 5v2h2V5zm0 8v2h2v-2z"/></svg></span> &nbsp; <strong><a href="../kafka-io/">Kafka I/O</a></strong> — same routing model, Kafka transport.</li>
-<li><span class="twemoji lg middle"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7 2v2h1v14a4 4 0 0 0 4 4 4 4 0 0 0 4-4V4h1V2zm4 14c-.6 0-1-.4-1-1s.4-1 1-1 1 .4 1 1-.4 1-1 1m2-4c-.6 0-1-.4-1-1s.4-1 1-1 1 .4 1 1-.4 1-1 1m1-5h-4V4h4z"/></svg></span> &nbsp; <strong><a href="../../architecture/e2e-tests/">E2E tests</a></strong> — <code>StateFunKinesisE2E</code> exercises this exact pipeline against LocalStack.</li>
-<li><span class="twemoji lg middle"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13.95 13.5h-.23c-.18.11-.26.32-.18.5l.86 2.11c.83-.53 1.46-1.32 1.79-2.25l-2.23-.36zm-3.45.29a.415.415 0 0 0-.38-.29h-.08l-2.22.37c.33.92.96 1.7 1.79 2.23l.85-2.07V14c.04-.05.04-.14.04-.21m1.83.81a.38.38 0 0 0-.51-.15c-.07.05-.12.08-.15.15h-.01l-1.09 1.97c.78.26 1.62.31 2.43.12.14-.03.29-.07.43-.12l-1.09-1.97zm3.45-4.57L14.1 11.5l.01.03a.37.37 0 0 0-.04.53q.075.09.18.12l.01.01 2.17.62c.07-.97-.14-1.95-.65-2.78m-3.11.16c.01.21.18.37.39.36.08 0 .15-.02.21-.05h.01l1.83-1.31a4.45 4.45 0 0 0-2.57-1.24zm-1.94.31c.17.11.4.08.52-.09.05-.06.07-.13.08-.21h.01l.12-2.25c-.15.02-.3.05-.46.08-.8.18-1.54.58-2.12 1.16l1.84 1.31zm-.99 1.69c.2-.05.32-.26.26-.46 0-.08-.05-.14-.11-.19v-.01L8.21 10c-.52.86-.74 1.84-.63 2.82l2.16-.62zm1.64.66.62.3.62-.3.15-.67-.43-.53h-.69l-.43.53zm10.89 1.32L20.5 6.5c-.09-.42-.37-.76-.74-.94l-7.17-3.43c-.37-.17-.81-.17-1.19 0L4.24 5.56c-.37.18-.65.52-.74.94l-1.77 7.67c-.05.2-.05.4 0 .59.01.06.03.12.05.18.03.09.08.19.13.27.03.04.05.08.09.11l4.95 6.18c.02 0 .05.04.05.06.1.09.19.16.28.22.12.08.26.14.4.17.11.05.23.05.32.05h8.12c.07 0 .14-.03.2-.05.05-.01.1-.03.14-.04.04-.02.07-.03.11-.05.05-.02.1-.05.15-.08.12-.08.23-.18.33-.28l.15-.2 4.8-5.98c.1-.12.17-.25.22-.38.02-.06.04-.12.05-.18.05-.19.05-.4 0-.59m-7.43 2.99c.02.06.04.12.07.17-.04.08-.06.17-.03.26.12.24.23.46.38.68.08.11.16.23.24.34 0 .03.03.08.04.12.12.2.06.46-.15.59s-.47.05-.59-.15c-.01-.03-.02-.05-.03-.08-.02-.03-.04-.09-.06-.09-.05-.15-.09-.28-.12-.41-.09-.25-.17-.49-.3-.72a.38.38 0 0 0-.21-.14l-.08-.16c-1.29.48-2.7.48-3.97-.01l-.1.18c-.07.01-.14.04-.19.09-.14.24-.24.49-.33.77-.03.13-.07.26-.12.4-.02 0-.04.07-.06.1a.43.43 0 0 1-.81-.29c.01-.03.03-.05.04-.08.04-.03.04-.08.04-.11.09-.12.16-.23.24-.35.16-.21.29-.45.39-.69a.54.54 0 0 0-.03-.25l.07-.18a5.6 5.6 0 0 1-2.47-3.09l-.2.03a.4.4 0 0 0-.23-.09c-.27.05-.51.13-.77.22-.11.06-.24.11-.37.15-.03.01-.07.02-.13.03a.44.44 0 0 1-.54-.27c-.07-.23.04-.47.28-.55.02 0 .05-.01.08-.01v-.01h.01l.11-.02c.14-.04.28-.04.41-.04.26 0 .52-.06.77-.12.08-.05.14-.11.19-.19l.19-.05c-.21-1.36.1-2.73.86-3.87l-.14-.12c0-.09-.03-.18-.08-.25-.2-.17-.41-.32-.64-.45q-.18-.09-.36-.21c-.02-.02-.06-.05-.08-.07l-.01-.01c-.2-.16-.25-.42-.11-.63.09-.1.21-.15.35-.15q.165.015.3.12l.09.07c.1.09.19.2.28.3.18.19.37.37.58.52.08.04.17.05.26.03l.15.11c.75-.8 1.73-1.36 2.8-1.6.25-.06.52-.1.78-.12l.01-.18a.45.45 0 0 0 .14-.23c.01-.26-.01-.52-.05-.77-.03-.13-.05-.27-.06-.41V5.1c-.02-.24.15-.45.39-.48s.44.15.47.38v.22c-.01.14-.03.28-.06.41-.04.25-.06.51-.05.77.02.1.07.17.14.22l.01.19c1.36.12 2.62.73 3.56 1.72l.16-.12c.09.02.18.01.26-.03.21-.15.41-.33.58-.52.09-.1.18-.2.28-.3.03-.02.07-.06.1-.06.17-.18.44-.18.59 0 .19.16.18.43 0 .6 0 .02-.03.04-.06.06a2.495 2.495 0 0 1-.44.28c-.23.13-.45.28-.64.45-.06.07-.09.15-.08.24l-.16.14a5.44 5.44 0 0 1 .88 3.86l.19.05c.04.08.11.14.19.18.25.07.51.11.77.14h.41c.03.03.08.04.12.05.24.03.4.25.37.49-.05.23-.24.4-.48.37-.03-.01-.07-.01-.07-.02v-.01c-.06 0-.1-.01-.14-.02q-.195-.06-.36-.15c-.26-.1-.5-.17-.77-.21-.09 0-.17 0-.23.08-.07-.01-.13-.02-.19-.03-.41 1.31-1.31 2.41-2.47 3.11"/></svg></span> &nbsp; <strong><a href="../k8s-deployment/">Kubernetes deployment</a></strong> — wiring Kinesis I/O in production with IAM Roles for Service Accounts.</li>
+<li><code>withUtf8Header(key, text)</code> — plain text, readable by any Kafka consumer, <code>kcat</code>, or Connect.</li>
+<li><code>withHeader(key, bytes)</code> — raw bytes, you own the format.</li>
+<li><code>withHeader(key, 10)</code> / <code>withHeader(key, type, value)</code> — the SDK's binary type encodings, decoded losslessly on the read side by <code>valueAsInt()</code>, <code>valueAsLong()</code>, <code>valueAsFloat()</code>, <code>valueAsDouble()</code>, <code>valueAsBoolean()</code>, or <code>valueAs(Type&lt;T&gt;)</code>.</li>
 </ul>
-</div>
+<p>Every read accessor shares one production-safety contract: a null or undecodable value returns <code>null</code> — never an exception inside a live function invocation.</p>
+<h2 id="what-happens-to-null-header-values">What happens to null header values?<a class="headerlink" href="#what-happens-to-null-header-values" title="Permanent link">&para;</a></h2>
+<p>They stay null. This detail is easy to get wrong: Kafka's wire format distinguishes a header whose value is <strong>null</strong> from one whose value is <strong>empty</strong> (a null value encodes as length <code>-1</code>), and <code>Header#value()</code> in the Kafka client legitimately returns <code>null</code>. Protobuf — which carries StateFun's remote-function protocol — cannot represent null bytes.</p>
+<p>Our first cut coerced null to empty bytes. It worked, and it was wrong — we only caught it after actually checking what <code>kafka-clients</code> does (null header values are legal and preserved; null <em>keys</em> are rejected). The fix borrows the idiom StateFun's protocol already uses for exactly this problem: an explicit <code>has_value</code> flag, same as <code>TypedValue.has_value</code>. A null-valued header now goes in as null and comes out as null, which also means echoing headers is lossless:</p>
+<div class="language-java highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">message</span><span class="p">.</span><span class="na">headers</span><span class="p">().</span><span class="na">forEach</span><span class="p">(</span><span class="n">h</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">egress</span><span class="p">.</span><span class="na">withHeader</span><span class="p">(</span><span class="n">h</span><span class="p">.</span><span class="na">key</span><span class="p">(),</span><span class="w"> </span><span class="n">h</span><span class="p">.</span><span class="na">value</span><span class="p">()));</span>
+</span></code></pre></div>
+<h2 id="how-did-this-land-without-touching-the-runtimes-hot-path">How did this land without touching the runtime's hot path?<a class="headerlink" href="#how-did-this-land-without-touching-the-runtimes-hot-path" title="Permanent link">&para;</a></h2>
+<p>The interesting design constraint: an ingress record's payload crosses the whole Flink runtime — router, internal message envelope, feedback loop, request-reply dispatcher — as a single <code>TypedValue</code> protobuf, which the dispatcher copies verbatim into the remote function invocation. There is no side channel.</p>
+<p>So the headers ride the <code>TypedValue</code> itself, as a new repeated <code>metadata</code> field. Additive protobuf, preserved by every serialization boundary in between, delivered to the SDK with <strong>zero changes to flink-core</strong>. Old SDKs parse and ignore the field; new SDKs against old runtimes simply see no metadata. No lockstep upgrade, no savepoint migration, no protocol version bump.</p>
+<p>A pleasant side effect: function-to-function messages can carry headers too — <code>MessageBuilder</code> has the same header API, and forwarding via <code>MessageBuilder.fromMessage(...)</code> preserves them.</p>
+<h2 id="doesnt-this-bloat-every-record">Doesn't this bloat every record?<a class="headerlink" href="#doesnt-this-bloat-every-record" title="Permanent link">&para;</a></h2>
+<p>Only if you ask for it. Ingress header forwarding is <strong>opt-in per topic</strong>, because captured headers cost bytes on every hop — the routable envelope, the Flink shuffle, the HTTP request to your function:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">io.statefun.kafka.v1/ingress</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="nt">spec</span><span class="p">:</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example/orders-in</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">  </span><span class="nt">forwardHeaders</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">          </span><span class="c1"># ingress-level default for all topics</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">  </span><span class="nt">topics</span><span class="p">:</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">topic</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">orders</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">      </span><span class="nt">valueType</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example/Order</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">      </span><span class="nt">targets</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">example/order-fn</span><span class="p p-Indicator">]</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">topic</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">firehose</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">      </span><span class="nt">forwardHeaders</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w">     </span><span class="c1"># per-topic override wins</span>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="w">      </span><span class="nt">valueType</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example/Event</span>
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="w">      </span><span class="nt">targets</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">example/event-fn</span><span class="p p-Indicator">]</span>
+</span></code></pre></div>
+<p>Topics that have not opted in never capture headers — nothing enters the runtime, and <code>Message#headers()</code> returns an empty list. Records on opted-in topics that happen to carry no headers add zero overhead: the hot path guards every allocation behind a header-count check. Egress headers are always available since they are explicit builder calls.</p>
+<h2 id="can-i-unit-test-functions-that-use-headers">Can I unit-test functions that use headers?<a class="headerlink" href="#can-i-unit-test-functions-that-use-headers" title="Permanent link">&para;</a></h2>
+<p>Yes, without touching protobuf. The SDK testing toolkit grew alongside the feature:</p>
+<div class="language-java highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">Message</span><span class="w"> </span><span class="n">message</span><span class="w"> </span><span class="o">=</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">    </span><span class="n">MessageBuilder</span><span class="p">.</span><span class="na">forAddress</span><span class="p">(</span><span class="n">SELF</span><span class="p">)</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">        </span><span class="p">.</span><span class="na">withValue</span><span class="p">(</span><span class="s">&quot;payload&quot;</span><span class="p">)</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">        </span><span class="p">.</span><span class="na">withUtf8Header</span><span class="p">(</span><span class="s">&quot;traceparent&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;00-abc...&quot;</span><span class="p">)</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">        </span><span class="p">.</span><span class="na">withHeader</span><span class="p">(</span><span class="s">&quot;attempt&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">        </span><span class="p">.</span><span class="na">build</span><span class="p">();</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="n">TestContext</span><span class="w"> </span><span class="n">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TestContext</span><span class="p">.</span><span class="na">forTarget</span><span class="p">(</span><span class="n">SELF</span><span class="p">);</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="n">functionUnderTest</span><span class="p">.</span><span class="na">apply</span><span class="p">(</span><span class="n">context</span><span class="p">,</span><span class="w"> </span><span class="n">message</span><span class="p">).</span><span class="na">get</span><span class="p">();</span>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="n">KafkaEgressCapture</span><span class="w"> </span><span class="n">record</span><span class="w"> </span><span class="o">=</span>
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="w">    </span><span class="n">KafkaEgressCapture</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">context</span><span class="p">.</span><span class="na">getSentEgressMessages</span><span class="p">().</span><span class="na">get</span><span class="p">(</span><span class="mi">0</span><span class="p">).</span><span class="na">message</span><span class="p">());</span>
+</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="n">assertThat</span><span class="p">(</span><span class="n">record</span><span class="p">.</span><span class="na">lastHeader</span><span class="p">(</span><span class="s">&quot;traceparent&quot;</span><span class="p">).</span><span class="na">orElseThrow</span><span class="p">().</span><span class="na">valueAsUtf8String</span><span class="p">())</span>
+</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="w">    </span><span class="p">.</span><span class="na">startsWith</span><span class="p">(</span><span class="s">&quot;00-&quot;</span><span class="p">);</span>
+</span></code></pre></div>
+<p><code>KafkaEgressCapture</code> unpacks a captured egress message into topic, key, value, and headers — with <code>lastHeader</code> following Kafka's own last-wins semantics.</p>
+<h2 id="how-is-this-tested">How is this tested?<a class="headerlink" href="#how-is-this-tested" title="Permanent link">&para;</a></h2>
+<p>Around sixty unit tests pin the contract at each seam: duplicate keys, ordering, all six value encodings, null-vs-empty at every boundary, garbage bytes decoding to <code>null</code> instead of throwing. On top of that sits the Kubernetes end-to-end gate every release has to pass anyway — it now produces a record with UTF-8, binary, <em>and</em> null-valued headers into a kind cluster running the Flink Operator, has a remote function echo them, and asserts byte-exact results on the output topic.</p>
+<h2 id="how-do-i-get-it">How do I get it?<a class="headerlink" href="#how-do-i-get-it" title="Permanent link">&para;</a></h2>
+<p><code>3.4.0-KZM-3.4</code> on <a href="https://central.sonatype.com/artifact/io.github.kzmlabs.flinkstatefun/statefun-sdk-java">Maven Central</a> and <a href="https://github.com/kzmlabs/flink-statefun/pkgs/container/flink-statefun">GHCR</a>:</p>
+<div class="language-xml highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nt">&lt;dependency&gt;</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">    </span><span class="nt">&lt;groupId&gt;</span>io.github.kzmlabs.flinkstatefun<span class="nt">&lt;/groupId&gt;</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="nt">&lt;artifactId&gt;</span>statefun-sdk-java<span class="nt">&lt;/artifactId&gt;</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">    </span><span class="nt">&lt;version&gt;</span>3.4.0-KZM-3.4<span class="nt">&lt;/version&gt;</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="nt">&lt;/dependency&gt;</span>
+</span></code></pre></div>
+<p>Existing deployments upgrade in place — the protocol change is strictly additive, and header forwarding stays off until a topic opts in, so nothing changes behavior until you say so.</p>
+<p>Full reference: <strong><a href="https://kzmlabs.github.io/flink-statefun/guides/kafka-headers/">the Kafka record headers guide</a></strong>. Background on the fork itself: <strong><a href="../forking-statefun/">We forked Apache Stateful Functions for Flink 2.x — here's why</a></strong>.</p>
 
 
 

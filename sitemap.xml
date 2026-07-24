@@ -45,7 +45,15 @@
          <lastmod>2026-07-24</lastmod>
     </url>
     <url>
+         <loc>https://kzmlabs.github.io/flink-statefun/articles/flink-operator-1.15-upgrade/</loc>
+         <lastmod>2026-07-24</lastmod>
+    </url>
+    <url>
          <loc>https://kzmlabs.github.io/flink-statefun/articles/forking-statefun/</loc>
+         <lastmod>2026-07-24</lastmod>
+    </url>
+    <url>
+         <loc>https://kzmlabs.github.io/flink-statefun/articles/kafka-record-headers/</loc>
          <lastmod>2026-07-24</lastmod>
     </url>
     <url>

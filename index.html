@@ -1410,6 +1410,8 @@
       
         
       
+        
+      
     
     
     
@@ -1462,6 +1464,34 @@
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="articles/kafka-record-headers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Kafka record headers in Stateful Functions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
               
             
               
@@ -1812,7 +1842,7 @@
 <tr>
 <th></th>
 <th>Apache StateFun 3.4.0</th>
-<th>StateFun Actors KZM-3.3</th>
+<th>StateFun Actors KZM-3.4</th>
 </tr>
 </thead>
 <tbody>
@@ -1859,6 +1889,7 @@
 <li><strong>Per-key durable state</strong> — read and write your function's own state without manually wiring Flink keyed-state primitives.</li>
 <li><strong>Exactly-once messaging</strong> between functions and to/from external systems, riding Flink's checkpointing.</li>
 <li><strong>Polyglot remote functions</strong> — write functions as HTTP endpoints in any language; the runtime owns state and routing.</li>
+<li><strong>Kafka record headers, end-to-end</strong> <em>(new in KZM-3.4)</em> — functions read the headers of the record that triggered them and set headers on egress records, with Kafka-exact null semantics and per-topic opt-in. <a href="guides/kafka-headers/">Guide →</a></li>
 <li><strong>Deployment flexibility</strong> — embedded in Flink, co-located with the JobManager, or remote HTTP services scaled independently.</li>
 <li><strong>Production-grade releases</strong> — every version is gated on a real K8s end-to-end run with the Flink Operator, Kafka, S3 checkpoints, and the actual remote-function pod.</li>
 </ul>
@@ -1881,7 +1912,7 @@
 <h2 id="project-status-and-security">Project status and security<a class="headerlink" href="#project-status-and-security" title="Permanent link">&para;</a></h2>
 <p>Releases are signed via Sigstore keyless attestation, scanned with Trivy, and tracked by <a href="https://scorecard.dev/viewer/?uri=github.com/kzmlabs/flink-statefun">OpenSSF Scorecard</a>. Container images carry SLSA build provenance.</p>
 <p>Verify a release artifact with the GitHub CLI:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>gh<span class="w"> </span>attestation<span class="w"> </span>verify<span class="w"> </span>oci://ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.3<span class="w"> </span>--owner<span class="w"> </span>kzmlabs
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>gh<span class="w"> </span>attestation<span class="w"> </span>verify<span class="w"> </span>oci://ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.4<span class="w"> </span>--owner<span class="w"> </span>kzmlabs
 </span></code></pre></div>
 <h2 id="where-next">Where next<a class="headerlink" href="#where-next" title="Permanent link">&para;</a></h2>
 <table>

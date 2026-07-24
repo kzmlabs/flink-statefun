@@ -16,7 +16,7 @@
         <link rel="prev" href="../architecture/e2e-tests/">
       
       
-        <link rel="next" href="forking-statefun/">
+        <link rel="next" href="kafka-record-headers/">
       
       
         
@@ -1174,6 +1174,8 @@
       
         
       
+        
+      
     
     
     
@@ -1229,6 +1231,34 @@
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="kafka-record-headers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Kafka record headers in Stateful Functions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
               
             
               
@@ -1389,8 +1419,14 @@
 <p>Long-form notes from the maintainers — the design decisions, migration playbooks, and engineering lessons behind running stateful actors on Apache Flink 2.x.</p>
 <h2 id="latest">Latest<a class="headerlink" href="#latest" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="forking-statefun/"><strong>We forked Apache Stateful Functions for Flink 2.x — here's why</strong></a>
-  Why the project exists, what we changed under the hood, what stayed the same for upstream users, and where this fits versus Kafka Streams, ksqlDB, and Akka. <em>2026-05-03</em></li>
+<li>
+<p><a href="kafka-record-headers/"><strong>Kafka record headers in Stateful Functions — closing a five-year-old gap</strong></a>
+  End-to-end header support lands in KZM-3.4: trace propagation through function graphs, typed header values, Kafka-exact null semantics, per-topic opt-in — and the protocol trick that made it possible without touching the runtime's hot path. <em>2026-07-24</em></p>
+</li>
+<li>
+<p><a href="forking-statefun/"><strong>We forked Apache Stateful Functions for Flink 2.x — here's why</strong></a>
+  Why the project exists, what we changed under the hood, what stayed the same for upstream users, and where this fits versus Kafka Streams, ksqlDB, and Akka. <em>2026-05-03</em></p>
+</li>
 </ul>
 
 
