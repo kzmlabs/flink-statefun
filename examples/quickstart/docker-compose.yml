@@ -80,8 +80,8 @@ services:
         state.checkpoints.dir: file:///tmp/flink/checkpoints
         statefun.flink-job-name: statefun-quickstart
         statefun.remote.module-name: file:///opt/statefun/module.yaml
-        execution.restart-strategy.type: fixed-delay
-        execution.restart-strategy.fixed-delay.attempts: 3
+        restart-strategy.type: fixed-delay
+        restart-strategy.fixed-delay.attempts: 3
     healthcheck:
       test: ["CMD-SHELL", "curl -sf http://localhost:8081/overview > /dev/null"]
       interval: 5s

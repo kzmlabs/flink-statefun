@@ -27,9 +27,9 @@ public class EmbeddedSmokeHarnessTest {
     harness.withConfiguration(
         "classloader.parent-first-patterns.additional",
         "org.apache.flink.statefun;org.apache.kafka;com.google.protobuf");
-    harness.withConfiguration("execution.restart-strategy.type", "fixed-delay");
-    harness.withConfiguration("execution.restart-strategy.fixed-delay.attempts", "2147483647");
-    harness.withConfiguration("execution.restart-strategy.fixed-delay.delay", "1sec");
+    harness.withConfiguration("restart-strategy.type", "fixed-delay");
+    harness.withConfiguration("restart-strategy.fixed-delay.attempts", "2147483647");
+    harness.withConfiguration("restart-strategy.fixed-delay.delay", "1sec");
     harness.withConfiguration("execution.checkpointing.interval", "2sec");
     harness.withConfiguration("execution.checkpointing.mode", "EXACTLY_ONCE");
     harness.withConfiguration("execution.checkpointing.max-concurrent-checkpoints", "3");
