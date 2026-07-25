@@ -202,13 +202,13 @@ That's the entire deployment configuration. Three blocks, twenty-five lines.
 
 ## Testing locally
 
-With the [quickstart stack](../quickstart.md) running, send a synthetic burst:
+The [quickstart stack](../quickstart.md) ships only the greeter module, so first point its `module.yaml` at this example's module (the ingress/egress blocks above), deploy the `payments/card-risk` function service, and create the `payments.swipes` / `risk.alerts` topics. With that in place, send a synthetic burst:
 
 ```bash
 for i in $(seq 1 5); do
   echo "card-42:{\"card_id\":\"card-42\",\"amount_usd\":12.50,\"city\":\"Berlin\",\"country\":\"DE\",\"timestamp\":$(date +%s%3N),\"merchant\":\"shop\"}" \
-    | docker exec -i statefun-kafka kafka-console-producer \
-        --broker-list localhost:9092 --topic payments.swipes \
+    | docker exec -i quickstart-kafka /opt/kafka/bin/kafka-console-producer.sh \
+        --bootstrap-server localhost:9092 --topic payments.swipes \
         --property "parse.key=true" --property "key.separator=:"
   sleep 0.1
 done
@@ -217,7 +217,7 @@ done
 Watch the alerts:
 
 ```bash
-docker exec statefun-kafka kafka-console-consumer \
+docker exec quickstart-kafka /opt/kafka/bin/kafka-console-consumer.sh \
   --bootstrap-server localhost:9092 \
   --topic risk.alerts --from-beginning
 ```

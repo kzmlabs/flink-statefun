@@ -65,6 +65,7 @@ nav:
   - Getting started:
       - Quickstart: quickstart.md
       - Install: install.md
+      - Snapshot builds: snapshots.md
       - Building from source: build.md
   - Examples:
       - Overview: examples/index.md
@@ -81,9 +82,20 @@ nav:
       - Overview: architecture/index.md
       - Shading layer: architecture/shading.md
       - End-to-end tests: architecture/e2e-tests.md
+  - Decisions:
+      - Decision records: adr/index.md
+      - "0001: Fork for Flink 2.x": adr/0001-fork-statefun-for-flink-2.md
+      - "0002: Kafka Source/Sink V2": adr/0002-kafka-io-source-sink-v2.md
+      - "0003: Kinesis I/O + LocalStack": adr/0003-restore-kinesis-io-localstack.md
+      - "0004: K8s E2E release gate": adr/0004-k8s-native-e2e-release-gate.md
+      - "0005: Kafka record headers": adr/0005-kafka-record-headers.md
+      - "0006: Operator 1.15, v2_2": adr/0006-operator-1-15-flink-v2-2.md
+      - "0007: Restart-strategy keys": adr/0007-restart-strategy-key-names.md
+      - "0008: Kafka invalid-record handling": adr/0008-kafka-invalid-record-handling.md
   - Articles:
       - Overview: articles/index.md
       - Kafka record headers in Stateful Functions: articles/kafka-record-headers.md
+      - Upgrading to Flink Operator 1.15: articles/flink-operator-1.15-upgrade.md
       - We forked Apache Stateful Functions for Flink 2.x: articles/forking-statefun.md
   - Differences from Apache StateFun: upstream-vs-kzm.md
   - Release process: release-process.md

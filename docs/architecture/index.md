@@ -65,6 +65,34 @@ Each function instance has a typed `AddressScopedStorage`:
 
 You declare state via `ValueSpec`s on the function spec; the runtime gives you a typed handle inside `Context`.
 
+## Message flow
+
+One record's journey through the job, from Kafka partition to egress topic. This is also the map for reasoning about failure: a record that cannot be deserialized fails inside the source (before routing), while a record for an unknown function type fails at dispatch, after it has entered checkpointed state.
+
+```mermaid
+sequenceDiagram
+    participant K as Kafka topic
+    participant S as KafkaSource<br/>(deserializer)
+    participant R as Router
+    participant D as Function dispatch<br/>(feedback union)
+    participant F as Remote function<br/>(HTTP)
+    participant E as Kafka egress
+
+    K->>S: record (key, value, headers)
+    S->>S: key -> function id<br/>value -> payload<br/>headers -> metadata
+    S->>R: AutoRoutable
+    R->>D: TypedValue to Address(ns/name, id)
+    D->>F: POST /statefun (batch)
+    F-->>D: state deltas + outgoing messages
+    D->>E: egress records
+    Note over D,E: state update + egress commit<br/>ride the same checkpoint
+```
+
+Two properties fall out of this picture:
+
+- **The failure unit is the whole job.** Every ingress, function and egress runs in one Flink job; an unhandled error anywhere in the flow restarts everything ([ADR-0007](../adr/0007-restart-strategy-key-names.md), [ADR-0008](../adr/0008-kafka-invalid-record-handling.md)).
+- **The record key is the function identity.** The Kafka key becomes the function instance id, which is why keys are mandatory on routable ingresses and why per-key ordering holds end to end.
+
 ## Deployment topology
 
 The same code can run in three modes, picked at deployment time:
@@ -89,6 +117,7 @@ Egress to Kafka uses Kafka transactions; egress to Kinesis uses idempotent produ
 
 - :material-package-variant-closed:{ .lg .middle } &nbsp; **[Shading layer](shading.md)** — how Protobuf is relocated so StateFun and your code can use different versions on the same classpath.
 - :material-test-tube:{ .lg .middle } &nbsp; **[End-to-end tests](e2e-tests.md)** — the Kubernetes-native release gate, what it covers, and how to run it locally.
+- :material-file-document-check:{ .lg .middle } &nbsp; **[Decision records](../adr/index.md)** — the ADR log: every significant technical decision with its context and consequences.
 
 </div>
 

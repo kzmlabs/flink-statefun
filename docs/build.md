@@ -90,19 +90,12 @@ Default empty pulls directly from Docker Hub — no behaviour change for the typ
 
 ## Code formatting
 
-The project enforces **Google Java Format** (2-space indent) via [Spotless](https://github.com/diffplug/spotless):
-
-```bash
-./mvnw spotless:apply -pl <module>     # auto-fix
-./mvnw spotless:check                   # CI gate — fails on drift
-```
-
-Run before committing — CI rejects formatting drift.
+The codebase follows **Google Java Format** (2-space indent). There is no formatter plugin in the build; format via your IDE's google-java-format integration (or the standalone [google-java-format](https://github.com/google/google-java-format) tool) before committing, and match the surrounding style when editing existing files.
 
 ## Contribution workflow
 
 1. Branch from `release` (the active development branch).
-2. Make changes; run `./mvnw spotless:apply` and `./mvnw -Dskip.k8s.e2e install` locally.
+2. Make changes; run `./mvnw -Dskip.k8s.e2e install` locally.
 3. Open a PR against `release`. CI runs the full K8s E2E gate, CodeQL, Scorecard, Trivy, and dep-convergence enforcer.
 4. Merge via the merge queue once green.
 

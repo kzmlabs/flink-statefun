@@ -19,8 +19,10 @@ description: Migration guide from Apache Stateful Functions 3.4.0 to StateFun Ac
 | **Active CI** | Inactive after 3.4.0 | Ongoing — Dependabot, CodeQL, Scorecard, Trivy |
 | **K8s deployment** | Examples in docs | **K8s-native E2E gate** via Flink Operator + LocalStack |
 | **Docker image** | `apache/flink-statefun:3.4.0` (Flink 1.16) | `ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.4` (Flink 2.2) |
-| **Test framework** | JUnit 4 | JUnit Jupiter 5.11 |
+| **Test framework** | JUnit 4 | JUnit Jupiter (6.x) |
 | **Release cadence** | Dormant | Active (Maven Central + GHCR) |
+
+Each fork-side decision has a record explaining its context and consequences: see the [decision log](adr/index.md). The most relevant per row: fork rationale [ADR-0001](adr/0001-fork-statefun-for-flink-2.md), Kafka connector migration [ADR-0002](adr/0002-kafka-io-source-sink-v2.md), Kinesis restoration [ADR-0003](adr/0003-restore-kinesis-io-localstack.md), E2E gate [ADR-0004](adr/0004-k8s-native-e2e-release-gate.md), record headers [ADR-0005](adr/0005-kafka-record-headers.md).
 
 ## Migrating user code
 

@@ -12,7 +12,7 @@ description: The Kubernetes-native end-to-end test gate that runs before every S
 | Component | What it provides |
 |---|---|
 | **`kind`** | A throwaway single-node Kubernetes cluster, provisioned per test run |
-| **Flink Kubernetes Operator 1.11** | Same Operator a production user would deploy |
+| **Flink Kubernetes Operator 1.15** | Same Operator a production user would deploy |
 | **Apache Kafka 3.9** | Single-broker KRaft mode, dual listener (cluster + port-forward) |
 | **LocalStack 4.1** | Emulates Kinesis (Kinesis test path) and S3 (checkpoint storage) |
 | **Remote function pod** | Multi-stage jlink-stripped Alpine image, ~80 MB |
@@ -79,7 +79,7 @@ The E2E gate uses the same Operator, the same image, the same Kafka, and the sam
 
 Specifically:
 
-- **The Flink Operator** is unmodified upstream 1.11
+- **The Flink Operator** is unmodified upstream 1.15
 - **Kafka** runs the apache/kafka image (not a mock)
 - **The remote function** is built from the same Dockerfile as production fixtures, just under a different artifact name
 - **Checkpoints** are written to LocalStack S3 with the same Flink S3 plugin used in production

@@ -261,7 +261,14 @@ spec:
 
 ## Testing locally
 
-Spin up the [quickstart stack](../quickstart.md) with the LocalStack add-on, create the streams:
+The [quickstart stack](../quickstart.md) is Kafka-only, so for Kinesis start a LocalStack container alongside it and point this example's `awsRegion` blocks at it (`type: custom-endpoint`, `endpoint: http://localhost:4566`, credentials `test`/`test`), swapping the quickstart `module.yaml` for the blocks above:
+
+```bash
+docker run -d --name statefun-localstack -p 4566:4566 \
+  -e SERVICES=kinesis localstack/localstack:4.1
+```
+
+Create the streams:
 
 ```bash
 docker exec statefun-localstack awslocal kinesis create-stream \

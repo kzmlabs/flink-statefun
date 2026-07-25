@@ -173,7 +173,7 @@ Contributions are welcome. See **[CONTRIBUTING.md](CONTRIBUTING.md)** for the wo
 In short:
 
 1. Branch from `release`.
-2. Run `./mvnw spotless:apply` and `./mvnw -Dskip.k8s.e2e install` locally.
+2. Run `./mvnw -Dskip.k8s.e2e install` locally.
 3. Open a PR against `release`. CI runs the full K8s E2E gate.
 
 ## Security
