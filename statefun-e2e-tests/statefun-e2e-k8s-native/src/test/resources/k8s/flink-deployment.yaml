@@ -51,9 +51,12 @@ spec:
     statefun.flink-job-name: statefun-k8s-e2e
     statefun.remote.module-name: "file:///opt/statefun/module.yaml"
     # --- Restart strategy ---
-    execution.restart-strategy.type: fixed-delay
-    execution.restart-strategy.fixed-delay.attempts: "3"
-    execution.restart-strategy.fixed-delay.delay: "5s"
+    # NOTE: keys are restart-strategy.* (no execution. prefix) — Flink 2.x
+    # silently ignores execution.restart-strategy.* and falls back to the
+    # default exponential-delay strategy with unlimited attempts.
+    restart-strategy.type: fixed-delay
+    restart-strategy.fixed-delay.attempts: "3"
+    restart-strategy.fixed-delay.delay: "5s"
     # --- Pipeline ---
     pipeline.auto-generate-uids: "false"
     execution.savepoint.ignore-unclaimed-state: "true"

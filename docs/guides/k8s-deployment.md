@@ -103,7 +103,7 @@ Flink 2.x renamed several configuration keys. The differences most likely to bit
 |---|---|
 | `state.backend` | `state.backend.type` |
 | `high-availability` | `high-availability.type` |
-| `restart-strategy` | `execution.restart-strategy.type` |
+| `restart-strategy` | `restart-strategy.type` |
 
 !!! warning "Use the fully-qualified keys"
 

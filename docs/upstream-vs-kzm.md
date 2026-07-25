@@ -54,20 +54,25 @@ Flink 2.x renamed several keys. Update your `module.yaml` / Operator config:
 |---|---|
 | `state.backend` | `state.backend.type` |
 | `high-availability` | `high-availability.type` |
-| `restart-strategy` | `execution.restart-strategy.type` |
+| `restart-strategy` | `restart-strategy.type` |
 
 Flink 2.x silently ignores the short forms, so the symptom is "the cluster comes up but with default values."
 
 ### 2. Restart strategy
 
-Flink 2.x's restart strategy uses the `execution.restart-strategy.*` prefix:
+Flink 2.x's restart strategy keys use the `restart-strategy.*` prefix with an explicit `.type`:
 
 ```yaml
 flinkConfiguration:
-  execution.restart-strategy.type: fixed-delay
-  execution.restart-strategy.fixed-delay.attempts: 3
-  execution.restart-strategy.fixed-delay.delay: 10s
+  restart-strategy.type: fixed-delay
+  restart-strategy.fixed-delay.attempts: 3
+  restart-strategy.fixed-delay.delay: 10s
 ```
+
+Do not add an `execution.` prefix to these keys. Flink 2.x silently ignores
+`execution.restart-strategy.*` and falls back to the default exponential-delay strategy
+with unlimited restart attempts, which turns any poison-pill record into an infinite
+restart loop instead of a terminal job failure.
 
 ### 3. Kinesis routing (if you use Kinesis I/O)
 
