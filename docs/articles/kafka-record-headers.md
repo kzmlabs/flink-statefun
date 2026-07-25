@@ -45,7 +45,7 @@ context.send(
 
 The obvious first use case is distributed tracing: a W3C `traceparent` header can now ride a record from your edge producer, through a StateFun function graph, and out to downstream consumers. That was previously impossible without smuggling trace context inside every payload schema.
 
-## Why is "10, not \"10\"" worth a bullet point?
+## Why is 10, not "10", worth a bullet point?
 
 Kafka headers are raw bytes on the wire; Kafka has no typed headers. Most frameworks make you pick between hand-stringifying numbers or hand-packing byte buffers. The SDK gives you three explicit encodings and never guesses:
 

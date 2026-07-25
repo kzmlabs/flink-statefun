@@ -118,7 +118,7 @@ Apache StateFun 3.4.0 itself targets Flink 1.16 and Java 11. The `KZM-x.y` line 
 </repositories>
 ```
 
-Use snapshots for testing fixes before they're released; pin a stable version for production.
+Use snapshots for testing fixes before they're released; pin a stable version for production. The [snapshot builds page](snapshots.md) covers the full consumer setup, including the GitHub Packages channel and authentication.
 
 ## Next steps
 
