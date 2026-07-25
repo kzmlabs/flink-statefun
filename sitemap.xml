@@ -29,6 +29,42 @@
          <lastmod>2026-07-25</lastmod>
     </url>
     <url>
+         <loc>https://kzmlabs.github.io/flink-statefun/adr/</loc>
+         <lastmod>2026-07-25</lastmod>
+    </url>
+    <url>
+         <loc>https://kzmlabs.github.io/flink-statefun/adr/0001-fork-statefun-for-flink-2/</loc>
+         <lastmod>2026-07-25</lastmod>
+    </url>
+    <url>
+         <loc>https://kzmlabs.github.io/flink-statefun/adr/0002-kafka-io-source-sink-v2/</loc>
+         <lastmod>2026-07-25</lastmod>
+    </url>
+    <url>
+         <loc>https://kzmlabs.github.io/flink-statefun/adr/0003-restore-kinesis-io-localstack/</loc>
+         <lastmod>2026-07-25</lastmod>
+    </url>
+    <url>
+         <loc>https://kzmlabs.github.io/flink-statefun/adr/0004-k8s-native-e2e-release-gate/</loc>
+         <lastmod>2026-07-25</lastmod>
+    </url>
+    <url>
+         <loc>https://kzmlabs.github.io/flink-statefun/adr/0005-kafka-record-headers/</loc>
+         <lastmod>2026-07-25</lastmod>
+    </url>
+    <url>
+         <loc>https://kzmlabs.github.io/flink-statefun/adr/0006-operator-1-15-flink-v2-2/</loc>
+         <lastmod>2026-07-25</lastmod>
+    </url>
+    <url>
+         <loc>https://kzmlabs.github.io/flink-statefun/adr/0007-restart-strategy-key-names/</loc>
+         <lastmod>2026-07-25</lastmod>
+    </url>
+    <url>
+         <loc>https://kzmlabs.github.io/flink-statefun/adr/0008-kafka-invalid-record-handling/</loc>
+         <lastmod>2026-07-25</lastmod>
+    </url>
+    <url>
          <loc>https://kzmlabs.github.io/flink-statefun/architecture/</loc>
          <lastmod>2026-07-25</lastmod>
     </url>
