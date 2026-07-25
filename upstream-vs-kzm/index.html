@@ -1759,18 +1759,22 @@
 </tr>
 <tr>
 <td><code>restart-strategy</code></td>
-<td><code>execution.restart-strategy.type</code></td>
+<td><code>restart-strategy.type</code></td>
 </tr>
 </tbody>
 </table>
 <p>Flink 2.x silently ignores the short forms, so the symptom is "the cluster comes up but with default values."</p>
 <h3 id="2-restart-strategy">2. Restart strategy<a class="headerlink" href="#2-restart-strategy" title="Permanent link">&para;</a></h3>
-<p>Flink 2.x's restart strategy uses the <code>execution.restart-strategy.*</code> prefix:</p>
+<p>Flink 2.x's restart strategy keys use the <code>restart-strategy.*</code> prefix with an explicit <code>.type</code>:</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">flinkConfiguration</span><span class="p">:</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">execution.restart-strategy.type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fixed-delay</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">execution.restart-strategy.fixed-delay.attempts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span><span class="nt">execution.restart-strategy.fixed-delay.delay</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10s</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">restart-strategy.type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fixed-delay</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">restart-strategy.fixed-delay.attempts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span><span class="nt">restart-strategy.fixed-delay.delay</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10s</span>
 </span></code></pre></div>
+<p>Do not add an <code>execution.</code> prefix to these keys. Flink 2.x silently ignores
+<code>execution.restart-strategy.*</code> and falls back to the default exponential-delay strategy
+with unlimited restart attempts, which turns any poison-pill record into an infinite
+restart loop instead of a terminal job failure.</p>
 <h3 id="3-kinesis-routing-if-you-use-kinesis-io">3. Kinesis routing (if you use Kinesis I/O)<a class="headerlink" href="#3-kinesis-routing-if-you-use-kinesis-io" title="Permanent link">&para;</a></h3>
 <p>Flink 2.x's <code>KinesisStreamsSource</code> invokes <code>KinesisDeserializationSchema.deserialize(record, stream, shardId, collector)</code> with the <strong>stream ARN</strong> as the <code>stream</code> argument (Flink 1.x passed the short name).</p>
 <p>The Kzmlabs SDK handles this transparently when you use <code>RoutableKinesisIngressSpec</code>. Custom deserializers must be updated to expect the ARN.</p>
