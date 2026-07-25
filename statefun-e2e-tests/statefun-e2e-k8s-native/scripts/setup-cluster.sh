@@ -86,9 +86,10 @@ kind load docker-image flink-statefun:e2e            --name "${CLUSTER_NAME}"
 kind load docker-image statefun-remote-function:e2e  --name "${CLUSTER_NAME}"
 
 # Pre-load infra images so kubelet doesn't pull on cold cache and overrun the
-# 180s readiness wait. Explicit --platform keeps the docker-save tarball
-# single-platform; kind load uses `ctr images import --all-platforms` and
-# otherwise fails on multi-arch manifest lists.
+# 180s readiness wait. Images go through an explicit single-platform
+# `docker save` archive: `kind load docker-image` imports with
+# --all-platforms, which fails on Docker's containerd image store where the
+# multi-arch manifest list references layers that were never pulled.
 echo "=== Pre-loading infra images into kind ==="
 # Match the kind node's actual architecture (which can differ from the host's
 # when KIND_NODE_IMAGE pins a specific platform), fall back to host uname.
@@ -102,9 +103,17 @@ PRELOAD_IMAGES=(
   "${IMAGE_REGISTRY_PREFIX}apache/kafka:3.9.0"
   "${IMAGE_REGISTRY_PREFIX}localstack/localstack:4.1"
 )
+PRELOAD_TMPDIR="$(mktemp -d)"
+trap 'rm -rf "${PRELOAD_TMPDIR}"' EXIT
 for img in "${PRELOAD_IMAGES[@]}"; do
   docker pull --platform "${PRELOAD_PLATFORM}" "${img}"
-  kind load docker-image "${img}" --name "${CLUSTER_NAME}"
+  tarball="${PRELOAD_TMPDIR}/$(echo "${img}" | tr '/:' '__').tar"
+  # --platform requires a recent engine; classic-store pulls are already
+  # single-platform, so plain save is an equivalent fallback there.
+  docker save --platform "${PRELOAD_PLATFORM}" "${img}" -o "${tarball}" 2>/dev/null \
+    || docker save "${img}" -o "${tarball}"
+  kind load image-archive "${tarball}" --name "${CLUSTER_NAME}"
+  rm -f "${tarball}"
 done
 
 # --- cert-manager + Flink Operator ------------------------------------------
