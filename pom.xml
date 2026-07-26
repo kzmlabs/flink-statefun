@@ -119,7 +119,7 @@
         <flink-kafka.version>4.0.1-2.0</flink-kafka.version>
         <flink.connector.aws.version>6.0.0-2.0</flink.connector.aws.version>
         <scala.binary.version>2.12</scala.binary.version>
-        <scala.version>2.12.7</scala.version>
+        <scala.version>3.8.4</scala.version>
         <lz4-java.version>1.8.1</lz4-java.version>
         <flink-shaded-jackson.version>2.18.2-20.0</flink-shaded-jackson.version>
         <netty.version>4.1.136.Final</netty.version>
