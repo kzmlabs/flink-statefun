@@ -100,7 +100,10 @@ class StateFunKafkaInvalidRecordsE2E {
       assertThat(results).as("valid record after two skipped poisons").isNotEmpty();
     });
 
-    assertThat(Kubectl.jobState(DEPLOYMENT)).as("job survives skipped poisons").isEqualTo("RUNNING");
+    // the processed result above already proves the job survived; the CR state itself converges
+    // to RUNNING with operator-observation lag (CREATED was observed right after setup), so await
+    // it instead of asserting a single snapshot
+    awaitRunning();
     String tmLog = Kubectl.taskManagerLog(DEPLOYMENT);
     assertThat(tmLog).contains("Skipping invalid record");
     assertThat(tmLog).contains("defect [NULL_KEY]");
