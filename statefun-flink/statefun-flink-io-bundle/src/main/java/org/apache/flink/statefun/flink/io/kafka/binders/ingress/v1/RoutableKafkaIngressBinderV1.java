@@ -30,7 +30,7 @@ import org.apache.flink.statefun.sdk.spi.StatefulFunctionModule;
  *   forwardHeaders: true                                             (boolean, optional, default false)
  *   invalidRecordHandling:                                           (object, optional, default type skip + logLevel warn)
  *     type: skip                                                     (string: skip or fail)
- *     logLevel: warn                                                 (string, skip only: warn or error)
+ *     logLevel: warn                                                 (string, skip only: debug, info, warn or error)
  *   topics:                                                          (array)
  *   - topic: topic-1                                                 (string)
  *     valueType: com.foo.bar/my-type-1                               (typename)

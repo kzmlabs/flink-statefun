@@ -157,20 +157,30 @@ class RoutableKafkaIngressDeserializerTest {
   }
 
   @Test
-  void skipLogsAtErrorWhenConfigured() {
+  void skipLogsAtEveryConfigurableLevel() {
     ch.qos.logback.core.read.ListAppender<ch.qos.logback.classic.spi.ILoggingEvent> log = captureSkipLog();
-    RoutableKafkaIngressDeserializer errorLevel =
-        new RoutableKafkaIngressDeserializer(
-            routingMap(ORDERS_TOPIC, ORDERS_ROUTING), Set.of(), Map.of(ORDERS_TOPIC, InvalidRecordPolicy.skip(InvalidRecordPolicy.LogLevel.ERROR)));
+    Map<InvalidRecordPolicy.LogLevel, ch.qos.logback.classic.Level> expected = Map.of(
+        InvalidRecordPolicy.LogLevel.DEBUG, ch.qos.logback.classic.Level.DEBUG,
+        InvalidRecordPolicy.LogLevel.INFO, ch.qos.logback.classic.Level.INFO,
+        InvalidRecordPolicy.LogLevel.WARN, ch.qos.logback.classic.Level.WARN,
+        InvalidRecordPolicy.LogLevel.ERROR, ch.qos.logback.classic.Level.ERROR);
 
-    errorLevel.deserialize(consumerRecordAt(ORDERS_TOPIC, 0, 5L, 1690000000789L, null, "x".getBytes(StandardCharsets.UTF_8)));
+    for (Map.Entry<InvalidRecordPolicy.LogLevel, ch.qos.logback.classic.Level> entry : expected.entrySet()) {
+      log.list.clear();
+      RoutableKafkaIngressDeserializer configured =
+          new RoutableKafkaIngressDeserializer(
+              routingMap(ORDERS_TOPIC, ORDERS_ROUTING), Set.of(), Map.of(ORDERS_TOPIC, InvalidRecordPolicy.skip(entry.getKey())));
 
-    assertThat(log.list).hasSize(1);
-    assertThat(log.list.get(0).getLevel()).isEqualTo(ch.qos.logback.classic.Level.ERROR);
+      configured.deserialize(consumerRecordAt(ORDERS_TOPIC, 0, 5L, 1690000000789L, null, "x".getBytes(StandardCharsets.UTF_8)));
+
+      assertThat(log.list).as("one log event at level %s", entry.getKey()).hasSize(1);
+      assertThat(log.list.get(0).getLevel()).isEqualTo(entry.getValue());
+    }
   }
 
   private static ch.qos.logback.core.read.ListAppender<ch.qos.logback.classic.spi.ILoggingEvent> captureSkipLog() {
     ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(SkipInvalidRecordHandler.class);
+    logger.setLevel(ch.qos.logback.classic.Level.ALL);
     logger.detachAndStopAllAppenders();
     ch.qos.logback.core.read.ListAppender<ch.qos.logback.classic.spi.ILoggingEvent> appender = new ch.qos.logback.core.read.ListAppender<>();
     appender.start();

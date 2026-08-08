@@ -53,7 +53,7 @@ kind: io.statefun.kafka.v1/ingress
 spec:
   invalidRecordHandling:
     type: skip          # default when omitted
-    logLevel: warn      # skip only: warn (default) or error
+    logLevel: warn      # skip only: debug, info, warn (default) or error
   topics:
     - topic: example.orders
       invalidRecordHandling:

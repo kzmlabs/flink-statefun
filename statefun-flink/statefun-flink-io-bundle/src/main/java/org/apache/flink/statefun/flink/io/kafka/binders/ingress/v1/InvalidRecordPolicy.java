@@ -20,6 +20,8 @@ final class InvalidRecordPolicy implements Serializable {
   }
 
   enum LogLevel {
+    DEBUG,
+    INFO,
     WARN,
     ERROR
   }
@@ -71,14 +73,11 @@ final class InvalidRecordPolicy implements Serializable {
     if (levelNode == null || levelNode.isNull()) {
       return LogLevel.WARN;
     }
-    String level = levelNode.asText();
-    if ("warn".equals(level)) {
-      return LogLevel.WARN;
+    try {
+      return LogLevel.valueOf(levelNode.asText().toUpperCase(java.util.Locale.ENGLISH));
+    } catch (IllegalArgumentException e) {
+      throw new IllegalArgumentException("Invalid invalidRecordHandling logLevel: " + levelNode.asText() + "; valid values are [debug, info, warn, error]", e);
     }
-    if ("error".equals(level)) {
-      return LogLevel.ERROR;
-    }
-    throw new IllegalArgumentException("Invalid invalidRecordHandling logLevel: " + level + "; valid values are [warn, error]");
   }
 
   Action action() {

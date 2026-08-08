@@ -36,10 +36,11 @@ final class SkipInvalidRecordHandler implements InvalidRecordHandler {
     String message = String.format(
         "Skipping invalid record: defect [%s], topic [%s], partition [%d], offset [%d], timestamp [%d], key [%s], value size [%d]",
         defect, record.topic(), record.partition(), record.offset(), record.timestamp(), key, valueSize);
-    if (logLevel == InvalidRecordPolicy.LogLevel.ERROR) {
-      LOG.error(message);
-    } else {
-      LOG.warn(message);
+    switch (logLevel) {
+      case DEBUG -> LOG.debug(message);
+      case INFO -> LOG.info(message);
+      case WARN -> LOG.warn(message);
+      case ERROR -> LOG.error(message);
     }
     return null;
   }
