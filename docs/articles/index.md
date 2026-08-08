@@ -9,6 +9,9 @@ Long-form notes from the maintainers - the design decisions, migration playbooks
 
 ## Latest
 
+- [**One bad Kafka record should not kill 20 pipelines**](invalid-record-handling.md)
+  A single null-key record used to crash the whole Stateful Functions job. KZM-3.5 turns that outage into a log line, a labeled metric and a routine ticket - with a strict mode one line of yaml away. *2026-08-08*
+
 - [**Kafka record headers in Stateful Functions - closing a five-year-old gap**](kafka-record-headers.md)
   End-to-end header support lands in KZM-3.4: trace propagation through function graphs, typed header values, Kafka-exact null semantics, per-topic opt-in - and the protocol trick that made it possible without touching the runtime's hot path. *2026-07-24*
 
