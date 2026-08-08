@@ -118,6 +118,16 @@ class RoutableKafkaIngressDeserializerTest {
   }
 
   @Test
+  void emptyKeyIsAValidAddressRoutingToEmptyInstanceId() {
+    final ConsumerRecord<byte[], byte[]> record =
+        consumerRecord(ORDERS_TOPIC, new byte[0], "p".getBytes(StandardCharsets.UTF_8));
+
+    final AutoRoutable routable = (AutoRoutable) deserializer.deserialize(record);
+
+    assertThat(routable.getId()).isEmpty();
+  }
+
+  @Test
   void nullKeyFailureReportsRecordCoordinates() {
     final ConsumerRecord<byte[], byte[]> record =
         consumerRecordAt(
