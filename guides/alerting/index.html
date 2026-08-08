@@ -1746,7 +1746,7 @@
   <span class="md-ellipsis">
     
   
-    One bad record should not kill 20 pipelines
+    One bad Kafka record shouldn't crash a Flink StateFun job
   
 
     
@@ -1982,12 +1982,12 @@
 
 
 <h1 id="alerting">Alerting<a class="headerlink" href="#alerting" title="Permanent link">&para;</a></h1>
-<p>Alert rules for the counters documented in <a href="../metrics/">Metrics</a>. Prerequisite: a Prometheus reporter scraping the TaskManagers (port 9249 in the reference deployments). The metric name prefix below follows the default scope format; adjust it to your <code>metrics.scope.*</code> configuration - the <code>deserializer_topic_defect_numInvalidRecordsSkipped</code> suffix is stable.</p>
+<p>Alert rules for the counters documented in <a href="../metrics/">Metrics</a>. Prerequisite: a Prometheus reporter scraping the TaskManagers (port 9249 in the reference deployments). <code>topic</code> and <code>defect</code> are Prometheus <strong>labels</strong>, not part of the metric name - the counter is <code>flink_taskmanager_job_task_operator_deserializer_numInvalidRecordsSkipped{topic="…", defect="…"}</code>. The name prefix follows the default scope format; adjust it to your <code>metrics.scope.*</code> configuration - the <code>deserializer_numInvalidRecordsSkipped</code> suffix is stable.</p>
 <h2 id="invalid-records">Invalid records<a class="headerlink" href="#invalid-records" title="Permanent link">&para;</a></h2>
 <p>The per-topic, per-defect counter carries <code>topic</code> and <code>defect</code> as labels, so a firing alert names the offending topic and the kind of corruption without log correlation:</p>
 <p>Both expressions aggregate with <code>sum by (topic, defect)</code>: a parallel ingress emits one series per source subtask, and without aggregation each subtask would fire its own alert.</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">alert</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">StateFunInvalidRecordsSkipped</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">expr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sum by (topic, defect) (increase(flink_taskmanager_job_task_operator_deserializer_topic_defect_numInvalidRecordsSkipped[5m])) &gt; 0</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">expr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sum by (topic, defect) (increase(flink_taskmanager_job_task_operator_deserializer_numInvalidRecordsSkipped[5m])) &gt; 0</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">labels</span><span class="p">:</span>
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="nt">severity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">warning</span>
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">  </span><span class="nt">annotations</span><span class="p">:</span>
@@ -1996,7 +1996,7 @@
 </span></code></pre></div>
 <p>To page on a sustained stream rather than a single stray record, alert on the rate instead:</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">alert</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">StateFunInvalidRecordsSustained</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">expr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sum by (topic, defect) (rate(flink_taskmanager_job_task_operator_deserializer_topic_defect_numInvalidRecordsSkipped[15m])) &gt; 0.1</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">expr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sum by (topic, defect) (rate(flink_taskmanager_job_task_operator_deserializer_numInvalidRecordsSkipped[15m])) &gt; 0.1</span>
 </span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">labels</span><span class="p">:</span>
 </span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="nt">severity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">critical</span>
 </span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">  </span><span class="nt">annotations</span><span class="p">:</span>

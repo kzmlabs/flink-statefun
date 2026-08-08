@@ -27,7 +27,7 @@
     
     
       
-        <title>One bad Kafka record should not kill 20 pipelines - StateFun Actors by Kzmlabs</title>
+        <title>One bad Kafka record shouldn't crash a Flink Stateful Functions job - StateFun Actors by Kzmlabs</title>
       
     
     
@@ -76,7 +76,7 @@
 
   <!-- OpenGraph -->
   <meta property="og:type" content="website">
-  <meta property="og:title" content="One bad record should not kill 20 pipelines">
+  <meta property="og:title" content="One bad Kafka record shouldn't crash a Flink StateFun job">
   <meta property="og:description" content="A single null-key record crashed a whole Stateful Functions job. StateFun Actors 3.4.0-KZM-3.5 ships invalidRecordHandling - skip by default, strict fail per topic, full per-record diagnostics.">
   <meta property="og:image" content="https://kzmlabs.github.io/flink-statefun/assets/social-preview.png">
   <meta property="og:image:width" content="1280">
@@ -87,7 +87,7 @@
 
   <!-- Twitter card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="One bad record should not kill 20 pipelines">
+  <meta name="twitter:title" content="One bad Kafka record shouldn't crash a Flink StateFun job">
   <meta name="twitter:description" content="A single null-key record crashed a whole Stateful Functions job. StateFun Actors 3.4.0-KZM-3.5 ships invalidRecordHandling - skip by default, strict fail per topic, full per-record diagnostics.">
   <meta name="twitter:image" content="https://kzmlabs.github.io/flink-statefun/assets/social-preview.png">
 
@@ -114,7 +114,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#one-bad-kafka-record-should-not-kill-20-pipelines" class="md-skip">
+        <a href="#one-bad-kafka-record-shouldnt-crash-a-flink-stateful-functions-job" class="md-skip">
           Skip to content
         </a>
       
@@ -147,7 +147,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              One bad Kafka record should not kill 20 pipelines
+              One bad Kafka record shouldn't crash a Flink Stateful Functions job
             
           </span>
         </div>
@@ -1686,7 +1686,7 @@
   <span class="md-ellipsis">
     
   
-    One bad record should not kill 20 pipelines
+    One bad Kafka record shouldn't crash a Flink StateFun job
   
 
     
@@ -1704,7 +1704,7 @@
   <span class="md-ellipsis">
     
   
-    One bad record should not kill 20 pipelines
+    One bad Kafka record shouldn't crash a Flink StateFun job
   
 
     
@@ -2047,21 +2047,21 @@
   
 
 
-<h1 id="one-bad-kafka-record-should-not-kill-20-pipelines">One bad Kafka record should not kill 20 pipelines<a class="headerlink" href="#one-bad-kafka-record-should-not-kill-20-pipelines" title="Permanent link">&para;</a></h1>
+<h1 id="one-bad-kafka-record-shouldnt-crash-a-flink-stateful-functions-job">One bad Kafka record shouldn't crash a Flink Stateful Functions job<a class="headerlink" href="#one-bad-kafka-record-shouldnt-crash-a-flink-stateful-functions-job" title="Permanent link">&para;</a></h1>
 <p><em>Published 2026-08-08 · by the kzmlabs maintainers</em></p>
 <p><img alt="One bad record shouldn't stop the business: invalidRecordHandling in StateFun Actors" src="../../assets/invalid-record-handling-hero.png" /></p>
 <h2 id="what-was-broken">What was broken<a class="headerlink" href="#what-was-broken" title="Permanent link">&para;</a></h2>
 <p>In Apache Stateful Functions, the routable Kafka ingress had no policy for malformed records. A record with a <strong>null key</strong> (there's no function instance to route to) threw inside the deserializer. A <strong>tombstone</strong> (null value, normal on compacted topics) blew up as a bare <code>NullPointerException</code> from deep inside protobuf - no topic, no offset, no hint which record did it.</p>
 <p>Either way the whole Flink job died - every ingress, every topic, every function, not just the pipeline that read the record. And it looped: the poison record's offset is never committed, so each restart re-reads it and dies again until the job parks at terminal <code>FAILED</code>.</p>
-<p>With twenty topics feeding twenty pipelines in one job, one producer bug on one topic halts all twenty.</p>
+<p>A Flink job runs many pipelines together and fails as a unit, so one producer bug on one topic halts all of them - not just the pipeline that read the record.</p>
 <pre class="mermaid"><code>flowchart LR
     P[producer bug] -- "record with null key" --&gt; T3
     subgraph job ["one Flink job"]
         T1["topic: tracking"] --&gt; F1["pipeline 1 ✓"]
         T3["topic: orders"] --&gt; X["deserializer throws"]
-        T20["topic: billing"] --&gt; F20["pipeline 20 ✓"]
+        TN["topic: billing"] --&gt; FN["pipeline N ✓"]
     end
-    X == "job fails as a unit" ==&gt; DOWN["ALL 20 pipelines FAILED"]
+    X == "job fails as a unit" ==&gt; DOWN["every pipeline FAILED"]
     style X fill:#ff5470,color:#0a0e27
     style DOWN fill:#ff5470,color:#0a0e27</code></pre>
 <h2 id="what-ships-in-340-kzm-35">What ships in 3.4.0-KZM-3.5<a class="headerlink" href="#what-ships-in-340-kzm-35" title="Permanent link">&para;</a></h2>

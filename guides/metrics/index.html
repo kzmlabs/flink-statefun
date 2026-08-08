@@ -1155,10 +1155,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#prometheus-mapping" class="md-nav__link">
+  <a href="#how-each-reporter-renders-it" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Prometheus mapping
+        How each reporter renders it
       
     </span>
   </a>
@@ -1746,7 +1746,7 @@
   <span class="md-ellipsis">
     
   
-    One bad record should not kill 20 pipelines
+    One bad Kafka record shouldn't crash a Flink StateFun job
   
 
     
@@ -1943,10 +1943,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#prometheus-mapping" class="md-nav__link">
+  <a href="#how-each-reporter-renders-it" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Prometheus mapping
+        How each reporter renders it
       
     </span>
   </a>
@@ -1985,32 +1985,36 @@
 <p>StateFun Actors jobs expose the standard <a href="https://nightlies.apache.org/flink/flink-docs-stable/docs/ops/metrics/">Flink metrics</a> unchanged. This page documents what this distribution adds on top. The reference deployments enable the Prometheus reporter on port 9249 (<code>metrics.reporter.prom.factory.class</code>, see <code>flink-deployment.yaml</code> in the E2E resources).</p>
 <h2 id="invalid-record-counters">Invalid-record counters<a class="headerlink" href="#invalid-record-counters" title="Permanent link">&para;</a></h2>
 <p>Registered on the source operator's metric group of the routable Kafka ingress. They increment once per record skipped under <code>invalidRecordHandling: skip</code> (see <a href="../kafka-io/#invalid-records">Kafka I/O</a>); under <code>type: fail</code> nothing increments because the first invalid record fails the job.</p>
-<p>Both counters register inside the <code>deserializer</code> subgroup that KafkaSource hands to the deserialization schema, so their full scope is <code>&lt;operator&gt;.deserializer.*</code>:</p>
+<p>Both counters register inside the <code>deserializer</code> subgroup that KafkaSource hands to the deserialization schema, so their metric name lives under <code>&lt;operator&gt;.deserializer.*</code>:</p>
 <table>
 <thead>
 <tr>
-<th>Metric</th>
+<th>Counter</th>
 <th>Increments</th>
-<th>Naming rationale</th>
+<th>Dimensions</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>deserializer.numInvalidRecordsSkipped</code></td>
+<td><code>numInvalidRecordsSkipped</code></td>
 <td>once per skipped record, all topics of the ingress</td>
-<td>Flink operator-counter convention <code>numXxx</code>, cf. <code>numLateRecordsDropped</code></td>
+<td>none</td>
 </tr>
 <tr>
-<td><code>deserializer.topic.&lt;topic&gt;.defect.&lt;defect&gt;.numInvalidRecordsSkipped</code></td>
+<td><code>numInvalidRecordsSkipped</code></td>
 <td>once per skipped record of that topic and defect</td>
-<td>key-value metric groups, same pattern as the Kafka connector's <code>KafkaSourceReader.topic.&lt;topic&gt;.partition.&lt;partition&gt;.*</code></td>
+<td><code>topic</code>, <code>defect</code> (key-value metric groups)</td>
 </tr>
 </tbody>
 </table>
-<p><code>&lt;defect&gt;</code> is <code>NULL_KEY</code> or <code>NULL_VALUE</code>, matching the <code>defect [...]</code> field of the per-record skip log line.</p>
+<p>The per-topic breakdown uses <code>addGroup("topic", …).addGroup("defect", …)</code> - the two-argument, key-value form. <code>topic</code> and <code>defect</code> are the group <strong>keys</strong>, so they become dimensions (labels/tags in reporters that support them), not part of the metric name. <code>&lt;defect&gt;</code> is <code>NULL_KEY</code> or <code>NULL_VALUE</code>, matching the <code>defect [...]</code> field of the per-record skip log line.</p>
 <p>The <a href="https://cwiki.apache.org/confluence/display/FLINK/FLIP-33%3A+Standardize+Connector+Metrics">FLIP-33</a> standard <code>numRecordsInErrors</code> counter is deliberately not touched: it lives on the operator I/O metric group, which is not reachable from the deserializer context, and a same-named counter in a different scope would only mislead dashboards.</p>
-<h2 id="prometheus-mapping">Prometheus mapping<a class="headerlink" href="#prometheus-mapping" title="Permanent link">&para;</a></h2>
-<p>Key-value groups become labels: the per-topic counter arrives as <code>..._deserializer_topic_defect_numInvalidRecordsSkipped{topic="example.orders", defect="NULL_VALUE"}</code>. The metric name prefix depends on the reporter's scope format; the trailing <code>deserializer_topic_defect_numInvalidRecordsSkipped</code> part is stable. Alert rules for these counters: <a href="../alerting/">Alerting</a>.</p>
+<h2 id="how-each-reporter-renders-it">How each reporter renders it<a class="headerlink" href="#how-each-reporter-renders-it" title="Permanent link">&para;</a></h2>
+<p>The two representations are the same metric, rendered differently per reporter - this trips people up, so both are spelled out:</p>
+<ul>
+<li><strong>JMX / Slf4j / other label-less reporters</strong> fold the key-value groups into the logical identifier: <code>…deserializer.topic.&lt;topic&gt;.defect.&lt;defect&gt;.numInvalidRecordsSkipped</code>. Here <code>topic</code>/<code>defect</code> and their values <em>are</em> part of the name.</li>
+<li><strong>Prometheus</strong> turns key-value groups into labels. The metric name is <code>flink_taskmanager_job_task_operator_deserializer_numInvalidRecordsSkipped</code> and the breakdown arrives as labels: <code>{topic="example.orders", defect="NULL_VALUE"}</code>. The values are <strong>not</strong> in the name - query by label. Alert rules: <a href="../alerting/">Alerting</a>.</li>
+</ul>
 
 
 
