@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="How a single null-key record crashed a whole Stateful Functions job, and the invalidRecordHandling policy that turns that outage into a log line, a metric and a ticket.">
+        <meta name="description" content="A single null-key record crashed a whole Stateful Functions job. StateFun Actors 3.4.0-KZM-3.5 ships invalidRecordHandling - skip by default, strict fail per topic, full per-record diagnostics.">
       
       
       
@@ -77,7 +77,7 @@
   <!-- OpenGraph -->
   <meta property="og:type" content="website">
   <meta property="og:title" content="One bad record should not kill 20 pipelines">
-  <meta property="og:description" content="How a single null-key record crashed a whole Stateful Functions job, and the invalidRecordHandling policy that turns that outage into a log line, a metric and a ticket.">
+  <meta property="og:description" content="A single null-key record crashed a whole Stateful Functions job. StateFun Actors 3.4.0-KZM-3.5 ships invalidRecordHandling - skip by default, strict fail per topic, full per-record diagnostics.">
   <meta property="og:image" content="https://kzmlabs.github.io/flink-statefun/assets/social-preview.png">
   <meta property="og:image:width" content="1280">
   <meta property="og:image:height" content="640">
@@ -88,7 +88,7 @@
   <!-- Twitter card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="One bad record should not kill 20 pipelines">
-  <meta name="twitter:description" content="How a single null-key record crashed a whole Stateful Functions job, and the invalidRecordHandling policy that turns that outage into a log line, a metric and a ticket.">
+  <meta name="twitter:description" content="A single null-key record crashed a whole Stateful Functions job. StateFun Actors 3.4.0-KZM-3.5 ships invalidRecordHandling - skip by default, strict fail per topic, full per-record diagnostics.">
   <meta name="twitter:image" content="https://kzmlabs.github.io/flink-statefun/assets/social-preview.png">
 
   
@@ -1730,10 +1730,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#what-actually-happens-on-a-bad-record" class="md-nav__link">
+  <a href="#what-was-broken" class="md-nav__link">
     <span class="md-ellipsis">
       
-        What actually happens on a bad record?
+        What was broken
       
     </span>
   </a>
@@ -1741,10 +1741,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#why-this-is-a-business-problem" class="md-nav__link">
+  <a href="#what-ships-in-340-kzm-35" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Why this is a business problem
+        What ships in 3.4.0-KZM-3.5
       
     </span>
   </a>
@@ -1752,10 +1752,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#the-fix-a-policy-not-a-crash" class="md-nav__link">
+  <a href="#flexibility" class="md-nav__link">
     <span class="md-ellipsis">
       
-        The fix: a policy, not a crash
+        Flexibility
       
     </span>
   </a>
@@ -1763,10 +1763,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#is-a-skipped-record-silently-lost" class="md-nav__link">
+  <a href="#upgrading" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Is a skipped record silently lost?
+        Upgrading
       
     </span>
   </a>
@@ -1774,65 +1774,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#what-happens-under-fail" class="md-nav__link">
+  <a href="#whats-next" class="md-nav__link">
     <span class="md-ellipsis">
       
-        What happens under fail?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#how-do-we-know-it-works" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        How do we know it works?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#what-about-custom-deserializers" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        What about custom deserializers?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#how-does-this-compare-to-a-dead-letter-queue" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        How does this compare to a dead letter queue?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#when-should-you-keep-type-fail" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        When should you keep type: fail?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#what-is-next" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        What is next
+        What's next
       
     </span>
   </a>
@@ -2020,10 +1965,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#what-actually-happens-on-a-bad-record" class="md-nav__link">
+  <a href="#what-was-broken" class="md-nav__link">
     <span class="md-ellipsis">
       
-        What actually happens on a bad record?
+        What was broken
       
     </span>
   </a>
@@ -2031,10 +1976,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#why-this-is-a-business-problem" class="md-nav__link">
+  <a href="#what-ships-in-340-kzm-35" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Why this is a business problem
+        What ships in 3.4.0-KZM-3.5
       
     </span>
   </a>
@@ -2042,10 +1987,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#the-fix-a-policy-not-a-crash" class="md-nav__link">
+  <a href="#flexibility" class="md-nav__link">
     <span class="md-ellipsis">
       
-        The fix: a policy, not a crash
+        Flexibility
       
     </span>
   </a>
@@ -2053,10 +1998,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#is-a-skipped-record-silently-lost" class="md-nav__link">
+  <a href="#upgrading" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Is a skipped record silently lost?
+        Upgrading
       
     </span>
   </a>
@@ -2064,65 +2009,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#what-happens-under-fail" class="md-nav__link">
+  <a href="#whats-next" class="md-nav__link">
     <span class="md-ellipsis">
       
-        What happens under fail?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#how-do-we-know-it-works" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        How do we know it works?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#what-about-custom-deserializers" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        What about custom deserializers?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#how-does-this-compare-to-a-dead-letter-queue" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        How does this compare to a dead letter queue?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#when-should-you-keep-type-fail" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        When should you keep type: fail?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#what-is-next" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        What is next
+        What's next
       
     </span>
   </a>
@@ -2160,21 +2050,10 @@
 <h1 id="one-bad-kafka-record-should-not-kill-20-pipelines">One bad Kafka record should not kill 20 pipelines<a class="headerlink" href="#one-bad-kafka-record-should-not-kill-20-pipelines" title="Permanent link">&para;</a></h1>
 <p><em>Published 2026-08-08 · by the kzmlabs maintainers</em></p>
 <p><img alt="One bad record shouldn't stop the business: invalidRecordHandling in StateFun Actors" src="../../assets/invalid-record-handling-hero.png" /></p>
-<div class="admonition abstract">
-<p class="admonition-title">TL;DR</p>
-<p>One null-key Kafka record used to crash an entire Stateful Functions job - every pipeline, not just the one that read it. As of 3.4.0-KZM-3.5 the routable ingress has an <code>invalidRecordHandling</code> policy: <code>skip</code> (new default) drops the record, logs it individually with full coordinates and counts it with <code>topic</code> + <code>defect</code> Prometheus labels; <code>fail</code> restores the strict halt-on-bad-data contract, per ingress or per topic.</p>
-</div>
-<p>Picture a delivery platform. Ten thousand orders in flight, each one an event on a Kafka topic, each topic feeding a Stateful Functions pipeline: order tracking, courier assignment, notifications, billing. Twenty topics, twenty pipelines, one Flink job.</p>
-<p>Now one producer publishes a single malformed order event: a record with no key.</p>
-<p>In Apache Stateful Functions, that one record crashed the entire job. Not the one pipeline that consumed it - all twenty. Order tracking down, couriers idle, customers refreshing the app. One bad record, platform-wide outage.</p>
-<p>As of <a href="https://github.com/kzmlabs/flink-statefun/releases/tag/v3.4.0-KZM-3.5">StateFun Actors 3.4.0-KZM-3.5</a>, that is no longer the default behavior. This article walks through what actually happened inside the runtime, why it was a business problem rather than an engineering nuisance, and what the <code>invalidRecordHandling</code> policy does about it.</p>
-<h2 id="what-actually-happens-on-a-bad-record">What actually happens on a bad record?<a class="headerlink" href="#what-actually-happens-on-a-bad-record" title="Permanent link">&para;</a></h2>
-<p>The routable Kafka ingress (<code>io.statefun.kafka.v1/ingress</code>) uses the record key as the target function instance id, and the record value as the message payload. Two kinds of records violate that contract:</p>
-<ul>
-<li><strong>Null key.</strong> There is no function instance to route to. The deserializer threw an <code>IllegalStateException</code>.</li>
-<li><strong>Null value (tombstone).</strong> Compacted topics use null-valued records as deletion markers. The deserializer passed the null payload into envelope building and died with a bare <code>NullPointerException</code> from deep inside protobuf - no topic, no offset, no hint which record was responsible.</li>
-</ul>
-<p>We verified both empirically on a live Kubernetes cluster before changing anything: produce one poison record, watch the whole job go down. Because a Flink job fails as a unit, the blast radius is every ingress, every topic, every function - not just the pipeline that consumed the record:</p>
+<h2 id="what-was-broken">What was broken<a class="headerlink" href="#what-was-broken" title="Permanent link">&para;</a></h2>
+<p>In Apache Stateful Functions, the routable Kafka ingress had no policy for malformed records. A record with a <strong>null key</strong> (there's no function instance to route to) threw inside the deserializer. A <strong>tombstone</strong> (null value, normal on compacted topics) blew up as a bare <code>NullPointerException</code> from deep inside protobuf - no topic, no offset, no hint which record did it.</p>
+<p>Either way the whole Flink job died - every ingress, every topic, every function, not just the pipeline that read the record. And it looped: the poison record's offset is never committed, so each restart re-reads it and dies again until the job parks at terminal <code>FAILED</code>.</p>
+<p>With twenty topics feeding twenty pipelines in one job, one producer bug on one topic halts all twenty.</p>
 <pre class="mermaid"><code>flowchart LR
     P[producer bug] -- "record with null key" --&gt; T3
     subgraph job ["one Flink job"]
@@ -2185,72 +2064,55 @@
     X == "job fails as a unit" ==&gt; DOWN["ALL 20 pipelines FAILED"]
     style X fill:#ff5470,color:#0a0e27
     style DOWN fill:#ff5470,color:#0a0e27</code></pre>
-<p>Worse, the failure loops. The offset of the poison record is never committed, so every restart re-reads it and dies again, until the restart budget is exhausted and the job reaches terminal <code>FAILED</code>.</p>
-<h2 id="why-this-is-a-business-problem">Why this is a business problem<a class="headerlink" href="#why-this-is-a-business-problem" title="Permanent link">&para;</a></h2>
-<p>The record that kills the job is, by definition, the record nobody planned for: a producer bug, a manual publish gone wrong, a tombstone landing on a topic that was never supposed to be compacted. It arrives unannounced, usually at night.</p>
-<p>The cost structure is what makes it painful. The trigger is one event, but the outage is total: with twenty topics feeding twenty pipelines, one bad record on one topic halts all twenty. Revenue-carrying traffic stops because of a record it never touched. Recovery is manual - someone has to find the poison record (with no diagnostics pointing at it), skip past it by hand, and restart the job.</p>
-<h2 id="the-fix-a-policy-not-a-crash">The fix: a policy, not a crash<a class="headerlink" href="#the-fix-a-policy-not-a-crash" title="Permanent link">&para;</a></h2>
-<p><code>invalidRecordHandling</code> is a per-ingress setting with a per-topic override:</p>
+<h2 id="what-ships-in-340-kzm-35">What ships in 3.4.0-KZM-3.5<a class="headerlink" href="#what-ships-in-340-kzm-35" title="Permanent link">&para;</a></h2>
+<p><a href="https://github.com/kzmlabs/flink-statefun/releases/tag/v3.4.0-KZM-3.5">StateFun Actors 3.4.0-KZM-3.5</a> adds <code>invalidRecordHandling</code> to <code>io.statefun.kafka.v1/ingress</code>:</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">io.statefun.kafka.v1/ingress</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nt">spec</span><span class="p">:</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">invalidRecordHandling</span><span class="p">:</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">skip</span><span class="w">          </span><span class="c1"># default when omitted</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="nt">logLevel</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">warn</span><span class="w">      </span><span class="c1"># debug | info | warn | error</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">  </span><span class="nt">topics</span><span class="p">:</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">topic</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">payments.commands</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">      </span><span class="nt">invalidRecordHandling</span><span class="p">:</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">        </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fail</span><span class="w">      </span><span class="c1"># strict contract for this one topic</span>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">      </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example/orders</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span><span class="nt">address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kafka.svc:9092</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">  </span><span class="nt">invalidRecordHandling</span><span class="p">:</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">skip</span><span class="w">              </span><span class="c1"># default when omitted</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">    </span><span class="nt">logLevel</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">warn</span><span class="w">          </span><span class="c1"># debug | info | warn | error</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">  </span><span class="nt">topics</span><span class="p">:</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">topic</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example.orders</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">      </span><span class="nt">valueType</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example/Order</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">      </span><span class="nt">targets</span><span class="p">:</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example/order-handler</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">topic</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">payments.commands</span>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="w">      </span><span class="nt">valueType</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example/PaymentCommand</span>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="w">      </span><span class="nt">invalidRecordHandling</span><span class="p">:</span>
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="w">        </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fail</span><span class="w">          </span><span class="c1"># per-topic override: strict contract here</span>
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="w">      </span><span class="nt">targets</span><span class="p">:</span>
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example/payment-handler</span>
 </span></code></pre></div>
-<p><strong><code>type: skip</code> is the new default.</strong> An invalid record is dropped and the job keeps running. The other nineteen pipelines never notice.</p>
-<p><strong><code>type: fail</code> restores the strict contract.</strong> Some pipelines should halt on bad data - regulated flows, financial commands, anything where processing gap is worse than downtime. One line of yaml, per ingress or per topic.</p>
-<pre class="mermaid"><code>flowchart LR
-    R["Kafka record"] --&gt; C{"key and value present?"}
-    C -- yes --&gt; route["route to function"]
-    C -- no --&gt; policy{"invalidRecordHandling"}
-    policy -- "skip (default)" --&gt; log["one log line + labeled metric"] --&gt; run["record dropped, job RUNNING"]
-    policy -- fail --&gt; stop["job fails with record coordinates"]
-    style run fill:#00d4aa,color:#0a0e27
-    style stop fill:#ff5470,color:#0a0e27</code></pre>
-<h2 id="is-a-skipped-record-silently-lost">Is a skipped record silently lost?<a class="headerlink" href="#is-a-skipped-record-silently-lost" title="Permanent link">&para;</a></h2>
-<p>No - and this is the part that matters operationally. Every skipped record produces one log line with full coordinates:</p>
+<p><strong><code>type: skip</code> - the new default.</strong> The invalid record is dropped and the job keeps running. Nothing is silently lost:</p>
+<ul>
+<li>
+<p>one log line per skipped record, with full coordinates:</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>Skipping invalid record: defect [NULL_KEY], topic [orders], partition [0], offset [42], timestamp [1690000000123], key [null], value size [17]
 </span></code></pre></div>
-<p>There is deliberately no rate limiting. During the design review we chose per-record diagnosability over log-flood protection: when a producer misbehaves, the operator's first question is "which records, exactly?" and sampled or summarized logs cannot answer it. The counters absorb the alerting load instead.</p>
-<p>Two counters register on the source operator, inside the <code>deserializer</code> scope:</p>
-<ul>
-<li><code>numInvalidRecordsSkipped</code> - the total across all topics of the ingress.</li>
-<li><code>topic.&lt;topic&gt;.defect.&lt;NULL_KEY|NULL_VALUE&gt;.numInvalidRecordsSkipped</code> - the same count broken down with <code>topic</code> and <code>defect</code> as Prometheus labels.</li>
+</li>
+<li>
+<p>counters on the source operator: <code>numInvalidRecordsSkipped</code> (total) and <code>topic.&lt;topic&gt;.defect.&lt;NULL_KEY|NULL_VALUE&gt;.numInvalidRecordsSkipped</code> - with the Prometheus reporter, <code>topic</code> and <code>defect</code> arrive as labels, so the alert names the misbehaving producer and the kind of corruption directly. Ready-made rules: <a href="../../guides/alerting/">Alerting guide</a>.</p>
+</li>
 </ul>
-<p>The labeled counter is the workhorse: the alert that fires carries the topic name and the defect kind, so it points at the misbehaving producer directly. Ready-made alert rules are in the <a href="../../guides/alerting/">Alerting guide</a>.</p>
-<h2 id="what-happens-under-fail">What happens under fail?<a class="headerlink" href="#what-happens-under-fail" title="Permanent link">&para;</a></h2>
-<p>The job fails on the first invalid record - but unlike the old behavior, the exception carries the full record coordinates:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>The io.statefun.kafka.v1/ingress ingress cannot process a tombstone (null value) record. Offending record: topic [orders], partition [0], offset [42], timestamp [1690000000123], key [order-17].
-</span></code></pre></div>
-<p>The tombstone case previously surfaced as a bare <code>NullPointerException</code> with no context at all. Under <code>fail</code> you still get the halt-on-bad-data guarantee; you no longer get the forensic hunt.</p>
-<h2 id="how-do-we-know-it-works">How do we know it works?<a class="headerlink" href="#how-do-we-know-it-works" title="Permanent link">&para;</a></h2>
-<p>Every release of StateFun Actors is gated on a Kubernetes-native end-to-end suite: a real Flink Kubernetes Operator, real Kafka, real remote functions, provisioned in CI from scratch. The invalid-record scenarios run against a dedicated deployment in that suite:</p>
+<p><strong><code>type: fail</code> - the strict contract.</strong> The job still halts on the first invalid record - right for ledgers and payment commands, where a processing gap is worse than downtime - but the exception now carries the full record coordinates, tombstones included. No more forensic hunt.</p>
+<h2 id="flexibility">Flexibility<a class="headerlink" href="#flexibility" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Under the default skip policy: a null-key poison record and a tombstone are produced, followed by a valid record. The test asserts the job stays <code>RUNNING</code>, the valid record's result arrives, and the TaskManager log carries one diagnostic line per skipped record.</li>
-<li>Under <code>fail</code>: the same poison records must fail the job with the coordinates in the JobManager log.</li>
+<li>Policy per <strong>ingress</strong> (default for all its topics) with a wholesale per-<strong>topic</strong> override - one ingress can run lenient telemetry topics next to a strict billing topic.</li>
+<li>Skip log level per ingress or per topic: <code>debug | info | warn (default) | error</code>.</li>
+<li>Deliberately <strong>no rate limiting</strong> on skip logs: when a producer misbehaves, "which records exactly?" must be answerable from the log. Alerting load belongs to the labeled counters.</li>
 </ul>
-<p>The failure mode this feature fixes was itself discovered by poking a live cluster; the fix is proven the same way, on every commit.</p>
-<h2 id="what-about-custom-deserializers">What about custom deserializers?<a class="headerlink" href="#what-about-custom-deserializers" title="Permanent link">&para;</a></h2>
-<p><code>KafkaIngressDeserializer</code> has documented "return null if the message cannot be deserialized" in its javadoc for years - but the runtime never honored it and collected the null anyway. As of this release the contract is real for every deserializer, including custom embedded-SDK ones: a null return counts and drops the record instead of corrupting the stream. If your custom deserializer returns null today, its records will now be skipped instead of crashing the job.</p>
-<h2 id="how-does-this-compare-to-a-dead-letter-queue">How does this compare to a dead letter queue?<a class="headerlink" href="#how-does-this-compare-to-a-dead-letter-queue" title="Permanent link">&para;</a></h2>
-<p>Different layers of the same defense, and the ecosystem has several prior arts worth naming:</p>
+<h2 id="upgrading">Upgrading<a class="headerlink" href="#upgrading" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>Kafka Connect</strong> routes failed records to a dead letter topic via <code>errors.tolerance: all</code> and <code>errors.deadletterqueue.topic.name</code>. That protects connectors, not stream processors.</li>
-<li><strong>Kafka Streams</strong> has <code>DeserializationExceptionHandler</code> with the stock <code>LogAndContinueExceptionHandler</code> - the closest analog to our <code>skip</code>, though without per-record coordinates in a pinned format or a per-topic, per-defect metric breakdown.</li>
-<li><strong>Flink DataStream</strong> jobs typically route bad records to a side output. Stateful Functions users never see the DataStream API, so that escape hatch was out of reach - which is exactly why the ingress itself has to own the policy.</li>
+<li><strong>Behavioral break:</strong> the default flips from crash-the-job to skip-with-log+metric. If your team alerts on job restarts as the bad-data signal, move that alert to <code>numInvalidRecordsSkipped</code> - or pin <code>type: fail</code> to keep the old behavior.</li>
+<li>Custom <code>KafkaIngressDeserializer</code> implementations: a <code>null</code> return now skips the record (the long-documented javadoc contract is finally enforced) instead of crashing the job.</li>
+<li>Coordinates: Maven <code>io.github.kzmlabs.flinkstatefun:*:3.4.0-KZM-3.5</code>, image <code>ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.5</code>.</li>
 </ul>
-<p><code>skip</code> is the log-and-continue layer. The planned <code>forward</code> policy (ADR-0008 stage 3) is the true dead-letter layer: invalid records delivered to a designated function with provenance metadata, so a pipeline can quarantine, replay or alert on them with the full power of the programming model.</p>
-<h2 id="when-should-you-keep-type-fail">When should you keep type: fail?<a class="headerlink" href="#when-should-you-keep-type-fail" title="Permanent link">&para;</a></h2>
-<p>Use <code>fail</code> where a processing gap is worse than downtime: payment commands, ledger events, anything audited. Use the default <code>skip</code> everywhere availability wins. The per-topic override means one ingress can hold both: lenient telemetry topics next to a strict billing topic.</p>
-<h2 id="what-is-next">What is next<a class="headerlink" href="#what-is-next" title="Permanent link">&para;</a></h2>
-<p><code>type: forward</code> - delivering invalid records to a dead-letter function with provenance metadata - is designed (ADR-0008 in the repository) and lands as the next stage. The handler abstraction is already in place, so it arrives without touching the ingress hot path.</p>
+<h2 id="whats-next">What's next<a class="headerlink" href="#whats-next" title="Permanent link">&para;</a></h2>
+<p><code>type: forward</code> - delivering invalid records to a dead-letter function with provenance metadata (topic, partition, offset, defect) so pipelines can quarantine or replay them - is designed in ADR-0008 and is the next stage.</p>
 <hr />
-<p><strong>Try it:</strong> <a href="../../guides/kafka-io/#invalid-records">Kafka I/O guide</a> covers the full configuration, <a href="../../guides/metrics/">Metrics</a> and <a href="../../guides/alerting/">Alerting</a> the observability. The repository is <a href="https://github.com/kzmlabs/flink-statefun">github.com/kzmlabs/flink-statefun</a>; StateFun Actors is the maintained fork of Apache Stateful Functions on Flink 2.2 and Java 21 - the story of the fork is in <a href="../forking-statefun/">Why we forked</a>.</p>
+<p><strong>Docs:</strong> <a href="../../guides/kafka-io/#invalid-records">Kafka I/O - invalid records</a> · <a href="../../guides/metrics/">Metrics</a> · <a href="../../guides/alerting/">Alerting</a>. <strong>Repo:</strong> <a href="https://github.com/kzmlabs/flink-statefun">github.com/kzmlabs/flink-statefun</a> - StateFun Actors is the maintained fork of Apache Stateful Functions on Flink 2.2 / Java 21 (<a href="../forking-statefun/">why we forked</a>).</p>
 
 
 
