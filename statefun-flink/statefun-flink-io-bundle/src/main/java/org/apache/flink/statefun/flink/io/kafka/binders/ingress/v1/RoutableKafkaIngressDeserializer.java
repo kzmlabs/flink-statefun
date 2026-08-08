@@ -35,17 +35,17 @@ public final class RoutableKafkaIngressDeserializer
 
   @Override
   public Message deserialize(ConsumerRecord<byte[], byte[]> input) {
-    final String topic = input.topic();
-    final byte[] payload = input.value();
-    final byte[] key = requireNonNullKey(input.key());
-    final String id = new String(key, StandardCharsets.UTF_8);
+    String topic = input.topic();
+    byte[] key = requireNonNullKey(input);
+    byte[] payload = requireNonNullValue(input);
+    String id = new String(key, StandardCharsets.UTF_8);
 
-    final RoutingConfig routingConfig = routingConfigs.get(topic);
+    RoutingConfig routingConfig = routingConfigs.get(topic);
     if (routingConfig == null) {
       throw new IllegalStateException(
           "Consumed a record from topic [" + topic + "], but no routing config was specified.");
     }
-    final AutoRoutable.Builder routable =
+    AutoRoutable.Builder routable =
         AutoRoutable.newBuilder()
             .setConfig(routingConfig)
             .setId(id)
@@ -62,25 +62,44 @@ public final class RoutableKafkaIngressDeserializer
   }
 
   private static Header toProtoHeader(org.apache.kafka.common.header.Header header) {
-    final String key = header.key();
-    final byte[] value = header.value();
-    final Header.Builder proto = Header.newBuilder().setKey(key == null ? "" : key);
+    String key = header.key();
+    byte[] value = header.value();
+    Header.Builder proto = Header.newBuilder().setKey(key == null ? "" : key);
     if (value != null) {
       proto.setValue(MoreByteStrings.wrap(value)).setHasValue(true);
     }
     return proto.build();
   }
 
-  private byte[] requireNonNullKey(byte[] key) {
+  private static byte[] requireNonNullKey(ConsumerRecord<byte[], byte[]> input) {
+    byte[] key = input.key();
     if (key == null) {
-      TypeName tpe = RoutableKafkaIngressBinderV1.KIND_TYPE;
-      throw new IllegalStateException(
-          "The "
-              + tpe.namespace()
-              + "/"
-              + tpe.name()
-              + " ingress requires a UTF-8 key set for each record.");
+      throw invalidRecord(input, "requires a UTF-8 key set for each record");
     }
     return key;
+  }
+
+  private static byte[] requireNonNullValue(ConsumerRecord<byte[], byte[]> input) {
+    byte[] value = input.value();
+    if (value == null) {
+      throw invalidRecord(input, "cannot process a tombstone (null value) record");
+    }
+    return value;
+  }
+
+  /**
+   * Builds the job-fatal rejection for an invalid record, carrying its topic, partition, offset,
+   * timestamp and, when present, its key. Null-safe on every record field, so the diagnostic can
+   * never itself throw regardless of which defect triggered it.
+   */
+  private static IllegalStateException invalidRecord(
+      ConsumerRecord<byte[], byte[]> input, String defect) {
+    TypeName tpe = RoutableKafkaIngressBinderV1.KIND_TYPE;
+    byte[] key = input.key();
+    String keySegment = key == null ? "" : ", key [" + new String(key, StandardCharsets.UTF_8) + "]";
+    return new IllegalStateException(
+        String.format(
+            "The %s/%s ingress %s. Offending record: topic [%s], partition [%d], offset [%d], timestamp [%d]%s.",
+            tpe.namespace(), tpe.name(), defect, input.topic(), input.partition(), input.offset(), input.timestamp(), keySegment));
   }
 }

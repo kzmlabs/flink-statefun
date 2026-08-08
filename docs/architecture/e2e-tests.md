@@ -20,12 +20,13 @@ description: The Kubernetes-native end-to-end test gate that runs before every S
 
 ## Coverage
 
-Two test classes run in the same `mvn verify` invocation:
+Three test classes run in the same `mvn verify` invocation:
 
 | Test | Validates |
 |---|---|
 | `StateFunK8sE2E` | Kafka ingress → stateful counter function → Kafka egress; greeter function over JSON; checkpoint persistence |
 | `StateFunKinesisE2E` | Kinesis ingress → stateful counter → Kinesis egress; ARN-keyed routing; LocalStack-backed S3 checkpoints |
+| `StateFunKafkaInvalidRecordsE2E` | Invalid-record diagnostics on the routable ingress: null key and tombstone fail the isolated `statefun-e2e-invalid` job with record coordinates in the JobManager log |
 
 JUnit 5 `@Tag("kafka")` / `@Tag("kinesis")` allow running either suite in isolation:
 

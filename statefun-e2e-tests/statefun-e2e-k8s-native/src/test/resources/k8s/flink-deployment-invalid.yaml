@@ -1,0 +1,64 @@
+# SPDX-License-Identifier: Apache-2.0
+
+
+apiVersion: flink.apache.org/v1beta1
+kind: FlinkDeployment
+metadata:
+  name: statefun-e2e-invalid
+  namespace: statefun-e2e
+spec:
+  image: flink-statefun:e2e
+  imagePullPolicy: Never
+  flinkVersion: "v2_2"
+  serviceAccount: flink
+  flinkConfiguration:
+    classloader.parent-first-patterns.additional: "org.apache.flink.statefun;org.apache.kafka;com.google.protobuf"
+    classloader.resolve-order: parent-first
+    taskmanager.numberOfTaskSlots: "1"
+    statefun.flink-job-name: statefun-k8s-e2e-invalid
+    statefun.remote.module-name: "file:///opt/statefun/module.yaml"
+    restart-strategy.type: fixed-delay
+    restart-strategy.fixed-delay.attempts: "1"
+    restart-strategy.fixed-delay.delay: "1s"
+    # keep the JobManager alive after a terminal job failure: the E2E scenarios read the
+    # failure diagnostics from its log, and an exiting JM would restart the pod and wipe them
+    execution.shutdown-on-application-finish: "false"
+    pipeline.auto-generate-uids: "false"
+  # the image is logback-based and requires this file; without logConfiguration the operator
+  # does not generate it, logback fails to initialize, and the JM logs nothing at all
+  logConfiguration:
+    logback-console.xml: |
+      <?xml version="1.0" encoding="UTF-8"?>
+      <configuration>
+          <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+              <encoder>
+                  <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %logger{60} - %msg%n</pattern>
+              </encoder>
+          </appender>
+          <root level="INFO">
+              <appender-ref ref="console"/>
+          </root>
+      </configuration>
+  podTemplate:
+    spec:
+      containers:
+        - name: flink-main-container
+          volumeMounts:
+            - name: module-config
+              mountPath: /opt/statefun
+      volumes:
+        - name: module-config
+          configMap:
+            name: statefun-e2e-module-invalid
+  jobManager:
+    resource:
+      memory: "1024m"
+      cpu: 0.25
+  taskManager:
+    resource:
+      memory: "1280m"
+      cpu: 0.25
+  job:
+    jarURI: local:///opt/flink/statefun-flink-runner.jar
+    parallelism: 1
+    upgradeMode: stateless

@@ -9,11 +9,14 @@ import com.google.protobuf.Message;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import org.apache.flink.statefun.flink.io.generated.AutoRoutable;
 import org.apache.flink.statefun.flink.io.generated.RoutingConfig;
 import org.apache.flink.statefun.flink.io.generated.TargetFunctionType;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.common.header.internals.RecordHeaders;
+import org.apache.kafka.common.record.TimestampType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -46,14 +49,14 @@ class RoutableKafkaIngressDeserializerTest {
 
   @Test
   void routesConfiguredTopicToTargets() {
-    final byte[] payload = "order-payload".getBytes(StandardCharsets.UTF_8);
-    final byte[] key = "pk-7".getBytes(StandardCharsets.UTF_8);
-    final ConsumerRecord<byte[], byte[]> record = consumerRecord(ORDERS_TOPIC, key, payload);
+    byte[] payload = "order-payload".getBytes(StandardCharsets.UTF_8);
+    byte[] key = "pk-7".getBytes(StandardCharsets.UTF_8);
+    ConsumerRecord<byte[], byte[]> record = consumerRecord(ORDERS_TOPIC, key, payload);
 
-    final Message result = deserializer.deserialize(record);
+    Message result = deserializer.deserialize(record);
 
     assertThat(result).isInstanceOf(AutoRoutable.class);
-    final AutoRoutable routable = (AutoRoutable) result;
+    AutoRoutable routable = (AutoRoutable) result;
     assertThat(routable.getId()).isEqualTo("pk-7");
     assertThat(routable.getPayloadBytes().toByteArray()).isEqualTo(payload);
     assertThat(routable.getConfig().getTypeUrl()).isEqualTo(ORDERS_VALUE_TYPE);
@@ -62,7 +65,7 @@ class RoutableKafkaIngressDeserializerTest {
 
   @Test
   void capturesRecordHeadersInOrderIncludingNullValues() {
-    final ConsumerRecord<byte[], byte[]> record =
+    ConsumerRecord<byte[], byte[]> record =
         consumerRecord(
             ORDERS_TOPIC,
             "pk-7".getBytes(StandardCharsets.UTF_8),
@@ -71,7 +74,7 @@ class RoutableKafkaIngressDeserializerTest {
     record.headers().add("empty-header", null);
     record.headers().add("trace-id", "def-456".getBytes(StandardCharsets.UTF_8));
 
-    final AutoRoutable routable = (AutoRoutable) deserializer.deserialize(record);
+    AutoRoutable routable = (AutoRoutable) deserializer.deserialize(record);
 
     assertThat(routable.getHeadersCount()).isEqualTo(3);
     assertThat(routable.getHeaders(0).getKey()).isEqualTo("trace-id");
@@ -87,36 +90,72 @@ class RoutableKafkaIngressDeserializerTest {
 
   @Test
   void recordWithoutHeadersProducesEmptyHeaderList() {
-    final ConsumerRecord<byte[], byte[]> record =
+    ConsumerRecord<byte[], byte[]> record =
         consumerRecord(
             ORDERS_TOPIC,
             "pk".getBytes(StandardCharsets.UTF_8),
             "p".getBytes(StandardCharsets.UTF_8));
 
-    final AutoRoutable routable = (AutoRoutable) deserializer.deserialize(record);
+    AutoRoutable routable = (AutoRoutable) deserializer.deserialize(record);
 
     assertThat(routable.getHeadersCount()).isZero();
   }
 
   @Test
   void headersAreIgnoredWhenTopicHasNotOptedIntoForwarding() {
-    final RoutableKafkaIngressDeserializer optedOut =
+    RoutableKafkaIngressDeserializer optedOut =
         new RoutableKafkaIngressDeserializer(routingMap(ORDERS_TOPIC, ORDERS_ROUTING), Set.of());
-    final ConsumerRecord<byte[], byte[]> record =
+    ConsumerRecord<byte[], byte[]> record =
         consumerRecord(
             ORDERS_TOPIC,
             "pk-7".getBytes(StandardCharsets.UTF_8),
             "p".getBytes(StandardCharsets.UTF_8));
     record.headers().add("trace-id", "abc-123".getBytes(StandardCharsets.UTF_8));
 
-    final AutoRoutable routable = (AutoRoutable) optedOut.deserialize(record);
+    AutoRoutable routable = (AutoRoutable) optedOut.deserialize(record);
 
     assertThat(routable.getHeadersCount()).isZero();
   }
 
   @Test
+  void emptyKeyIsAValidAddressRoutingToEmptyInstanceId() {
+    ConsumerRecord<byte[], byte[]> record = consumerRecord(ORDERS_TOPIC, new byte[0], "p".getBytes(StandardCharsets.UTF_8));
+
+    AutoRoutable routable = (AutoRoutable) deserializer.deserialize(record);
+
+    assertThat(routable.getId()).isEmpty();
+  }
+
+  @Test
+  void nullKeyFailureReportsRecordCoordinates() {
+    ConsumerRecord<byte[], byte[]> record = consumerRecordAt(ORDERS_TOPIC, 3, 42L, 1690000000123L, null, "x".getBytes(StandardCharsets.UTF_8));
+
+    assertThatThrownBy(() -> deserializer.deserialize(record))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("requires a UTF-8 key")
+        .hasMessageContaining("topic [" + ORDERS_TOPIC + "]")
+        .hasMessageContaining("partition [3]")
+        .hasMessageContaining("offset [42]")
+        .hasMessageContaining("timestamp [1690000000123]");
+  }
+
+  @Test
+  void tombstoneFailureReportsRecordCoordinatesAndKey() {
+    ConsumerRecord<byte[], byte[]> record = consumerRecordAt(ORDERS_TOPIC, 1, 7L, 1690000000456L, "pk-7".getBytes(StandardCharsets.UTF_8), null);
+
+    assertThatThrownBy(() -> deserializer.deserialize(record))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("tombstone")
+        .hasMessageContaining("topic [" + ORDERS_TOPIC + "]")
+        .hasMessageContaining("partition [1]")
+        .hasMessageContaining("offset [7]")
+        .hasMessageContaining("timestamp [1690000000456]")
+        .hasMessageContaining("key [pk-7]");
+  }
+
+  @Test
   void throwsWhenTopicIsNotInRoutingMap() {
-    final ConsumerRecord<byte[], byte[]> record =
+    ConsumerRecord<byte[], byte[]> record =
         consumerRecord(
             "unknown-topic",
             "pk".getBytes(StandardCharsets.UTF_8),
@@ -129,7 +168,7 @@ class RoutableKafkaIngressDeserializerTest {
   }
 
   private static Map<String, RoutingConfig> routingMap(String key, RoutingConfig value) {
-    final Map<String, RoutingConfig> map = new HashMap<>(1);
+    Map<String, RoutingConfig> map = new HashMap<>(1);
     map.put(key, value);
     return map;
   }
@@ -137,5 +176,21 @@ class RoutableKafkaIngressDeserializerTest {
   private static ConsumerRecord<byte[], byte[]> consumerRecord(
       String topic, byte[] partitionKey, byte[] payload) {
     return new ConsumerRecord<>(topic, 0, 0L, partitionKey, payload);
+  }
+
+  private static ConsumerRecord<byte[], byte[]> consumerRecordAt(
+      String topic, int partition, long offset, long timestamp, byte[] key, byte[] payload) {
+    return new ConsumerRecord<>(
+        topic,
+        partition,
+        offset,
+        timestamp,
+        TimestampType.CREATE_TIME,
+        key == null ? -1 : key.length,
+        payload == null ? -1 : payload.length,
+        key,
+        payload,
+        new RecordHeaders(),
+        Optional.empty());
   }
 }

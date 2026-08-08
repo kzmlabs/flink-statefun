@@ -18,7 +18,7 @@ set -euo pipefail
 CLUSTER_NAME=${1:-statefun-e2e}
 NAMESPACE=statefun-e2e
 FLINK_OPERATOR_VERSION=1.15.0
-KAFKA_TOPICS=(counter.commands counter.results counter.commands.ttl counter.results.ttl greeter.commands greeter.results)
+KAFKA_TOPICS=(counter.commands counter.results counter.commands.ttl counter.results.ttl greeter.commands greeter.results invalid.commands invalid.results)
 KINESIS_STREAMS=(counter.commands counter.results)
 S3_BUCKET=statefun-checkpoints
 
@@ -151,6 +151,7 @@ sed -e "s|\${IMAGE_REGISTRY_PREFIX}|${IMAGE_REGISTRY_PREFIX}|g" \
     "${K8S_MANIFESTS}/localstack.yaml" | kubectl apply -f -
 kubectl apply -f "${K8S_MANIFESTS}/remote-function.yaml"
 kubectl apply -f "${K8S_MANIFESTS}/module-configmap.yaml"
+kubectl apply -f "${K8S_MANIFESTS}/module-configmap-invalid.yaml"
 
 for app in kafka localstack remote-function; do
   echo "=== Waiting for ${app} to be ready ==="
@@ -209,23 +210,29 @@ MSYS_NO_PATHCONV=1 kubectl exec -n "${NAMESPACE}" "${LOCALSTACK_POD}" -- \
 
 # --- FlinkDeployment --------------------------------------------------------
 
-echo "=== Deploying FlinkDeployment ==="
-kubectl apply -f "${K8S_MANIFESTS}/flink-deployment.yaml"
+wait_for_flinkdeployment() {
+  local name=$1
+  echo "=== Waiting for FlinkDeployment ${name} to be READY ==="
+  for i in $(seq 1 60); do
+    status=$(kubectl get flinkdeployment "${name}" -n "${NAMESPACE}" \
+      -o jsonpath='{.status.jobManagerDeploymentStatus}' 2>/dev/null || echo UNKNOWN)
+    echo "  [${i}/60] FlinkDeployment ${name}: ${status}"
+    [[ "${status}" == READY ]] && { echo "FlinkDeployment ${name} is READY!"; return 0; }
+    if [[ $i -eq 60 ]]; then
+      echo "ERROR: FlinkDeployment ${name} did not reach READY within 5 minutes"
+      kubectl describe flinkdeployment "${name}" -n "${NAMESPACE}" || true
+      kubectl logs -n "${NAMESPACE}" -l "app=${name},component=jobmanager" --tail=50 || true
+      exit 1
+    fi
+    sleep 5
+  done
+}
 
-echo "=== Waiting for FlinkDeployment to be READY ==="
-for i in $(seq 1 60); do
-  status=$(kubectl get flinkdeployment statefun-jobmanager -n "${NAMESPACE}" \
-    -o jsonpath='{.status.jobManagerDeploymentStatus}' 2>/dev/null || echo UNKNOWN)
-  echo "  [${i}/60] FlinkDeployment: ${status}"
-  [[ "${status}" == READY ]] && { echo "FlinkDeployment is READY!"; break; }
-  if [[ $i -eq 60 ]]; then
-    echo "ERROR: FlinkDeployment did not reach READY within 5 minutes"
-    kubectl describe flinkdeployment statefun-jobmanager -n "${NAMESPACE}" || true
-    kubectl logs -n "${NAMESPACE}" -l component=jobmanager --tail=50 || true
-    exit 1
-  fi
-  sleep 5
-done
+echo "=== Deploying FlinkDeployments ==="
+kubectl apply -f "${K8S_MANIFESTS}/flink-deployment.yaml"
+kubectl apply -f "${K8S_MANIFESTS}/flink-deployment-invalid.yaml"
+wait_for_flinkdeployment statefun-jobmanager
+wait_for_flinkdeployment statefun-e2e-invalid
 
 echo
 echo "=== Cluster ${CLUSTER_NAME} is ready ==="
