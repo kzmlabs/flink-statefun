@@ -78,6 +78,7 @@ nav:
       - Kinesis I/O: guides/kinesis-io.md
       - Kubernetes deployment: guides/k8s-deployment.md
       - Logging: guides/logging.md
+      - Metrics: guides/metrics.md
   - Architecture:
       - Overview: architecture/index.md
       - Shading layer: architecture/shading.md

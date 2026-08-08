@@ -7,8 +7,8 @@ description: A configurable policy for malformed Kafka records on the routable i
 
 | | |
 |---|---|
-| Status | Proposed |
-| Date | 2026-07-25 |
+| Status | Accepted (skip + fail implemented; forward pending) |
+| Date | 2026-07-25, revised 2026-08-08 |
 | Issues/PRs | Issue #272 |
 
 ## Context
@@ -21,7 +21,7 @@ This compounds the restart-strategy gap fixed in ADR-0007: with the corrected re
 
 Introduce `invalidRecordHandling` as a per-ingress default with per-topic override, mirroring the existing placement of `forwardHeaders`. It is a camelCase field holding an object with a `type` discriminator, consistent with existing spec conventions like `deliverySemantic`:
 
-- `type: skip` (new default, no yaml required): the record is dropped, a log entry is emitted with full context (topic, partition, offset, timestamp, defect class, error, key, value size), a rate limiter prevents log flooding under sustained garbage (keyed by topic and defect class, so distinct defects always log fully; suppressed repeats surface in periodic summary lines carrying counts and per-partition offset ranges), and a metric counter increments for every record. The job never leaves `RUNNING`. The log level defaults to ERROR and can be lowered per ingress or per topic with `logLevel: warn`.
+- `type: skip` (new default, no yaml required): the record is dropped, every skipped record is logged individually with full context (defect class, topic, partition, offset, timestamp, key, value size) and a metric counter increments for every record. The job never leaves `RUNNING`. Revised 2026-08-08: the originally proposed rate limiter with summary lines was dropped in implementation - per-record diagnosability was chosen over flood protection, the counters are the alerting signal. The log level defaults to WARN and can be raised per ingress or per topic with `logLevel: error`.
 - `type: fail`: restores the previous behavior, the job crashes on the first invalid record, with pinned exception contracts so existing log-grepping tooling keeps working.
 - `type: forward`: the invalid record is delivered to a configured dead-letter function as a normal message, not a special envelope. The payload keeps the topic's configured `valueType` with the original bytes verbatim; a tombstone forwards as an empty payload, since the runtime's `TypedValue` invariant prohibits unset message values (the SDK `MessageWrapper` rejects them), and the `NULL_VALUE` defect metadata preserves the null-vs-empty distinction. Java SDK conveniences ship alongside: `Message.lastHeader(String)` (mirroring Kafka's and `KafkaEgressCapture`'s `lastHeader`) and an `InvalidRecord.of(message)` wrapper with Optional-returning, never-throwing accessors; raw `statefun.invalid/*` keys remain the cross-SDK contract. Provenance rides as message metadata under the reserved `statefun.invalid/` prefix (`kafka.topic`, `kafka.partition`, `kafka.offset`, `kafka.timestamp`, `defect`, `error`, `key`). Original record headers pass through unchanged. Any incoming header already using the reserved prefix is stripped so provenance cannot be spoofed by producers. The function instance id is the record key when present, or the literal `"none"` otherwise.
 
@@ -32,7 +32,7 @@ Bind-time validation of routing targets was considered and dropped: with remote 
 ## Consequences
 
 - The default behavior changes from crash-the-job to skip-with-ERROR-log; this is a breaking behavior change that must be called out in release notes.
-- Operators who currently alert on job restarts as their signal for bad data need to migrate that alert to the `numInvalidRecordsSkipped` metric instead. Metric naming follows Flink conventions (camelCase `numXxx`, cf. `numLateRecordsDropped`), and the FLIP-33 standard source counter `numRecordsInErrors` increments alongside the policy-specific counters so existing dashboards pick the signal up unchanged.
+- Operators who currently alert on job restarts as their signal for bad data need to migrate that alert to the `numInvalidRecordsSkipped` metric instead. Metric naming follows Flink conventions (camelCase `numXxx`, cf. `numLateRecordsDropped`), and the FLIP-33 standard source counter `numRecordsInErrors` increments alongside the policy-specific counters so existing dashboards pick the signal up unchanged. A per-topic breakdown `topic.<name>.numInvalidRecordsSkipped` (the Kafka connector's `topic` group convention) makes one bad producer attributable and alertable in isolation (added 2026-08-08).
 - `type: forward` gives StateFun a dead-letter path that reuses the existing message and metadata machinery from ADR-0005 (Kafka record headers) with no new protocol additions, and no new runtime machinery beyond the existing ingress-to-function path.
 - `type: fail` remains available for teams that prefer the old strict contract, one line of yaml away.
 - Unroutable targets (a typo'd namespace in `targets:`) still fail at first message, past the reach of this policy; keeping routing targets correct stays a deploy-review concern.

@@ -44,6 +44,42 @@ startupPosition:
   timestamp: "2026-04-23T00:00:00.000Z"     # ISO-8601
 ```
 
+### Invalid records
+
+The routable ingress requires a UTF-8 key and a non-null value on every record: the key is the target function instance id, and a null value (tombstone) has no meaning to a function. `invalidRecordHandling` decides what happens to records that violate this - as an ingress-level default, with a per-topic override that replaces it wholesale:
+
+```yaml
+kind: io.statefun.kafka.v1/ingress
+spec:
+  invalidRecordHandling:
+    type: skip          # default when omitted
+    logLevel: warn      # skip only: warn (default) or error
+  topics:
+    - topic: example.orders
+      invalidRecordHandling:
+        type: fail      # per-topic override: strict contract for this topic
+      ...
+```
+
+| `type` | Behavior |
+|---|---|
+| `skip` (default) | The record is dropped, the job keeps running. Every skipped record is logged individually on the TaskManager with full coordinates, and the [invalid-record counters](metrics.md) increment. |
+| `fail` | The job fails on the first invalid record with the coordinates in the exception - the strict pre-3.5 contract, one line of yaml away. |
+
+Every skipped record produces one log line - deliberately no rate limiting, so each corrupted record stays individually diagnosable:
+
+```
+Skipping invalid record: defect [NULL_VALUE], topic [example.orders], partition [0], offset [42], timestamp [1690000000123], key [order-17], value size [-1]
+```
+
+`defect` is `NULL_KEY` or `NULL_VALUE`; the key prints as `null` when absent; `value size` is `-1` for tombstones. An empty key is NOT invalid - it is a legal address that routes to the function instance with id `""`.
+
+For alerting on skipped records, see the [Metrics guide](metrics.md).
+
+!!! warning "Behavior change in 3.5"
+
+    Before 3.5 an invalid record crashed the whole job unconditionally. `skip` is the new default; teams that alerted on job restarts as their bad-data signal should alert on `numInvalidRecordsSkipped` instead, or pin `type: fail` to keep the old contract.
+
 ## Egress
 
 ```yaml
