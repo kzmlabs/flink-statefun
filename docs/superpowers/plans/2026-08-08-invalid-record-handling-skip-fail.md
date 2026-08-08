@@ -62,7 +62,9 @@ spec:
 
 **Interfaces:**
 - Produces: `class InvalidRecordException extends IllegalStateException` carrying `enum Defect { NULL_KEY, NULL_VALUE }`, topic, partition, offset (message stays byte-identical to stage 1, so existing greps and the merged E2E fragments keep matching).
-- Deserializer constructor gains `Map<String, InvalidRecordPolicy> policyByTopic` (threaded from the spec in `toUniversalKafkaIngressSpec`, like `routingConfigsByTopic()`); on a defect with SKIP policy `deserialize` returns null after logging through the rate limiter (Task 3); with FAIL it throws `InvalidRecordException`.
+- Deserializer constructor gains `Map<String, InvalidRecordPolicy> policyByTopic` (threaded from the spec in `toUniversalKafkaIngressSpec`, like `routingConfigsByTopic()`).
+- EXTENSIBILITY (requested 2026-08-08): the deserializer does not branch on the action itself. `InvalidRecordHandler` is a Serializable strategy interface `Message handle(ConsumerRecord, Defect)`; `InvalidRecordPolicy.handler()` resolves to `Fail` (throws the pinned `InvalidRecordException`) or `Skip(logLevel)` (logs per record, returns null). The future `forward` strategy becomes a third handler returning a routable envelope to the dead-letter function — the deserializer stays untouched.
+- `InvalidRecordException.forRecord(record, defect)` is the single builder of the pinned message.
 - Consumes: `InvalidRecordPolicy` from Task 1.
 
 - [ ] **Step 1: Write failing tests** — SKIP policy: null-key record and tombstone both return null (no throw) and the happy path still routes; FAIL policy: both throw `InvalidRecordException` with the exact stage-1 message (reuse the existing coordinate assertions); unknown-topic behavior unchanged.
@@ -84,7 +86,7 @@ Design revision over the original ADR text: the operator wants every skipped rec
 **Interfaces:**
 - Log line shape (one per skipped record, level from the topic's policy — WARN by default, ERROR when configured):
   `Skipping invalid record: defect [NULL_VALUE], topic [t], partition [0], offset [42], timestamp [1690000000123], key [pk-7], value size [-1]`
-  — key segment says `key [none]` for NULL_KEY defects; value size is `-1` for tombstones, byte length otherwise. Same coordinate vocabulary as the stage-1 exception messages so greps work across both policies.
+  — key segment says `key [null]` for NULL_KEY defects (matches Kafka's null-key vocabulary; decided 2026-08-08 over "none"); value size is `-1` for tombstones, byte length otherwise. Same coordinate vocabulary as the stage-1 exception messages so greps work across both policies. Handler class names are verbose top-level: `SkipInvalidRecordHandler`, `FailInvalidRecordHandler` (decided 2026-08-08).
 
 - [ ] **Step 1: Failing tests** — capture the logger (slf4j test appender or logback ListAppender, whichever the module already uses — check existing tests first); assert one event per skipped record with every fragment above, two skips = two events; default policy logs at WARN, `logLevel: error` policy logs the same line at ERROR.
 - [ ] **Step 2: Verify RED, 3: implement, 4: green, 5: commit** `feat(kafka): per-record ERROR logging for skipped invalid records`
@@ -99,7 +101,7 @@ Design revision over the original ADR text: the operator wants every skipped rec
 - Test: `statefun-flink/statefun-flink-io-bundle/src/test/java/org/apache/flink/statefun/flink/io/kafka/KafkaDeserializationSchemaDelegateTest.java`
 
 **Interfaces:**
-- `deserialize(record, collector)`: null from the delegate deserializer → do NOT collect; increment both counters. Counters registered in `open(DeserializationSchema.InitializationContext context)`: `numInvalidRecordsSkipped` (operator metric group) and standard `numRecordsInErrors`. Guard: metrics may be absent in unit tests (open not called) — counting must no-op, not NPE.
+- `deserialize(record, collector)`: null from the delegate deserializer → do NOT collect; increment counters. Counters registered in `open(DeserializationSchema.InitializationContext context)`: `numInvalidRecordsSkipped` (operator metric group), standard FLIP-33 `numRecordsInErrors`, and PER-TOPIC (requested 2026-08-08, for per-topic alerting): `addGroup("topic", record.topic()).counter("numInvalidRecordsSkipped")`, created lazily per topic on first skip and cached in a map. Guard: metrics may be absent in unit tests (open not called) — counting must no-op, not NPE.
 
 - [ ] **Step 1: Failing tests** — null result is not collected (mock Collector records nothing); non-null still collected; counters incremented once per skipped record after `open`.
 - [ ] **Step 2: Verify RED, 3: implement, 4: green, 5: commit** `feat(kafka): delegate skips null-deserialized records and counts them`

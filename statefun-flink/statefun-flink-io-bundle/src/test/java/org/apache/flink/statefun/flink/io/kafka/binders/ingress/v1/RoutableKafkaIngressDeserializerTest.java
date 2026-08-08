@@ -145,7 +145,7 @@ class RoutableKafkaIngressDeserializerTest {
         .contains("partition [3]")
         .contains("offset [42]")
         .contains("timestamp [1690000000123]")
-        .contains("key [none]")
+        .contains("key [null]")
         .contains("value size [1]");
     assertThat(log.list.get(1).getLevel()).isEqualTo(ch.qos.logback.classic.Level.WARN);
     assertThat(log.list.get(1).getFormattedMessage())
@@ -170,7 +170,7 @@ class RoutableKafkaIngressDeserializerTest {
   }
 
   private static ch.qos.logback.core.read.ListAppender<ch.qos.logback.classic.spi.ILoggingEvent> captureSkipLog() {
-    ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(InvalidRecordHandler.Skip.class);
+    ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(SkipInvalidRecordHandler.class);
     logger.detachAndStopAllAppenders();
     ch.qos.logback.core.read.ListAppender<ch.qos.logback.classic.spi.ILoggingEvent> appender = new ch.qos.logback.core.read.ListAppender<>();
     appender.start();

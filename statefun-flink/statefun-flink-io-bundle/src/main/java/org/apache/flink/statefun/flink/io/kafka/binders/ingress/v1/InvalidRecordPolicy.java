@@ -91,6 +91,6 @@ final class InvalidRecordPolicy implements Serializable {
 
   /** Resolves this policy to the handler strategy the deserializer applies to invalid records. */
   InvalidRecordHandler handler() {
-    return action == Action.FAIL ? new InvalidRecordHandler.Fail() : new InvalidRecordHandler.Skip(logLevel);
+    return action == Action.FAIL ? new FailInvalidRecordHandler() : new SkipInvalidRecordHandler(logLevel);
   }
 }
