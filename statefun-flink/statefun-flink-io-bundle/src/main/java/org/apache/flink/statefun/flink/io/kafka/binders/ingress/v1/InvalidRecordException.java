@@ -40,9 +40,12 @@ final class InvalidRecordException extends IllegalStateException {
     String reason = defect == Defect.NULL_KEY ? "requires a UTF-8 key set for each record" : "cannot process a tombstone (null value) record";
     return new InvalidRecordException(
         defect,
-        String.format(
-            "The %s/%s ingress %s. Offending record: topic [%s], partition [%d], offset [%d], timestamp [%d]%s.",
-            tpe.namespace(), tpe.name(), reason, input.topic(), input.partition(), input.offset(), input.timestamp(), keySegment));
+        String.format("The %s/%s ingress %s. Offending record: %s%s.", tpe.namespace(), tpe.name(), reason, coordinates(input), keySegment));
+  }
+
+  /** Shared coordinate segment of the pinned exception message and the skip log line. */
+  static String coordinates(ConsumerRecord<byte[], byte[]> input) {
+    return String.format("topic [%s], partition [%d], offset [%d], timestamp [%d]", input.topic(), input.partition(), input.offset(), input.timestamp());
   }
 
   Defect defect() {

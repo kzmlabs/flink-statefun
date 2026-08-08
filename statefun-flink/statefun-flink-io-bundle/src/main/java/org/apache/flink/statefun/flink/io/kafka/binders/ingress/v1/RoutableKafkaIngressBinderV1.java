@@ -54,8 +54,8 @@ import org.apache.flink.statefun.sdk.spi.StatefulFunctionModule;
  * <p>{@code invalidRecordHandling} decides what happens to records the ingress cannot route: a
  * record with a null key or a null value (tombstone). {@code type: skip} (the default) drops the
  * record, logs it individually with full coordinates at {@code logLevel} (warn by default), and
- * increments the {@code numInvalidRecordsSkipped} and {@code numRecordsInErrors} counters plus a
- * per-topic {@code topic.<name>.numInvalidRecordsSkipped}; the job keeps running. {@code type:
+ * increments the {@code numInvalidRecordsSkipped} counter plus a per-topic per-defect
+ * {@code topic.<name>.defect.<defect>.numInvalidRecordsSkipped}; the job keeps running. {@code type:
  * fail} restores the strict contract: the job fails on the first invalid record with the record
  * coordinates in the exception.
  *

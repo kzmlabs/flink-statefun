@@ -23,18 +23,23 @@ final class KafkaDeserializationSchemaDelegate<T> implements KafkaRecordDeserial
   private final KafkaIngressDeserializer<T> delegate;
 
   private transient Counter numInvalidRecordsSkipped;
-  private transient Counter numRecordsInErrors;
 
   KafkaDeserializationSchemaDelegate(KafkaIngressDeserializer<T> delegate) {
     this.producedTypeInfo = new UnimplementedTypeInfo<>();
     this.delegate = Objects.requireNonNull(delegate);
   }
 
+  /**
+   * The metric group here is the KafkaSource-provided deserializer subgroup, so everything
+   * registered lands under operator.deserializer.*. The FLIP-33 standard numRecordsInErrors
+   * counter lives on the operator I/O group, which is not reachable from this context; a
+   * same-named counter in a different scope would only mislead dashboards, so it is deliberately
+   * not registered.
+   */
   @Override
   public void open(DeserializationSchema.InitializationContext context) throws Exception {
     MetricGroup metricGroup = context.getMetricGroup();
     numInvalidRecordsSkipped = metricGroup.counter("numInvalidRecordsSkipped");
-    numRecordsInErrors = metricGroup.counter("numRecordsInErrors");
     if (delegate instanceof InvalidRecordMetricsAware metricsAware) {
       metricsAware.registerInvalidRecordMetrics(metricGroup);
     }
@@ -53,10 +58,11 @@ final class KafkaDeserializationSchemaDelegate<T> implements KafkaRecordDeserial
   }
 
   /**
-   * A null from the deserializer means the record was invalid and its policy said skip: it is
-   * counted (globally plus FLIP-33 numRecordsInErrors; the labeled per-topic per-defect breakdown
-   * is registered by the deserializer itself via InvalidRecordMetricsAware) and not collected. The
-   * valid-record path pays only one null comparison on top of the pre-existing behavior.
+   * A null from the deserializer means skip this record: it is counted and not collected. This
+   * honors the KafkaIngressDeserializer javadoc contract for every deserializer, including custom
+   * ones; the labeled per-topic per-defect breakdown is registered by the routable deserializer
+   * itself via InvalidRecordMetricsAware. The valid-record path pays only one null comparison on
+   * top of the pre-existing behavior.
    */
   @Override
   public void deserialize(ConsumerRecord<byte[], byte[]> consumerRecord, Collector<T> collector) {
@@ -64,7 +70,6 @@ final class KafkaDeserializationSchemaDelegate<T> implements KafkaRecordDeserial
     if (value == null) {
       if (numInvalidRecordsSkipped != null) {
         numInvalidRecordsSkipped.inc();
-        numRecordsInErrors.inc();
       }
       return;
     }

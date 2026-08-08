@@ -5,7 +5,7 @@ description: Prometheus alert rules for the invalid-record counters of the routa
 
 # Alerting
 
-Alert rules for the counters documented in [Metrics](metrics.md). Prerequisite: a Prometheus reporter scraping the TaskManagers (port 9249 in the reference deployments). The metric name prefix below follows the default scope format; adjust it to your `metrics.scope.*` configuration - the `topic_defect_numInvalidRecordsSkipped` suffix is stable.
+Alert rules for the counters documented in [Metrics](metrics.md). Prerequisite: a Prometheus reporter scraping the TaskManagers (port 9249 in the reference deployments). The metric name prefix below follows the default scope format; adjust it to your `metrics.scope.*` configuration - the `deserializer_topic_defect_numInvalidRecordsSkipped` suffix is stable.
 
 ## Invalid records
 
@@ -13,7 +13,7 @@ The per-topic, per-defect counter carries `topic` and `defect` as labels, so a f
 
 ```yaml
 - alert: StateFunInvalidRecordsSkipped
-  expr: increase(flink_taskmanager_job_task_operator_topic_defect_numInvalidRecordsSkipped[5m]) > 0
+  expr: increase(flink_taskmanager_job_task_operator_deserializer_topic_defect_numInvalidRecordsSkipped[5m]) > 0
   labels:
     severity: warning
   annotations:
@@ -25,7 +25,7 @@ To page on a sustained stream rather than a single stray record, alert on the ra
 
 ```yaml
 - alert: StateFunInvalidRecordsSustained
-  expr: rate(flink_taskmanager_job_task_operator_topic_defect_numInvalidRecordsSkipped[15m]) > 0.1
+  expr: rate(flink_taskmanager_job_task_operator_deserializer_topic_defect_numInvalidRecordsSkipped[15m]) > 0.1
   labels:
     severity: critical
   annotations:

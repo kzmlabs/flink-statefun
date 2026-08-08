@@ -192,7 +192,7 @@ final class RoutableKafkaIngressSpec {
     @JsonProperty("invalidRecordHandling")
     @JsonDeserialize(using = InvalidRecordHandlingJsonDeserializer.class)
     public Builder withInvalidRecordHandling(InvalidRecordPolicy invalidRecordHandling) {
-      this.invalidRecordHandlingDefault = Objects.requireNonNull(invalidRecordHandling);
+      this.invalidRecordHandlingDefault = invalidRecordHandling != null ? invalidRecordHandling : InvalidRecordPolicy.defaults();
       return this;
     }
 

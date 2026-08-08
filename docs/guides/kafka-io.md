@@ -109,7 +109,7 @@ Alert rules for the counters: [Alerting](alerting.md).
 
 !!! warning "Behavior change in 3.5"
 
-    Previously an invalid record crashed the whole job unconditionally. `skip` is the new default. Teams alerting on job restarts as their bad-data signal should alert on `numInvalidRecordsSkipped` instead, or pin `type: fail`.
+    Previously an invalid record crashed the whole job unconditionally. `skip` is the new default. Teams alerting on job restarts as their bad-data signal should alert on `numInvalidRecordsSkipped` instead, or pin `type: fail`. The null-means-skip contract also applies to custom `KafkaIngressDeserializer` implementations: a null return, previously a crash, now counts and drops the record.
 
 ## Egress
 

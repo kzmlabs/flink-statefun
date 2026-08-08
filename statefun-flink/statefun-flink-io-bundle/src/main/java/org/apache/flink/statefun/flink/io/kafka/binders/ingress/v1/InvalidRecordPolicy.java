@@ -50,8 +50,9 @@ final class InvalidRecordPolicy implements Serializable {
   }
 
   /**
-   * Parses an invalidRecordHandling spec node: type skip or fail, optional logLevel warn or error
-   * applicable to skip only. Unknown values fail spec parsing with the valid values listed.
+   * Parses an invalidRecordHandling spec node: type skip or fail, optional logLevel (debug, info,
+   * warn or error) applicable to skip only. Unknown values fail spec parsing with the valid values
+   * listed.
    */
   static InvalidRecordPolicy fromSpecNode(JsonNode node) {
     JsonNode typeNode = node.get("type");

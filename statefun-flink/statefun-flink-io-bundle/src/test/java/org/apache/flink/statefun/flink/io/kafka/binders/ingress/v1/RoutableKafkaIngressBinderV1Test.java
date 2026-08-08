@@ -74,6 +74,16 @@ public class RoutableKafkaIngressBinderV1Test {
   }
 
   @Test
+  public void emptyInvalidRecordHandlingNodeFallsBackToDefaults() throws Exception {
+    RoutableKafkaIngressSpec spec = parseSpec(componentFromYaml("kind: io.statefun.kafka.v1/ingress\nspec:\n  id: com.foo.bar/x\n  invalidRecordHandling:\n  topics:\n    - topic: t\n      valueType: com.googleapis/com.mycomp.foo.MessageA\n      targets:\n        - com.mycomp.foo/function-1\n"));
+
+    InvalidRecordPolicy policy = spec.invalidRecordPolicyByTopic().get("t");
+
+    assertThat(policy.action(), equalTo(InvalidRecordPolicy.Action.SKIP));
+    assertThat(policy.logLevel(), equalTo(InvalidRecordPolicy.LogLevel.WARN));
+  }
+
+  @Test
   public void rejectsLogLevelUnderFailPolicy() {
     assertThrows(Exception.class, () -> parseSpec(componentFromYaml("kind: io.statefun.kafka.v1/ingress\nspec:\n  id: com.foo.bar/x\n  invalidRecordHandling:\n    type: fail\n    logLevel: warn\n  topics:\n    - topic: t\n      valueType: com.googleapis/com.mycomp.foo.MessageA\n      targets:\n        - com.mycomp.foo/function-1\n")));
   }

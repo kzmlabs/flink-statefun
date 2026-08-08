@@ -29,19 +29,21 @@ final class SkipInvalidRecordHandler implements InvalidRecordHandler {
     return logLevel;
   }
 
+  /** The message is built only when the target level is enabled, so a silenced poison flood costs no formatting. */
   @Override
   public Message handle(ConsumerRecord<byte[], byte[]> record, InvalidRecordException.Defect defect) {
-    String key = record.key() == null ? "null" : new String(record.key(), StandardCharsets.UTF_8);
-    int valueSize = record.value() == null ? -1 : record.value().length;
-    String message = String.format(
-        "Skipping invalid record: defect [%s], topic [%s], partition [%d], offset [%d], timestamp [%d], key [%s], value size [%d]",
-        defect, record.topic(), record.partition(), record.offset(), record.timestamp(), key, valueSize);
     switch (logLevel) {
-      case DEBUG -> LOG.debug(message);
-      case INFO -> LOG.info(message);
-      case WARN -> LOG.warn(message);
-      case ERROR -> LOG.error(message);
+      case DEBUG -> { if (LOG.isDebugEnabled()) LOG.debug(message(record, defect)); }
+      case INFO -> { if (LOG.isInfoEnabled()) LOG.info(message(record, defect)); }
+      case WARN -> { if (LOG.isWarnEnabled()) LOG.warn(message(record, defect)); }
+      case ERROR -> { if (LOG.isErrorEnabled()) LOG.error(message(record, defect)); }
     }
     return null;
+  }
+
+  private static String message(ConsumerRecord<byte[], byte[]> record, InvalidRecordException.Defect defect) {
+    String key = record.key() == null ? "null" : new String(record.key(), StandardCharsets.UTF_8);
+    int valueSize = record.value() == null ? -1 : record.value().length;
+    return String.format("Skipping invalid record: defect [%s], %s, key [%s], value size [%d]", defect, InvalidRecordException.coordinates(record), key, valueSize);
   }
 }

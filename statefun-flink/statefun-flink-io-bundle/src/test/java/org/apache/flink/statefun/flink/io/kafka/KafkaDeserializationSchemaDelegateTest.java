@@ -89,7 +89,6 @@ class KafkaDeserializationSchemaDelegateTest {
     delegate.deserialize(new ConsumerRecord<>("orders", 0, 2L, "k".getBytes(StandardCharsets.UTF_8), "ok".getBytes(StandardCharsets.UTF_8)), collector);
 
     assertThat(metrics.count("numInvalidRecordsSkipped")).isEqualTo(3);
-    assertThat(metrics.count("numRecordsInErrors")).isEqualTo(3);
     assertThat(collector.collected).containsExactly("ok");
   }
 
