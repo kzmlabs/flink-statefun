@@ -16,7 +16,7 @@
         <link rel="prev" href="../adr/0008-kafka-invalid-record-handling/">
       
       
-        <link rel="next" href="kafka-record-headers/">
+        <link rel="next" href="invalid-record-handling/">
       
       
         
@@ -1604,6 +1604,8 @@
       
         
       
+        
+      
     
     
     
@@ -1659,6 +1661,34 @@
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="invalid-record-handling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    One bad record should not kill 20 pipelines
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
               
             
               
@@ -1875,6 +1905,10 @@
 <p>Long-form notes from the maintainers - the design decisions, migration playbooks, and engineering lessons behind running stateful actors on Apache Flink 2.x.</p>
 <h2 id="latest">Latest<a class="headerlink" href="#latest" title="Permanent link">&para;</a></h2>
 <ul>
+<li>
+<p><a href="invalid-record-handling/"><strong>One bad Kafka record should not kill 20 pipelines</strong></a>
+  A single null-key record used to crash the whole Stateful Functions job. KZM-3.5 turns that outage into a log line, a labeled metric and a routine ticket - with a strict mode one line of yaml away. <em>2026-08-08</em></p>
+</li>
 <li>
 <p><a href="kafka-record-headers/"><strong>Kafka record headers in Stateful Functions - closing a five-year-old gap</strong></a>
   End-to-end header support lands in KZM-3.4: trace propagation through function graphs, typed header values, Kafka-exact null semantics, per-topic opt-in - and the protocol trick that made it possible without touching the runtime's hot path. <em>2026-07-24</em></p>

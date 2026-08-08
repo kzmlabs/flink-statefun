@@ -89,6 +89,10 @@
          <lastmod>2026-08-08</lastmod>
     </url>
     <url>
+         <loc>https://kzmlabs.github.io/flink-statefun/articles/invalid-record-handling/</loc>
+         <lastmod>2026-08-08</lastmod>
+    </url>
+    <url>
          <loc>https://kzmlabs.github.io/flink-statefun/articles/kafka-record-headers/</loc>
          <lastmod>2026-08-08</lastmod>
     </url>
