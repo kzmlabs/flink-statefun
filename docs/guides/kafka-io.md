@@ -99,7 +99,7 @@ spec:
 
 Skip logging is one line per record, at `logLevel`, with no rate limiting:
 
-```
+```text
 Skipping invalid record: defect [NULL_VALUE], topic [example.orders], partition [0], offset [42], timestamp [1690000000123], key [order-17], value size [-1]
 ```
 

@@ -178,14 +178,26 @@ class RoutableKafkaIngressDeserializerTest {
     }
   }
 
-  private static ch.qos.logback.core.read.ListAppender<ch.qos.logback.classic.spi.ILoggingEvent> captureSkipLog() {
+  private ch.qos.logback.core.read.ListAppender<ch.qos.logback.classic.spi.ILoggingEvent> skipLogAppender;
+
+  private ch.qos.logback.core.read.ListAppender<ch.qos.logback.classic.spi.ILoggingEvent> captureSkipLog() {
     ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(SkipInvalidRecordHandler.class);
     logger.setLevel(ch.qos.logback.classic.Level.ALL);
-    logger.detachAndStopAllAppenders();
-    ch.qos.logback.core.read.ListAppender<ch.qos.logback.classic.spi.ILoggingEvent> appender = new ch.qos.logback.core.read.ListAppender<>();
-    appender.start();
-    logger.addAppender(appender);
-    return appender;
+    skipLogAppender = new ch.qos.logback.core.read.ListAppender<>();
+    skipLogAppender.start();
+    logger.addAppender(skipLogAppender);
+    return skipLogAppender;
+  }
+
+  @org.junit.jupiter.api.AfterEach
+  void detachSkipLogAppender() {
+    if (skipLogAppender != null) {
+      ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(SkipInvalidRecordHandler.class);
+      logger.detachAppender(skipLogAppender);
+      logger.setLevel(null);
+      skipLogAppender.stop();
+      skipLogAppender = null;
+    }
   }
 
   @Test

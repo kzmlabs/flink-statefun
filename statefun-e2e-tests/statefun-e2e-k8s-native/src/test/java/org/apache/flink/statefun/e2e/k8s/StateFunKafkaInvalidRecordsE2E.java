@@ -109,7 +109,12 @@ class StateFunKafkaInvalidRecordsE2E {
     assertThat(tmLog).contains("defect [NULL_KEY]");
     assertThat(tmLog).contains("defect [NULL_VALUE]");
     assertThat(tmLog).contains("topic [" + COMMANDS_TOPIC + "]");
+    assertThat(tmLog).contains("partition [0]");
+    assertThat(tmLog).contains("offset [");
+    assertThat(tmLog).contains("timestamp [");
+    assertThat(tmLog).contains("key [null]");
     assertThat(tmLog).contains("key [poison-tombstone]");
+    assertThat(tmLog).contains("value size [-1]");
   }
 
   @Test

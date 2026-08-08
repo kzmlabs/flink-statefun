@@ -11,9 +11,11 @@ Alert rules for the counters documented in [Metrics](metrics.md). Prerequisite: 
 
 The per-topic, per-defect counter carries `topic` and `defect` as labels, so a firing alert names the offending topic and the kind of corruption without log correlation:
 
+Both expressions aggregate with `sum by (topic, defect)`: a parallel ingress emits one series per source subtask, and without aggregation each subtask would fire its own alert.
+
 ```yaml
 - alert: StateFunInvalidRecordsSkipped
-  expr: increase(flink_taskmanager_job_task_operator_deserializer_topic_defect_numInvalidRecordsSkipped[5m]) > 0
+  expr: sum by (topic, defect) (increase(flink_taskmanager_job_task_operator_deserializer_topic_defect_numInvalidRecordsSkipped[5m])) > 0
   labels:
     severity: warning
   annotations:
@@ -25,7 +27,7 @@ To page on a sustained stream rather than a single stray record, alert on the ra
 
 ```yaml
 - alert: StateFunInvalidRecordsSustained
-  expr: rate(flink_taskmanager_job_task_operator_deserializer_topic_defect_numInvalidRecordsSkipped[15m]) > 0.1
+  expr: sum by (topic, defect) (rate(flink_taskmanager_job_task_operator_deserializer_topic_defect_numInvalidRecordsSkipped[15m])) > 0.1
   labels:
     severity: critical
   annotations:
