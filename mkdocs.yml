@@ -96,7 +96,7 @@ nav:
       - "0008: Kafka invalid-record handling": adr/0008-kafka-invalid-record-handling.md
   - Articles:
       - Overview: articles/index.md
-      - One bad record should not kill 20 pipelines: articles/invalid-record-handling.md
+      - One bad Kafka record shouldn't crash a Flink StateFun job: articles/invalid-record-handling.md
       - Kafka record headers in Stateful Functions: articles/kafka-record-headers.md
       - Upgrading to Flink Operator 1.15: articles/flink-operator-1.15-upgrade.md
       - We forked Apache Stateful Functions for Flink 2.x: articles/forking-statefun.md

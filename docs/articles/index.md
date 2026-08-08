@@ -9,7 +9,7 @@ Long-form notes from the maintainers - the design decisions, migration playbooks
 
 ## Latest
 
-- [**One bad Kafka record should not kill 20 pipelines**](invalid-record-handling.md)
+- [**One bad Kafka record shouldn't crash a Flink Stateful Functions job**](invalid-record-handling.md)
   A single null-key record used to crash the whole Stateful Functions job. KZM-3.5 turns that outage into a log line, a labeled metric and a routine ticket - with a strict mode one line of yaml away. *2026-08-08*
 
 - [**Kafka record headers in Stateful Functions - closing a five-year-old gap**](kafka-record-headers.md)

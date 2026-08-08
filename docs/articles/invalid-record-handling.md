@@ -1,9 +1,9 @@
 ---
-title: One bad Kafka record should not kill 20 pipelines
+title: One bad Kafka record shouldn't crash a Flink Stateful Functions job
 description: A single null-key record crashed a whole Stateful Functions job. StateFun Actors 3.4.0-KZM-3.5 ships invalidRecordHandling - skip by default, strict fail per topic, full per-record diagnostics.
 ---
 
-# One bad Kafka record should not kill 20 pipelines
+# One bad Kafka record shouldn't crash a Flink Stateful Functions job
 
 *Published 2026-08-08 · by the kzmlabs maintainers*
 
@@ -15,7 +15,7 @@ In Apache Stateful Functions, the routable Kafka ingress had no policy for malfo
 
 Either way the whole Flink job died - every ingress, every topic, every function, not just the pipeline that read the record. And it looped: the poison record's offset is never committed, so each restart re-reads it and dies again until the job parks at terminal `FAILED`.
 
-With twenty topics feeding twenty pipelines in one job, one producer bug on one topic halts all twenty.
+A Flink job runs many pipelines together and fails as a unit, so one producer bug on one topic halts all of them - not just the pipeline that read the record.
 
 ```mermaid
 flowchart LR
@@ -23,9 +23,9 @@ flowchart LR
     subgraph job ["one Flink job"]
         T1["topic: tracking"] --> F1["pipeline 1 ✓"]
         T3["topic: orders"] --> X["deserializer throws"]
-        T20["topic: billing"] --> F20["pipeline 20 ✓"]
+        TN["topic: billing"] --> FN["pipeline N ✓"]
     end
-    X == "job fails as a unit" ==> DOWN["ALL 20 pipelines FAILED"]
+    X == "job fails as a unit" ==> DOWN["every pipeline FAILED"]
     style X fill:#ff5470,color:#0a0e27
     style DOWN fill:#ff5470,color:#0a0e27
 ```
