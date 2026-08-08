@@ -129,7 +129,9 @@ Design revision over the original ADR text: the operator wants every skipped rec
 
 **Files:**
 - Modify: `docs/adr/0008-kafka-invalid-record-handling.md` (Status: Proposed → Accepted for skip/fail; forward noted as pending; REWRITE the rate-limiter sentence in the `type: skip` bullet: every skipped record logs individually with full context — defect, topic, partition, offset, timestamp, key, value size — because per-record diagnosability was chosen over flood protection; the metric remains for alerting. Also flip the documented default log level from ERROR to WARN, configurable per ingress/topic via `logLevel: warn|error`)
-- Modify: `docs/guides/kafka-io.md` — new "Invalid records" section documenting the yaml, the default change, the metrics, and the log shape
+- Modify: `docs/guides/kafka-io.md` — new "Invalid records" section documenting the yaml, the default change, the log shape, and a link to the metrics guide
+- Create: `docs/guides/metrics.md` (+ mkdocs nav entry next to Logging; decided 2026-08-08 — dedicated page, precedent is the Logging guide): table of the invalid-record counters (numInvalidRecordsSkipped operator-scope, FLIP-33 numRecordsInErrors, per-topic topic.<name>.numInvalidRecordsSkipped) with type/scope/when-incremented, and a PromQL alerting example on the per-topic counter
+- Modify ADR-0008 Consequences: document the per-topic counter alongside the existing metric naming paragraph
 - Modify: release notes / changelog location used by the repo (check `docs/release-process.md` for where breaking changes are recorded)
 
 - [ ] **Step 1: Write docs.**
