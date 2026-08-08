@@ -100,13 +100,6 @@ public final class RoutableKafkaIngressDeserializer
     return new IllegalStateException(
         String.format(
             "The %s/%s ingress %s. Offending record: topic [%s], partition [%d], offset [%d], timestamp [%d]%s.",
-            tpe.namespace(),
-            tpe.name(),
-            defect,
-            input.topic(),
-            input.partition(),
-            input.offset(),
-            input.timestamp(),
-            keySegment));
+            tpe.namespace(), tpe.name(), defect, input.topic(), input.partition(), input.offset(), input.timestamp(), keySegment));
   }
 }

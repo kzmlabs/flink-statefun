@@ -119,8 +119,7 @@ class RoutableKafkaIngressDeserializerTest {
 
   @Test
   void emptyKeyIsAValidAddressRoutingToEmptyInstanceId() {
-    final ConsumerRecord<byte[], byte[]> record =
-        consumerRecord(ORDERS_TOPIC, new byte[0], "p".getBytes(StandardCharsets.UTF_8));
+    final ConsumerRecord<byte[], byte[]> record = consumerRecord(ORDERS_TOPIC, new byte[0], "p".getBytes(StandardCharsets.UTF_8));
 
     final AutoRoutable routable = (AutoRoutable) deserializer.deserialize(record);
 
@@ -129,9 +128,7 @@ class RoutableKafkaIngressDeserializerTest {
 
   @Test
   void nullKeyFailureReportsRecordCoordinates() {
-    final ConsumerRecord<byte[], byte[]> record =
-        consumerRecordAt(
-            ORDERS_TOPIC, 3, 42L, 1690000000123L, null, "x".getBytes(StandardCharsets.UTF_8));
+    final ConsumerRecord<byte[], byte[]> record = consumerRecordAt(ORDERS_TOPIC, 3, 42L, 1690000000123L, null, "x".getBytes(StandardCharsets.UTF_8));
 
     assertThatThrownBy(() -> deserializer.deserialize(record))
         .isInstanceOf(IllegalStateException.class)
@@ -144,9 +141,7 @@ class RoutableKafkaIngressDeserializerTest {
 
   @Test
   void tombstoneFailureReportsRecordCoordinatesAndKey() {
-    final ConsumerRecord<byte[], byte[]> record =
-        consumerRecordAt(
-            ORDERS_TOPIC, 1, 7L, 1690000000456L, "pk-7".getBytes(StandardCharsets.UTF_8), null);
+    final ConsumerRecord<byte[], byte[]> record = consumerRecordAt(ORDERS_TOPIC, 1, 7L, 1690000000456L, "pk-7".getBytes(StandardCharsets.UTF_8), null);
 
     assertThatThrownBy(() -> deserializer.deserialize(record))
         .isInstanceOf(IllegalStateException.class)
