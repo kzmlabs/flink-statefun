@@ -100,6 +100,13 @@
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
         </dependency>
+        <!-- slf4j binding for asserting per-record skip logging; 1.2.x line matches slf4j-api 1.7 -->
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.2.13</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 </project>

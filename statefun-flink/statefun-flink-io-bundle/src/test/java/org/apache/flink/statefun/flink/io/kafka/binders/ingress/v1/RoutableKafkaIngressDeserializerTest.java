@@ -131,6 +131,54 @@ class RoutableKafkaIngressDeserializerTest {
   }
 
   @Test
+  void skipLogsEveryRecordWithFullContextAtWarnByDefault() {
+    ch.qos.logback.core.read.ListAppender<ch.qos.logback.classic.spi.ILoggingEvent> log = captureSkipLog();
+
+    deserializer.deserialize(consumerRecordAt(ORDERS_TOPIC, 3, 42L, 1690000000123L, null, "x".getBytes(StandardCharsets.UTF_8)));
+    deserializer.deserialize(consumerRecordAt(ORDERS_TOPIC, 1, 7L, 1690000000456L, "pk-7".getBytes(StandardCharsets.UTF_8), null));
+
+    assertThat(log.list).hasSize(2);
+    assertThat(log.list.get(0).getLevel()).isEqualTo(ch.qos.logback.classic.Level.WARN);
+    assertThat(log.list.get(0).getFormattedMessage())
+        .contains("defect [NULL_KEY]")
+        .contains("topic [" + ORDERS_TOPIC + "]")
+        .contains("partition [3]")
+        .contains("offset [42]")
+        .contains("timestamp [1690000000123]")
+        .contains("key [none]")
+        .contains("value size [1]");
+    assertThat(log.list.get(1).getLevel()).isEqualTo(ch.qos.logback.classic.Level.WARN);
+    assertThat(log.list.get(1).getFormattedMessage())
+        .contains("defect [NULL_VALUE]")
+        .contains("partition [1]")
+        .contains("offset [7]")
+        .contains("key [pk-7]")
+        .contains("value size [-1]");
+  }
+
+  @Test
+  void skipLogsAtErrorWhenConfigured() {
+    ch.qos.logback.core.read.ListAppender<ch.qos.logback.classic.spi.ILoggingEvent> log = captureSkipLog();
+    RoutableKafkaIngressDeserializer errorLevel =
+        new RoutableKafkaIngressDeserializer(
+            routingMap(ORDERS_TOPIC, ORDERS_ROUTING), Set.of(), Map.of(ORDERS_TOPIC, InvalidRecordPolicy.skip(InvalidRecordPolicy.LogLevel.ERROR)));
+
+    errorLevel.deserialize(consumerRecordAt(ORDERS_TOPIC, 0, 5L, 1690000000789L, null, "x".getBytes(StandardCharsets.UTF_8)));
+
+    assertThat(log.list).hasSize(1);
+    assertThat(log.list.get(0).getLevel()).isEqualTo(ch.qos.logback.classic.Level.ERROR);
+  }
+
+  private static ch.qos.logback.core.read.ListAppender<ch.qos.logback.classic.spi.ILoggingEvent> captureSkipLog() {
+    ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(InvalidRecordHandler.Skip.class);
+    logger.detachAndStopAllAppenders();
+    ch.qos.logback.core.read.ListAppender<ch.qos.logback.classic.spi.ILoggingEvent> appender = new ch.qos.logback.core.read.ListAppender<>();
+    appender.start();
+    logger.addAppender(appender);
+    return appender;
+  }
+
+  @Test
   void skipPolicyIsTheDefaultAndDropsNullKeyRecords() {
     ConsumerRecord<byte[], byte[]> record = consumerRecordAt(ORDERS_TOPIC, 3, 42L, 1690000000123L, null, "x".getBytes(StandardCharsets.UTF_8));
 
