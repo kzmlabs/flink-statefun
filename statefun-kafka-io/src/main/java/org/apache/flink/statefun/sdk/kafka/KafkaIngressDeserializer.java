@@ -17,7 +17,7 @@ public interface KafkaIngressDeserializer<T> extends Serializable {
    * Deserializes the Kafka record.
    *
    * @param input Kafka record to be deserialized.
-   * @return The deserialized message as an object (null if the message cannot be deserialized).
+   * @return The deserialized message as an object (null to skip the record (it is counted and not emitted)).
    */
   T deserialize(ConsumerRecord<byte[], byte[]> input);
 }

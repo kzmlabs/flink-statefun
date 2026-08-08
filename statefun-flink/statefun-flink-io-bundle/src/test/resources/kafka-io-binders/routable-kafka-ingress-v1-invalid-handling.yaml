@@ -1,0 +1,22 @@
+# SPDX-License-Identifier: Apache-2.0
+
+
+kind: io.statefun.kafka.v1/ingress
+spec:
+  id: com.foo.bar/invalid-handling-ingress
+  address: kafka-broker:9092
+  consumerGroupId: my-group-id
+  invalidRecordHandling:
+    type: fail
+  topics:
+    - topic: strict-topic
+      valueType: com.googleapis/com.mycomp.foo.MessageA
+      targets:
+        - com.mycomp.foo/function-1
+    - topic: lenient-topic
+      valueType: com.googleapis/com.mycomp.foo.MessageB
+      invalidRecordHandling:
+        type: skip
+        logLevel: error
+      targets:
+        - com.mycomp.foo/function-2

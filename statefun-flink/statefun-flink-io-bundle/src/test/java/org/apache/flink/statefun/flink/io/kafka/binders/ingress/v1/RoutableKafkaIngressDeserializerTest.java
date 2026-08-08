@@ -39,12 +39,16 @@ class RoutableKafkaIngressDeserializerTest {
           .build();
 
   private RoutableKafkaIngressDeserializer deserializer;
+  private RoutableKafkaIngressDeserializer failPolicyDeserializer;
 
   @BeforeEach
   void setUp() {
     deserializer =
         new RoutableKafkaIngressDeserializer(
-            routingMap(ORDERS_TOPIC, ORDERS_ROUTING), Set.of(ORDERS_TOPIC));
+            routingMap(ORDERS_TOPIC, ORDERS_ROUTING), Set.of(ORDERS_TOPIC), Map.of());
+    failPolicyDeserializer =
+        new RoutableKafkaIngressDeserializer(
+            routingMap(ORDERS_TOPIC, ORDERS_ROUTING), Set.of(ORDERS_TOPIC), Map.of(ORDERS_TOPIC, InvalidRecordPolicy.fail()));
   }
 
   @Test
@@ -104,7 +108,7 @@ class RoutableKafkaIngressDeserializerTest {
   @Test
   void headersAreIgnoredWhenTopicHasNotOptedIntoForwarding() {
     RoutableKafkaIngressDeserializer optedOut =
-        new RoutableKafkaIngressDeserializer(routingMap(ORDERS_TOPIC, ORDERS_ROUTING), Set.of());
+        new RoutableKafkaIngressDeserializer(routingMap(ORDERS_TOPIC, ORDERS_ROUTING), Set.of(), Map.of());
     ConsumerRecord<byte[], byte[]> record =
         consumerRecord(
             ORDERS_TOPIC,
@@ -127,11 +131,113 @@ class RoutableKafkaIngressDeserializerTest {
   }
 
   @Test
+  void skipLogsEveryRecordWithFullContextAtWarnByDefault() {
+    ch.qos.logback.core.read.ListAppender<ch.qos.logback.classic.spi.ILoggingEvent> log = captureSkipLog();
+
+    deserializer.deserialize(consumerRecordAt(ORDERS_TOPIC, 3, 42L, 1690000000123L, null, "x".getBytes(StandardCharsets.UTF_8)));
+    deserializer.deserialize(consumerRecordAt(ORDERS_TOPIC, 1, 7L, 1690000000456L, "pk-7".getBytes(StandardCharsets.UTF_8), null));
+
+    assertThat(log.list).hasSize(2);
+    assertThat(log.list.get(0).getLevel()).isEqualTo(ch.qos.logback.classic.Level.WARN);
+    assertThat(log.list.get(0).getFormattedMessage())
+        .contains("defect [NULL_KEY]")
+        .contains("topic [" + ORDERS_TOPIC + "]")
+        .contains("partition [3]")
+        .contains("offset [42]")
+        .contains("timestamp [1690000000123]")
+        .contains("key [null]")
+        .contains("value size [1]");
+    assertThat(log.list.get(1).getLevel()).isEqualTo(ch.qos.logback.classic.Level.WARN);
+    assertThat(log.list.get(1).getFormattedMessage())
+        .contains("defect [NULL_VALUE]")
+        .contains("partition [1]")
+        .contains("offset [7]")
+        .contains("key [pk-7]")
+        .contains("value size [-1]");
+  }
+
+  @Test
+  void skipLogsAtEveryConfigurableLevel() {
+    ch.qos.logback.core.read.ListAppender<ch.qos.logback.classic.spi.ILoggingEvent> log = captureSkipLog();
+    Map<InvalidRecordPolicy.LogLevel, ch.qos.logback.classic.Level> expected = Map.of(
+        InvalidRecordPolicy.LogLevel.DEBUG, ch.qos.logback.classic.Level.DEBUG,
+        InvalidRecordPolicy.LogLevel.INFO, ch.qos.logback.classic.Level.INFO,
+        InvalidRecordPolicy.LogLevel.WARN, ch.qos.logback.classic.Level.WARN,
+        InvalidRecordPolicy.LogLevel.ERROR, ch.qos.logback.classic.Level.ERROR);
+
+    for (Map.Entry<InvalidRecordPolicy.LogLevel, ch.qos.logback.classic.Level> entry : expected.entrySet()) {
+      log.list.clear();
+      RoutableKafkaIngressDeserializer configured =
+          new RoutableKafkaIngressDeserializer(
+              routingMap(ORDERS_TOPIC, ORDERS_ROUTING), Set.of(), Map.of(ORDERS_TOPIC, InvalidRecordPolicy.skip(entry.getKey())));
+
+      configured.deserialize(consumerRecordAt(ORDERS_TOPIC, 0, 5L, 1690000000789L, null, "x".getBytes(StandardCharsets.UTF_8)));
+
+      assertThat(log.list).as("one log event at level %s", entry.getKey()).hasSize(1);
+      assertThat(log.list.get(0).getLevel()).isEqualTo(entry.getValue());
+    }
+  }
+
+  private ch.qos.logback.core.read.ListAppender<ch.qos.logback.classic.spi.ILoggingEvent> skipLogAppender;
+
+  private ch.qos.logback.core.read.ListAppender<ch.qos.logback.classic.spi.ILoggingEvent> captureSkipLog() {
+    ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(SkipInvalidRecordHandler.class);
+    logger.setLevel(ch.qos.logback.classic.Level.ALL);
+    skipLogAppender = new ch.qos.logback.core.read.ListAppender<>();
+    skipLogAppender.start();
+    logger.addAppender(skipLogAppender);
+    return skipLogAppender;
+  }
+
+  @org.junit.jupiter.api.AfterEach
+  void detachSkipLogAppender() {
+    if (skipLogAppender != null) {
+      ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(SkipInvalidRecordHandler.class);
+      logger.detachAppender(skipLogAppender);
+      logger.setLevel(null);
+      skipLogAppender.stop();
+      skipLogAppender = null;
+    }
+  }
+
+  @Test
+  void skippedRecordsAreCountedByTopicAndDefect() {
+    org.apache.flink.statefun.flink.io.testutils.RecordingMetricGroup metrics = new org.apache.flink.statefun.flink.io.testutils.RecordingMetricGroup();
+    deserializer.registerInvalidRecordMetrics(metrics.group());
+
+    deserializer.deserialize(consumerRecordAt(ORDERS_TOPIC, 0, 1L, 1690000000100L, null, "x".getBytes(StandardCharsets.UTF_8)));
+    deserializer.deserialize(consumerRecordAt(ORDERS_TOPIC, 0, 2L, 1690000000200L, "pk-1".getBytes(StandardCharsets.UTF_8), null));
+    deserializer.deserialize(consumerRecordAt(ORDERS_TOPIC, 0, 3L, 1690000000300L, "pk-2".getBytes(StandardCharsets.UTF_8), null));
+
+    assertThat(metrics.count("topic." + ORDERS_TOPIC + ".defect.NULL_KEY.numInvalidRecordsSkipped")).isEqualTo(1);
+    assertThat(metrics.count("topic." + ORDERS_TOPIC + ".defect.NULL_VALUE.numInvalidRecordsSkipped")).isEqualTo(2);
+  }
+
+  @Test
+  void skippingWithoutRegisteredMetricsIsANoOp() {
+    assertThat(deserializer.deserialize(consumerRecordAt(ORDERS_TOPIC, 0, 1L, 1690000000100L, null, "x".getBytes(StandardCharsets.UTF_8)))).isNull();
+  }
+
+  @Test
+  void skipPolicyIsTheDefaultAndDropsNullKeyRecords() {
+    ConsumerRecord<byte[], byte[]> record = consumerRecordAt(ORDERS_TOPIC, 3, 42L, 1690000000123L, null, "x".getBytes(StandardCharsets.UTF_8));
+
+    assertThat(deserializer.deserialize(record)).isNull();
+  }
+
+  @Test
+  void skipPolicyIsTheDefaultAndDropsTombstones() {
+    ConsumerRecord<byte[], byte[]> record = consumerRecordAt(ORDERS_TOPIC, 1, 7L, 1690000000456L, "pk-7".getBytes(StandardCharsets.UTF_8), null);
+
+    assertThat(deserializer.deserialize(record)).isNull();
+  }
+
+  @Test
   void nullKeyFailureReportsRecordCoordinates() {
     ConsumerRecord<byte[], byte[]> record = consumerRecordAt(ORDERS_TOPIC, 3, 42L, 1690000000123L, null, "x".getBytes(StandardCharsets.UTF_8));
 
-    assertThatThrownBy(() -> deserializer.deserialize(record))
-        .isInstanceOf(IllegalStateException.class)
+    assertThatThrownBy(() -> failPolicyDeserializer.deserialize(record))
+        .isInstanceOf(InvalidRecordException.class)
         .hasMessageContaining("requires a UTF-8 key")
         .hasMessageContaining("topic [" + ORDERS_TOPIC + "]")
         .hasMessageContaining("partition [3]")
@@ -143,8 +249,8 @@ class RoutableKafkaIngressDeserializerTest {
   void tombstoneFailureReportsRecordCoordinatesAndKey() {
     ConsumerRecord<byte[], byte[]> record = consumerRecordAt(ORDERS_TOPIC, 1, 7L, 1690000000456L, "pk-7".getBytes(StandardCharsets.UTF_8), null);
 
-    assertThatThrownBy(() -> deserializer.deserialize(record))
-        .isInstanceOf(IllegalStateException.class)
+    assertThatThrownBy(() -> failPolicyDeserializer.deserialize(record))
+        .isInstanceOf(InvalidRecordException.class)
         .hasMessageContaining("tombstone")
         .hasMessageContaining("topic [" + ORDERS_TOPIC + "]")
         .hasMessageContaining("partition [1]")

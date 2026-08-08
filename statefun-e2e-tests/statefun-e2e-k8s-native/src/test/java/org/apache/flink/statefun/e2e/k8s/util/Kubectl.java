@@ -44,7 +44,16 @@ public final class Kubectl {
    * that failure live in the previous container's log.
    */
   public static String jobManagerLog(String deployment) {
-    String selector = "app=" + deployment + ",component=jobmanager";
+    return componentLog(deployment, "jobmanager");
+  }
+
+  /** TaskManager log of the given FlinkDeployment; skip-policy logging happens in the source task here. */
+  public static String taskManagerLog(String deployment) {
+    return componentLog(deployment, "taskmanager");
+  }
+
+  private static String componentLog(String deployment, String component) {
+    String selector = "app=" + deployment + ",component=" + component;
     String current = run("logs", "-n", E2eContext.NAMESPACE, "-l", selector, "--tail=-1");
     try {
       return current + run("logs", "-n", E2eContext.NAMESPACE, "-l", selector, "--tail=-1", "--previous");

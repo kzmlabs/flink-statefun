@@ -26,6 +26,37 @@ spec:
 
 Each entry under `topics:` maps inbound records to a target function namespace + name. The `valueType` declares how StateFun decodes the record value - typically a Protobuf type registered in your SDK code.
 
+### Full configuration reference
+
+Every supported field with its default:
+
+```yaml
+kind: io.statefun.kafka.v1/ingress
+spec:
+  id: example/orders                  # required, typename
+  address: kafka.svc:9092             # optional when set via properties
+  consumerGroupId: example-orders     # optional
+  forwardHeaders: false               # optional, ingress-level default for all topics
+  invalidRecordHandling:              # optional, default: type skip + logLevel warn
+    type: skip                        # skip | fail
+    logLevel: warn                    # skip only: debug | info | warn | error
+  autoOffsetResetPosition: latest     # optional: earliest | latest
+  startupPosition:                    # optional, default: latest
+    type: group-offsets
+  topics:                             # required, at least one entry
+    - topic: example.orders
+      valueType: example/Order        # required, registered SDK type
+      forwardHeaders: true            # optional, overrides the ingress-level value
+      invalidRecordHandling:          # optional, replaces the ingress-level object wholesale
+        type: fail
+      targets:                        # required, at least one function
+        - example/order-handler
+  properties:                         # optional, passed through to the Kafka consumer
+    - fetch.max.bytes: "52428800"
+```
+
+The same schema is documented in the `io.statefun.kafka.v1/ingress` binder javadoc (`RoutableKafkaIngressBinderV1`).
+
 ### Startup position
 
 | `startupPosition.type` | Meaning |
@@ -43,6 +74,42 @@ startupPosition:
   type: at-timestamp
   timestamp: "2026-04-23T00:00:00.000Z"     # ISO-8601
 ```
+
+### Invalid records
+
+The routable ingress requires a UTF-8 key and a non-null value on every record: the key is the target function instance id, and a null value (tombstone) has no meaning to a function. `invalidRecordHandling` decides what happens to records that violate this - as an ingress-level default, with a per-topic override that replaces it wholesale:
+
+```yaml
+kind: io.statefun.kafka.v1/ingress
+spec:
+  invalidRecordHandling:
+    type: skip          # default when omitted
+    logLevel: warn      # skip only: debug, info, warn (default) or error
+  topics:
+    - topic: example.orders
+      invalidRecordHandling:
+        type: fail      # per-topic override: strict contract for this topic
+      ...
+```
+
+| `type` | Behavior |
+|---|---|
+| `skip` (default) | The record is dropped and the job keeps running. Each skipped record is logged individually on the TaskManager and the [invalid-record counters](metrics.md) increment. |
+| `fail` | The job fails on the first invalid record, with the record coordinates in the exception. This is the strict pre-3.5 behavior. |
+
+Skip logging is one line per record, at `logLevel`, with no rate limiting:
+
+```text
+Skipping invalid record: defect [NULL_VALUE], topic [example.orders], partition [0], offset [42], timestamp [1690000000123], key [order-17], value size [-1]
+```
+
+`defect` is `NULL_KEY` or `NULL_VALUE`. A null key prints as `key [null]`; a tombstone prints as `value size [-1]`. An empty key is not invalid: it is a legal address that routes to the function instance with id `""`.
+
+Alert rules for the counters: [Alerting](alerting.md).
+
+!!! warning "Behavior change in 3.5"
+
+    Previously an invalid record crashed the whole job unconditionally. `skip` is the new default. Teams alerting on job restarts as their bad-data signal should alert on `numInvalidRecordsSkipped` instead, or pin `type: fail`. The null-means-skip contract also applies to custom `KafkaIngressDeserializer` implementations: a null return, previously a crash, now counts and drops the record.
 
 ## Egress
 

@@ -48,6 +48,7 @@ final class RoutableKafkaIngressSpec {
   private final Optional<String> consumerGroupId;
   private final Map<String, TopicRouting> topicRoutings;
   private final boolean forwardHeaders;
+  private final InvalidRecordPolicy invalidRecordHandlingDefault;
   private final KafkaIngressAutoResetPosition autoOffsetResetPosition;
   private final KafkaIngressStartupPosition startupPosition;
   private final Properties properties;
@@ -58,6 +59,7 @@ final class RoutableKafkaIngressSpec {
       Optional<String> consumerGroupId,
       Map<String, TopicRouting> topicRoutings,
       boolean forwardHeaders,
+      InvalidRecordPolicy invalidRecordHandlingDefault,
       KafkaIngressAutoResetPosition autoOffsetResetPosition,
       KafkaIngressStartupPosition startupPosition,
       Properties properties) {
@@ -66,6 +68,7 @@ final class RoutableKafkaIngressSpec {
     this.consumerGroupId = consumerGroupId;
     this.topicRoutings = topicRoutings;
     this.forwardHeaders = forwardHeaders;
+    this.invalidRecordHandlingDefault = invalidRecordHandlingDefault;
     this.autoOffsetResetPosition = autoOffsetResetPosition;
     this.startupPosition = startupPosition;
     this.properties = properties;
@@ -85,7 +88,7 @@ final class RoutableKafkaIngressSpec {
     builder.withProperties(properties);
     KafkaIngressBuilderApiExtension.withDeserializer(
         builder,
-        new RoutableKafkaIngressDeserializer(routingConfigsByTopic(), forwardHeaderTopics()));
+        new RoutableKafkaIngressDeserializer(routingConfigsByTopic(), forwardHeaderTopics(), invalidRecordPolicyByTopic()));
 
     return builder.build();
   }
@@ -102,6 +105,11 @@ final class RoutableKafkaIngressSpec {
         .collect(Collectors.toUnmodifiableSet());
   }
 
+  Map<String, InvalidRecordPolicy> invalidRecordPolicyByTopic() {
+    return topicRoutings.entrySet().stream()
+        .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().invalidRecordPolicy(invalidRecordHandlingDefault)));
+  }
+
   /**
    * A topic routing entry: the routing config plus the topic's optional {@code forwardHeaders}
    * override. The effective per-topic value is the override when present, otherwise the
@@ -111,10 +119,12 @@ final class RoutableKafkaIngressSpec {
   static final class TopicRouting {
     private final RoutingConfig config;
     private final Boolean forwardHeadersOverride;
+    private final InvalidRecordPolicy invalidRecordOverride;
 
-    TopicRouting(RoutingConfig config, Boolean forwardHeadersOverride) {
+    TopicRouting(RoutingConfig config, Boolean forwardHeadersOverride, InvalidRecordPolicy invalidRecordOverride) {
       this.config = Objects.requireNonNull(config);
       this.forwardHeadersOverride = forwardHeadersOverride;
+      this.invalidRecordOverride = invalidRecordOverride;
     }
 
     RoutingConfig config() {
@@ -123,6 +133,10 @@ final class RoutableKafkaIngressSpec {
 
     boolean forwardsHeaders(boolean ingressDefault) {
       return forwardHeadersOverride != null ? forwardHeadersOverride : ingressDefault;
+    }
+
+    InvalidRecordPolicy invalidRecordPolicy(InvalidRecordPolicy ingressDefault) {
+      return invalidRecordOverride != null ? invalidRecordOverride : ingressDefault;
     }
   }
 
@@ -135,6 +149,7 @@ final class RoutableKafkaIngressSpec {
     private Optional<String> consumerGroupId = Optional.empty();
     private Map<String, TopicRouting> topicRoutings = new HashMap<>();
     private boolean forwardHeaders = false;
+    private InvalidRecordPolicy invalidRecordHandlingDefault = InvalidRecordPolicy.defaults();
     private KafkaIngressAutoResetPosition autoOffsetResetPosition =
         KafkaIngressAutoResetPosition.LATEST;
     private KafkaIngressStartupPosition startupPosition = KafkaIngressStartupPosition.fromLatest();
@@ -174,6 +189,13 @@ final class RoutableKafkaIngressSpec {
       return this;
     }
 
+    @JsonProperty("invalidRecordHandling")
+    @JsonDeserialize(using = InvalidRecordHandlingJsonDeserializer.class)
+    public Builder withInvalidRecordHandling(InvalidRecordPolicy invalidRecordHandling) {
+      this.invalidRecordHandlingDefault = invalidRecordHandling != null ? invalidRecordHandling : InvalidRecordPolicy.defaults();
+      return this;
+    }
+
     @JsonProperty("autoOffsetResetPosition")
     @JsonDeserialize(using = AutoOffsetResetPositionJsonDeserializer.class)
     public Builder withAutoOffsetResetPosition(
@@ -203,6 +225,7 @@ final class RoutableKafkaIngressSpec {
           consumerGroupId,
           topicRoutings,
           forwardHeaders,
+          invalidRecordHandlingDefault,
           autoOffsetResetPosition,
           startupPosition,
           properties);
@@ -225,7 +248,7 @@ final class RoutableKafkaIngressSpec {
                 .build();
         result.put(
             routingJsonNode.get("topic").asText(),
-            new TopicRouting(routingConfig, parseForwardHeadersOverride(routingJsonNode)));
+            new TopicRouting(routingConfig, parseForwardHeadersOverride(routingJsonNode), parseInvalidRecordOverride(routingJsonNode)));
       }
       return result;
     }
@@ -233,6 +256,19 @@ final class RoutableKafkaIngressSpec {
     private static Boolean parseForwardHeadersOverride(ObjectNode routingJsonNode) {
       final JsonNode overrideNode = routingJsonNode.get("forwardHeaders");
       return overrideNode == null || overrideNode.isNull() ? null : overrideNode.asBoolean();
+    }
+
+    private static InvalidRecordPolicy parseInvalidRecordOverride(ObjectNode routingJsonNode) {
+      final JsonNode overrideNode = routingJsonNode.get("invalidRecordHandling");
+      return overrideNode == null || overrideNode.isNull() ? null : InvalidRecordPolicy.fromSpecNode(overrideNode);
+    }
+  }
+
+  private static class InvalidRecordHandlingJsonDeserializer extends JsonDeserializer<InvalidRecordPolicy> {
+    @Override
+    public InvalidRecordPolicy deserialize(
+        JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
+      return InvalidRecordPolicy.fromSpecNode(jsonParser.readValueAs(ObjectNode.class));
     }
   }
 
