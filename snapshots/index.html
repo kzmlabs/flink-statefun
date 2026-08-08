@@ -2140,17 +2140,17 @@
 <div class="language-xml highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">&lt;dependency&gt;</span>
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span><span class="nt">&lt;groupId&gt;</span>io.github.kzmlabs.flinkstatefun<span class="nt">&lt;/groupId&gt;</span>
 </span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="nt">&lt;artifactId&gt;</span>statefun-sdk-java<span class="nt">&lt;/artifactId&gt;</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span><span class="nt">&lt;version&gt;</span>3.4.0-KZM-3.4-SNAPSHOT<span class="nt">&lt;/version&gt;</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span><span class="nt">&lt;version&gt;</span>3.4.0-KZM-3.5-SNAPSHOT<span class="nt">&lt;/version&gt;</span>
 </span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="nt">&lt;/dependency&gt;</span>
 </span></code></pre></div>
 <p>Replace the version with whichever in-progress snapshot you want. Browse available versions: https://github.com/orgs/kzmlabs/packages?repo_name=flink-statefun</p>
 <h2 id="maintainer-flow-publishing-a-new-snapshot">Maintainer flow — publishing a new snapshot<a class="headerlink" href="#maintainer-flow-publishing-a-new-snapshot" title="Permanent link">&para;</a></h2>
 <ol>
-<li>Bump the <code>&lt;revision&gt;</code> in root <code>pom.xml</code> to a <code>-SNAPSHOT</code> version (e.g. <code>3.4.0-KZM-3.4-SNAPSHOT</code>)</li>
+<li>Bump the <code>&lt;revision&gt;</code> in root <code>pom.xml</code> to a <code>-SNAPSHOT</code> version (e.g. <code>3.4.0-KZM-3.5-SNAPSHOT</code>)</li>
 <li>Merge that bump to <code>release</code> branch</li>
 <li>Tag and push:
-   <div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>git<span class="w"> </span>tag<span class="w"> </span>snapshot-3.4.0-KZM-3.4<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;Snapshot 3.4.0-KZM-3.4&quot;</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </span>snapshot-3.4.0-KZM-3.4
+   <div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>git<span class="w"> </span>tag<span class="w"> </span>snapshot-3.4.0-KZM-3.5<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;Snapshot 3.4.0-KZM-3.5&quot;</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </span>snapshot-3.4.0-KZM-3.5
 </span></code></pre></div></li>
 <li>The <code>Deploy Snapshot</code> workflow runs (~5-7 min) and publishes to GitHub Packages</li>
 <li>Verify upload at https://github.com/orgs/kzmlabs/packages?repo_name=flink-statefun</li>
