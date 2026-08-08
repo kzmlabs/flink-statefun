@@ -21,7 +21,7 @@ The full module set is published to Maven Central under the `io.github.kzmlabs.f
         <dependency>
           <groupId>io.github.kzmlabs.flinkstatefun</groupId>
           <artifactId>statefun-bom</artifactId>
-          <version>3.4.0-KZM-3.4</version>
+          <version>3.4.0-KZM-3.5</version>
           <type>pom</type>
           <scope>import</scope>
         </dependency>
@@ -44,7 +44,7 @@ The full module set is published to Maven Central under the `io.github.kzmlabs.f
     <dependency>
       <groupId>io.github.kzmlabs.flinkstatefun</groupId>
       <artifactId>statefun-sdk-java</artifactId>
-      <version>3.4.0-KZM-3.4</version>
+      <version>3.4.0-KZM-3.5</version>
     </dependency>
     ```
 
@@ -52,7 +52,7 @@ The full module set is published to Maven Central under the `io.github.kzmlabs.f
 
     ```kotlin
     dependencies {
-      implementation(platform("io.github.kzmlabs.flinkstatefun:statefun-bom:3.4.0-KZM-3.4"))
+      implementation(platform("io.github.kzmlabs.flinkstatefun:statefun-bom:3.4.0-KZM-3.5"))
       implementation("io.github.kzmlabs.flinkstatefun:statefun-sdk-java")
     }
     ```
@@ -62,7 +62,7 @@ The full module set is published to Maven Central under the `io.github.kzmlabs.f
 Container images are published to GitHub Container Registry:
 
 ```bash
-docker pull ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.4
+docker pull ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.5
 ```
 
 The image bundles **Flink 2.2 + Java 21 + the StateFun distribution JARs + S3/OSS/Azure plugin filesystems**, ready to run as a `FlinkDeployment` via the Flink Kubernetes Operator.
@@ -72,7 +72,7 @@ The image bundles **Flink 2.2 + Java 21 + the StateFun distribution JARs + S3/OS
     Releases are signed with [Sigstore keyless attestation](https://docs.sigstore.dev/) and carry [SLSA build provenance](https://slsa.dev/). Verify with:
 
     ```bash
-    gh attestation verify oci://ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.4 --owner kzmlabs
+    gh attestation verify oci://ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.5 --owner kzmlabs
     ```
 
 ## Module overview
@@ -93,7 +93,7 @@ The image bundles **Flink 2.2 + Java 21 + the StateFun distribution JARs + S3/OS
 
 | Kzmlabs version | Apache StateFun base | Flink | Java | Status |
 |---|---|---|---|---|
-| **`3.4.0-KZM-3.4`** | 3.4.0 | 2.2.1 | 21 | **Latest stable** |
+| **`3.4.0-KZM-3.5`** | 3.4.0 | 2.2.1 | 21 | **Latest stable** |
 | `3.4.0-KZM-3.3` | 3.4.0 | 2.2.0 | 21 | Stable |
 | `3.4.0-KZM-3.1` | 3.4.0 | 2.2.0 | 21 | Stable |
 | `3.4.0-KZM-3.0` | 3.4.0 | 2.2.0 | 21 | Stable |

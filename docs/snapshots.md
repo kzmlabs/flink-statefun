@@ -63,7 +63,7 @@ The `<id>` in `settings.xml` must match the `<id>` of the `<repository>` block i
 <dependency>
     <groupId>io.github.kzmlabs.flinkstatefun</groupId>
     <artifactId>statefun-sdk-java</artifactId>
-    <version>3.4.0-KZM-3.4-SNAPSHOT</version>
+    <version>3.4.0-KZM-3.5-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -71,12 +71,12 @@ Replace the version with whichever in-progress snapshot you want. Browse availab
 
 ## Maintainer flow — publishing a new snapshot
 
-1. Bump the `<revision>` in root `pom.xml` to a `-SNAPSHOT` version (e.g. `3.4.0-KZM-3.4-SNAPSHOT`)
+1. Bump the `<revision>` in root `pom.xml` to a `-SNAPSHOT` version (e.g. `3.4.0-KZM-3.5-SNAPSHOT`)
 2. Merge that bump to `release` branch
 3. Tag and push:
    ```bash
-   git tag snapshot-3.4.0-KZM-3.4 -m "Snapshot 3.4.0-KZM-3.4"
-   git push origin snapshot-3.4.0-KZM-3.4
+   git tag snapshot-3.4.0-KZM-3.5 -m "Snapshot 3.4.0-KZM-3.5"
+   git push origin snapshot-3.4.0-KZM-3.5
    ```
 4. The `Deploy Snapshot` workflow runs (~5-7 min) and publishes to GitHub Packages
 5. Verify upload at https://github.com/orgs/kzmlabs/packages?repo_name=flink-statefun

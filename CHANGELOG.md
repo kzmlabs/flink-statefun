@@ -6,6 +6,44 @@ All notable changes to **StateFun Actors by Kzmlabs** are documented in this fil
 
 ## [Unreleased]
 
+## [3.4.0-KZM-3.5] - 2026-08-08
+
+Feature release. Headline: **invalid-record handling on the routable Kafka
+ingress** (ADR-0008 stages 1-2) — one malformed record no longer crashes
+the whole job.
+
+### Added
+
+- **`invalidRecordHandling` policy on `io.statefun.kafka.v1/ingress`**:
+  ingress-level default with a wholesale per-topic override.
+  - `type: skip` (**new default**): an invalid record (null key, or null
+    value / tombstone) is dropped and the job keeps running. Every skipped
+    record is logged individually with full coordinates (defect, topic,
+    partition, offset, timestamp, key, value size) at a configurable
+    `logLevel` (`debug|info|warn|error`, default `warn`) — deliberately no
+    rate limiting.
+  - `type: fail`: the strict pre-3.5 contract — job-fatal on the first
+    invalid record, with the record coordinates in the pinned exception
+    message.
+- **Metrics**: `numInvalidRecordsSkipped` on the source operator's
+  `deserializer` scope, plus a per-topic per-defect breakdown
+  `topic.<topic>.defect.<NULL_KEY|NULL_VALUE>.numInvalidRecordsSkipped`
+  (Prometheus labels `topic`, `defect`) for producer-precise alerting.
+- The `KafkaIngressDeserializer` "return null to skip" javadoc contract is
+  now real for every deserializer, including custom embedded-SDK ones.
+- New **Metrics** and **Alerting** guides; invalid-record E2E scenarios
+  (skip and fail) against a dedicated deployment in the K8s suite.
+
+### Changed
+
+- **Breaking (behavioral)**: the default reaction to an invalid record
+  changes from crash-the-job to skip-with-log+metric. Teams alerting on
+  job restarts as their bad-data signal should alert on
+  `numInvalidRecordsSkipped`, or pin `type: fail`.
+- Invalid-record diagnostics (stage 1): the null-key rejection carries
+  topic/partition/offset/timestamp; the tombstone case is a diagnosable
+  exception instead of a bare `NullPointerException`.
+
 ## [3.4.0-KZM-3.4] - 2026-07-24
 
 Feature release. Headline: **Kafka record headers, end-to-end** — the
