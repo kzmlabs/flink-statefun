@@ -26,6 +26,37 @@ spec:
 
 Each entry under `topics:` maps inbound records to a target function namespace + name. The `valueType` declares how StateFun decodes the record value - typically a Protobuf type registered in your SDK code.
 
+### Full configuration reference
+
+Every supported field with its default:
+
+```yaml
+kind: io.statefun.kafka.v1/ingress
+spec:
+  id: example/orders                  # required, typename
+  address: kafka.svc:9092             # optional when set via properties
+  consumerGroupId: example-orders     # optional
+  forwardHeaders: false               # optional, ingress-level default for all topics
+  invalidRecordHandling:              # optional, default: type skip + logLevel warn
+    type: skip                        # skip | fail
+    logLevel: warn                    # skip only: debug | info | warn | error
+  autoOffsetResetPosition: latest     # optional: earliest | latest
+  startupPosition:                    # optional, default: latest
+    type: group-offsets
+  topics:                             # required, at least one entry
+    - topic: example.orders
+      valueType: example/Order        # required, registered SDK type
+      forwardHeaders: true            # optional, overrides the ingress-level value
+      invalidRecordHandling:          # optional, replaces the ingress-level object wholesale
+        type: fail
+      targets:                        # required, at least one function
+        - example/order-handler
+  properties:                         # optional, passed through to the Kafka consumer
+    - fetch.max.bytes: "52428800"
+```
+
+The same schema is documented in the `io.statefun.kafka.v1/ingress` binder javadoc (`RoutableKafkaIngressBinderV1`).
+
 ### Startup position
 
 | `startupPosition.type` | Meaning |
