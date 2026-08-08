@@ -38,9 +38,19 @@ public final class Kubectl {
     return run("get", "flinkdeployment", deployment, "-n", E2eContext.NAMESPACE, "-o", "jsonpath={.status.jobStatus.state}").trim();
   }
 
-  /** Full JobManager pod log of the given FlinkDeployment. */
+  /**
+   * JobManager log of the given FlinkDeployment, current container plus the previous one when the
+   * pod has restarted. An application-mode JM exits on terminal job failure, so the diagnostics of
+   * that failure live in the previous container's log.
+   */
   public static String jobManagerLog(String deployment) {
-    return run("logs", "-n", E2eContext.NAMESPACE, "-l", "app=" + deployment + ",component=jobmanager", "--tail=-1");
+    String selector = "app=" + deployment + ",component=jobmanager";
+    String current = run("logs", "-n", E2eContext.NAMESPACE, "-l", selector, "--tail=-1");
+    try {
+      return current + run("logs", "-n", E2eContext.NAMESPACE, "-l", selector, "--tail=-1", "--previous");
+    } catch (RuntimeException noPreviousContainer) {
+      return current;
+    }
   }
 
   /** Applies a classpath resource as a manifest via a temp file. */

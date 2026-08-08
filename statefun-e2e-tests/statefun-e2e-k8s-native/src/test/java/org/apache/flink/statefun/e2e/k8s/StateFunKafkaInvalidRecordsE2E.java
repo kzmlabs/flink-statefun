@@ -84,7 +84,11 @@ class StateFunKafkaInvalidRecordsE2E {
 
   @AfterAll
   void teardown() {
-    resetTopicAndRedeploy();
+    // reset for local -Dskip.teardown reruns, but do not wait for RUNNING: in CI the cluster is
+    // torn down right after, and a rerun's first scenario awaits its own outcome anyway
+    Kubectl.deleteFlinkDeployment(DEPLOYMENT);
+    Kubectl.recreateTopic(COMMANDS_TOPIC);
+    Kubectl.apply("k8s/flink-deployment-invalid.yaml");
     if (producer != null) producer.close(Duration.ofSeconds(5));
     if (kafkaForward != null) kafkaForward.close();
   }

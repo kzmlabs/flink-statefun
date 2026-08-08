@@ -20,6 +20,9 @@ spec:
     restart-strategy.type: fixed-delay
     restart-strategy.fixed-delay.attempts: "1"
     restart-strategy.fixed-delay.delay: "1s"
+    # keep the JobManager alive after a terminal job failure: the E2E scenarios read the
+    # failure diagnostics from its log, and an exiting JM would restart the pod and wipe them
+    execution.shutdown-on-application-finish: "false"
     pipeline.auto-generate-uids: "false"
   podTemplate:
     spec:
