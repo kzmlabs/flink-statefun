@@ -10,7 +10,7 @@ repository-code: "https://github.com/kzmlabs/flink-statefun"
 url: "https://github.com/kzmlabs/flink-statefun"
 license: Apache-2.0
 version: "3.4.0-KZM-3.1"
-date-released: "2026-05-11"
+date-released: "2026-08-08"
 keywords:
   - apache-flink
   - stateful-functions

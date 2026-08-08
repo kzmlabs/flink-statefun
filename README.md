@@ -59,7 +59,7 @@ Full migration notes: **[Differences from Apache StateFun](https://kzmlabs.githu
     <dependency>
       <groupId>io.github.kzmlabs.flinkstatefun</groupId>
       <artifactId>statefun-bom</artifactId>
-      <version>3.4.0-KZM-3.4</version>
+      <version>3.4.0-KZM-3.5</version>
       <type>pom</type>
       <scope>import</scope>
     </dependency>
@@ -105,7 +105,7 @@ spec:
 ```bash
 docker run --rm -p 8081:8081 \
   -v $(pwd)/module.yaml:/opt/flink/conf/module.yaml \
-  ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.4
+  ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.5
 ```
 
 Full walkthrough → **[Quickstart guide](https://kzmlabs.github.io/flink-statefun/quickstart/)**.
@@ -148,7 +148,7 @@ JobManager and TaskManager logging is configured via `spec.logConfiguration.logb
 
 | Kzmlabs version | Apache StateFun base | Flink | Java | Status |
 |---|---|---|---|---|
-| `3.4.0-KZM-3.4` | 3.4.0 | 2.2.1 | 21 | Latest |
+| `3.4.0-KZM-3.5` | 3.4.0 | 2.2.1 | 21 | Latest |
 | `3.4.0-KZM-3.3` | 3.4.0 | 2.2.0 | 21 | Stable |
 | `3.4.0-KZM-3.1` | 3.4.0 | 2.2.0 | 21 | Stable |
 | `3.4.0-KZM-3.0` | 3.4.0 | 2.2.0 | 21 | Stable |
@@ -156,7 +156,7 @@ JobManager and TaskManager logging is configured via `spec.logConfiguration.logb
 Releases are signed via Sigstore keyless attestation. Verify with:
 
 ```bash
-gh attestation verify oci://ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.4 --owner kzmlabs
+gh attestation verify oci://ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.5 --owner kzmlabs
 ```
 
 ## Branch model
