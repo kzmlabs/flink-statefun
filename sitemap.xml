@@ -105,6 +105,10 @@
          <lastmod>2026-08-08</lastmod>
     </url>
     <url>
+         <loc>https://kzmlabs.github.io/flink-statefun/guides/alerting/</loc>
+         <lastmod>2026-08-08</lastmod>
+    </url>
+    <url>
          <loc>https://kzmlabs.github.io/flink-statefun/guides/k8s-deployment/</loc>
          <lastmod>2026-08-08</lastmod>
     </url>
@@ -129,11 +133,7 @@
          <lastmod>2026-08-08</lastmod>
     </url>
     <url>
-         <loc>https://kzmlabs.github.io/flink-statefun/superpowers/plans/2026-08-08-kafka-invalid-records-e2e/</loc>
-         <lastmod>2026-08-08</lastmod>
-    </url>
-    <url>
-         <loc>https://kzmlabs.github.io/flink-statefun/superpowers/specs/2026-08-08-kafka-invalid-records-e2e-design/</loc>
+         <loc>https://kzmlabs.github.io/flink-statefun/guides/metrics/</loc>
          <lastmod>2026-08-08</lastmod>
     </url>
 </urlset>

@@ -6,31 +6,35 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Stateful actors on Apache Flink — durable per-key state, exactly-once Kafka/Kinesis I/O, Kubernetes-native. Flink 2.2 + Java 21.">
+        <meta name="description" content="Prometheus alert rules for the invalid-record counters of the routable Kafka ingress - per-topic, per-defect attribution and migration from restart-based alerts.">
       
       
       
-        <link rel="canonical" href="https://kzmlabs.github.io/flink-statefun/superpowers/specs/2026-08-08-kafka-invalid-records-e2e-design/">
+        <link rel="canonical" href="https://kzmlabs.github.io/flink-statefun/guides/alerting/">
       
       
+        <link rel="prev" href="../metrics/">
+      
+      
+        <link rel="next" href="../../architecture/">
       
       
         
       
       
-      <link rel="icon" href="../../../assets/favicon-32.png">
+      <link rel="icon" href="../../assets/favicon-32.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
-        <title>Kafka invalid-record E2E scenarios — design - StateFun Actors by Kzmlabs</title>
+        <title>Alerting - StateFun Actors by Kzmlabs</title>
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
-        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -49,9 +53,9 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/css/theme.css">
+      <link rel="stylesheet" href="../../assets/css/theme.css">
     
-    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -64,27 +68,27 @@
   
 
   <!-- App icons (PWA + iOS) -->
-  <link rel="icon" type="image/png" sizes="32x32" href="../../../assets/favicon-32.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="../../../assets/favicon-192.png">
-  <link rel="icon" type="image/png" sizes="512x512" href="../../../assets/favicon-512.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="../../../assets/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="../../assets/favicon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="../../assets/favicon-512.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="../../assets/apple-touch-icon.png">
   <meta name="theme-color" content="#0a0e27">
 
   <!-- OpenGraph -->
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Kafka invalid-record E2E scenarios — design">
-  <meta property="og:description" content="Stateful actors on Apache Flink — durable per-key state, exactly-once Kafka/Kinesis I/O, Kubernetes-native. Flink 2.2 + Java 21.">
+  <meta property="og:title" content="Alerting">
+  <meta property="og:description" content="Prometheus alert rules for the invalid-record counters of the routable Kafka ingress - per-topic, per-defect attribution and migration from restart-based alerts.">
   <meta property="og:image" content="https://kzmlabs.github.io/flink-statefun/assets/social-preview.png">
   <meta property="og:image:width" content="1280">
   <meta property="og:image:height" content="640">
-  <meta property="og:url" content="https://kzmlabs.github.io/flink-statefun/superpowers/specs/2026-08-08-kafka-invalid-records-e2e-design/">
+  <meta property="og:url" content="https://kzmlabs.github.io/flink-statefun/guides/alerting/">
   <meta property="og:site_name" content="StateFun Actors by Kzmlabs">
   <meta property="og:locale" content="en_US">
 
   <!-- Twitter card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Kafka invalid-record E2E scenarios — design">
-  <meta name="twitter:description" content="Stateful actors on Apache Flink — durable per-key state, exactly-once Kafka/Kinesis I/O, Kubernetes-native. Flink 2.2 + Java 21.">
+  <meta name="twitter:title" content="Alerting">
+  <meta name="twitter:description" content="Prometheus alert rules for the invalid-record counters of the routable Kafka ingress - per-topic, per-defect attribution and migration from restart-based alerts.">
   <meta name="twitter:image" content="https://kzmlabs.github.io/flink-statefun/assets/social-preview.png">
 
   
@@ -110,7 +114,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#kafka-invalid-record-e2e-scenarios-design" class="md-skip">
+        <a href="#alerting" class="md-skip">
           Skip to content
         </a>
       
@@ -124,9 +128,9 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../../.." title="StateFun Actors by Kzmlabs" class="md-header__button md-logo" aria-label="StateFun Actors by Kzmlabs" data-md-component="logo">
+    <a href="../.." title="StateFun Actors by Kzmlabs" class="md-header__button md-logo" aria-label="StateFun Actors by Kzmlabs" data-md-component="logo">
       
-  <img src="../../../assets/logo-horizontal.png" alt="logo">
+  <img src="../../assets/logo-horizontal.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -143,7 +147,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Kafka invalid-record E2E scenarios — design
+              Alerting
             
           </span>
         </div>
@@ -257,7 +261,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../.." class="md-tabs__link">
+      <a href="../.." class="md-tabs__link">
         
   
   
@@ -278,7 +282,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../quickstart/" class="md-tabs__link">
+        <a href="../../quickstart/" class="md-tabs__link">
           
   
   
@@ -300,7 +304,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../examples/" class="md-tabs__link">
+        <a href="../../examples/" class="md-tabs__link">
           
   
   
@@ -318,11 +322,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../../../guides/kafka-io/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../kafka-io/" class="md-tabs__link">
           
   
   
@@ -344,7 +350,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../architecture/" class="md-tabs__link">
+        <a href="../../architecture/" class="md-tabs__link">
           
   
   
@@ -366,7 +372,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../adr/" class="md-tabs__link">
+        <a href="../../adr/" class="md-tabs__link">
           
   
   
@@ -388,7 +394,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../articles/" class="md-tabs__link">
+        <a href="../../articles/" class="md-tabs__link">
           
   
   
@@ -408,7 +414,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../../upstream-vs-kzm/" class="md-tabs__link">
+      <a href="../../upstream-vs-kzm/" class="md-tabs__link">
         
   
   
@@ -427,7 +433,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../../release-process/" class="md-tabs__link">
+      <a href="../../release-process/" class="md-tabs__link">
         
   
   
@@ -464,9 +470,9 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../../.." title="StateFun Actors by Kzmlabs" class="md-nav__button md-logo" aria-label="StateFun Actors by Kzmlabs" data-md-component="logo">
+    <a href="../.." title="StateFun Actors by Kzmlabs" class="md-nav__button md-logo" aria-label="StateFun Actors by Kzmlabs" data-md-component="logo">
       
-  <img src="../../../assets/logo-horizontal.png" alt="logo">
+  <img src="../../assets/logo-horizontal.png" alt="logo">
 
     </a>
     StateFun Actors by Kzmlabs
@@ -493,7 +499,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../.." class="md-nav__link">
+      <a href="../.." class="md-nav__link">
         
   
   
@@ -582,7 +588,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../quickstart/" class="md-nav__link">
+      <a href="../../quickstart/" class="md-nav__link">
         
   
   
@@ -610,7 +616,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../install/" class="md-nav__link">
+      <a href="../../install/" class="md-nav__link">
         
   
   
@@ -638,7 +644,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../snapshots/" class="md-nav__link">
+      <a href="../../snapshots/" class="md-nav__link">
         
   
   
@@ -666,7 +672,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../build/" class="md-nav__link">
+      <a href="../../build/" class="md-nav__link">
         
   
   
@@ -728,7 +734,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../examples/" class="md-nav__link ">
+            <a href="../../examples/" class="md-nav__link ">
               
   
   
@@ -772,7 +778,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../examples/fraud-detection/" class="md-nav__link">
+      <a href="../../examples/fraud-detection/" class="md-nav__link">
         
   
   
@@ -800,7 +806,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../examples/iot-fleet/" class="md-nav__link">
+      <a href="../../examples/iot-fleet/" class="md-nav__link">
         
   
   
@@ -832,8 +838,10 @@
       
   
   
+    
   
   
+  
     
     
       
@@ -849,23 +857,30 @@
       
         
       
+        
+      
+        
+      
     
     
     
+      
+        
+        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
         
           
-          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
             
   
   
@@ -883,7 +898,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             
@@ -901,7 +916,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../guides/kafka-io/" class="md-nav__link">
+      <a href="../kafka-io/" class="md-nav__link">
         
   
   
@@ -929,7 +944,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../guides/kafka-headers/" class="md-nav__link">
+      <a href="../kafka-headers/" class="md-nav__link">
         
   
   
@@ -957,7 +972,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../guides/kafka-egress-tuning/" class="md-nav__link">
+      <a href="../kafka-egress-tuning/" class="md-nav__link">
         
   
   
@@ -985,7 +1000,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../guides/kinesis-io/" class="md-nav__link">
+      <a href="../kinesis-io/" class="md-nav__link">
         
   
   
@@ -1013,7 +1028,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../guides/k8s-deployment/" class="md-nav__link">
+      <a href="../k8s-deployment/" class="md-nav__link">
         
   
   
@@ -1041,7 +1056,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../guides/logging/" class="md-nav__link">
+      <a href="../logging/" class="md-nav__link">
         
   
   
@@ -1057,6 +1072,131 @@
   
 
       </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../metrics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metrics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Alerting
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Alerting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#invalid-records" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Invalid records
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#migrating-from-restart-based-alerts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Migrating from restart-based alerts
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1103,7 +1243,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../architecture/" class="md-nav__link ">
+            <a href="../../architecture/" class="md-nav__link ">
               
   
   
@@ -1147,7 +1287,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../architecture/shading/" class="md-nav__link">
+      <a href="../../architecture/shading/" class="md-nav__link">
         
   
   
@@ -1175,7 +1315,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../architecture/e2e-tests/" class="md-nav__link">
+      <a href="../../architecture/e2e-tests/" class="md-nav__link">
         
   
   
@@ -1249,7 +1389,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../adr/" class="md-nav__link ">
+            <a href="../../adr/" class="md-nav__link ">
               
   
   
@@ -1293,7 +1433,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../adr/0001-fork-statefun-for-flink-2/" class="md-nav__link">
+      <a href="../../adr/0001-fork-statefun-for-flink-2/" class="md-nav__link">
         
   
   
@@ -1321,7 +1461,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../adr/0002-kafka-io-source-sink-v2/" class="md-nav__link">
+      <a href="../../adr/0002-kafka-io-source-sink-v2/" class="md-nav__link">
         
   
   
@@ -1349,7 +1489,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../adr/0003-restore-kinesis-io-localstack/" class="md-nav__link">
+      <a href="../../adr/0003-restore-kinesis-io-localstack/" class="md-nav__link">
         
   
   
@@ -1377,7 +1517,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../adr/0004-k8s-native-e2e-release-gate/" class="md-nav__link">
+      <a href="../../adr/0004-k8s-native-e2e-release-gate/" class="md-nav__link">
         
   
   
@@ -1405,7 +1545,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../adr/0005-kafka-record-headers/" class="md-nav__link">
+      <a href="../../adr/0005-kafka-record-headers/" class="md-nav__link">
         
   
   
@@ -1433,7 +1573,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../adr/0006-operator-1-15-flink-v2-2/" class="md-nav__link">
+      <a href="../../adr/0006-operator-1-15-flink-v2-2/" class="md-nav__link">
         
   
   
@@ -1461,7 +1601,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../adr/0007-restart-strategy-key-names/" class="md-nav__link">
+      <a href="../../adr/0007-restart-strategy-key-names/" class="md-nav__link">
         
   
   
@@ -1489,7 +1629,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../adr/0008-kafka-invalid-record-handling/" class="md-nav__link">
+      <a href="../../adr/0008-kafka-invalid-record-handling/" class="md-nav__link">
         
   
   
@@ -1553,7 +1693,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../articles/" class="md-nav__link ">
+            <a href="../../articles/" class="md-nav__link ">
               
   
   
@@ -1597,7 +1737,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../articles/kafka-record-headers/" class="md-nav__link">
+      <a href="../../articles/kafka-record-headers/" class="md-nav__link">
         
   
   
@@ -1625,7 +1765,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../articles/flink-operator-1.15-upgrade/" class="md-nav__link">
+      <a href="../../articles/flink-operator-1.15-upgrade/" class="md-nav__link">
         
   
   
@@ -1653,7 +1793,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../articles/forking-statefun/" class="md-nav__link">
+      <a href="../../articles/forking-statefun/" class="md-nav__link">
         
   
   
@@ -1688,7 +1828,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../upstream-vs-kzm/" class="md-nav__link">
+      <a href="../../upstream-vs-kzm/" class="md-nav__link">
         
   
   
@@ -1715,7 +1855,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../release-process/" class="md-nav__link">
+      <a href="../../release-process/" class="md-nav__link">
         
   
   
@@ -1762,10 +1902,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#goal" class="md-nav__link">
+  <a href="#invalid-records" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Goal
+        Invalid records
       
     </span>
   </a>
@@ -1773,71 +1913,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#constraints" class="md-nav__link">
+  <a href="#migrating-from-restart-based-alerts" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Constraints
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#design" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Design
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Design">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#1-isolation-a-second-minimal-flinkdeployment" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1. Isolation: a second, minimal FlinkDeployment
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#2-test-class-statefunkafkainvalidrecordse2e" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. Test class StateFunKafkaInvalidRecordsE2E
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#3-extension-contract-for-future-strategies" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. Extension contract for future strategies
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#out-of-scope" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Out of scope
+        Migrating from restart-based alerts
       
     </span>
   </a>
@@ -1864,7 +1943,7 @@
 
 
   
-    <a href="https://github.com/kzmlabs/flink-statefun/edit/release/docs/superpowers/specs/2026-08-08-kafka-invalid-records-e2e-design.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/kzmlabs/flink-statefun/edit/release/docs/guides/alerting.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
     </a>
@@ -1872,48 +1951,38 @@
   
 
 
-<h1 id="kafka-invalid-record-e2e-scenarios-design">Kafka invalid-record E2E scenarios — design<a class="headerlink" href="#kafka-invalid-record-e2e-scenarios-design" title="Permanent link">&para;</a></h1>
-<p>Date: 2026-08-08
-Status: approved
-Related: ADR-0008 (invalid record handling), stage-1 diagnostics on branch <code>fix/kafka-ingress-invalid-record-context</code></p>
-<h2 id="goal">Goal<a class="headerlink" href="#goal" title="Permanent link">&para;</a></h2>
-<p>Cover failing Kafka-record deserialization on the routable ingress with dedicated, isolated K8s-native E2E scenarios, structured so that future <code>invalidRecordHandling</code> strategies (<code>skip</code>, <code>forward</code>) extend the same test class instead of requiring new infrastructure.</p>
-<h2 id="constraints">Constraints<a class="headerlink" href="#constraints" title="Permanent link">&para;</a></h2>
-<ul>
-<li>Invalid records are currently job-fatal, so scenarios must not share a FlinkDeployment with the existing ordered tests in <code>StateFunK8sE2E</code>.</li>
-<li>Each fatal scenario kills the job, so consecutive fatal scenarios need a redeploy in between (~1-2 min in kind).</li>
-<li>Keep it very simple and transparent: no scenario framework, plain test methods, part of the same <code>mvn verify</code> E2E scope and PR gate. Accepted gate cost: +2-4 min.</li>
-</ul>
-<h2 id="design">Design<a class="headerlink" href="#design" title="Permanent link">&para;</a></h2>
-<h3 id="1-isolation-a-second-minimal-flinkdeployment">1. Isolation: a second, minimal FlinkDeployment<a class="headerlink" href="#1-isolation-a-second-minimal-flinkdeployment" title="Permanent link">&para;</a></h3>
-<ul>
-<li><code>src/test/resources/k8s/flink-deployment-invalid.yaml</code>: FlinkDeployment <code>statefun-e2e-invalid</code>, 1 TM, same StateFun image as the main deployment.</li>
-<li><code>src/test/resources/k8s/module-configmap-invalid.yaml</code>: one routable Kafka ingress on topic <code>invalid.commands</code> targeting the existing counter function (served by the shared remote-function pod), Kafka egress to <code>invalid.results</code>.</li>
-<li><code>scripts/setup-cluster.sh</code>: create topics <code>invalid.commands</code> / <code>invalid.results</code>, apply the CR, wait READY (same wait pattern as the main deployment).</li>
-</ul>
-<p>Killing this job never affects the main suite; the main job never consumes these topics.</p>
-<h3 id="2-test-class-statefunkafkainvalidrecordse2e">2. Test class <code>StateFunKafkaInvalidRecordsE2E</code><a class="headerlink" href="#2-test-class-statefunkafkainvalidrecordse2e" title="Permanent link">&para;</a></h3>
-<p><code>@Tag("kafka")</code>, same module <code>statefun-e2e-k8s-native</code>. Every scenario is one plain test method with the shape "produce a defect record, then assert the observable outcome". Ordered methods, current scenarios:</p>
-<ol>
-<li><code>nullKeyRecordFailsJobWithRecordCoordinates</code> — produce a record with a null key and a valid payload; await the invalid-deployment JobManager log containing <code>requires a UTF-8 key</code>, <code>topic [invalid.commands]</code>, <code>partition [</code>, <code>offset [</code>, and the FlinkDeployment reaching job state FAILED. This pins the stage-1 diagnostics end to end.</li>
-<li>Redeploy helper between fatal scenarios: delete CR, re-apply, wait READY.</li>
-<li><code>tombstoneRecordFailsJobWithRecordCoordinatesAndKey</code> — produce a valid-key record with a null value; await the <code>tombstone</code> diagnostic including the <code>key [...]</code> segment, and FAILED state.</li>
-</ol>
-<p>Helpers follow the existing <code>KubectlPortForward</code> ProcessBuilder pattern, kept as small static methods (or a tiny <code>Kubectl</code> util): <code>jobManagerLog(deployment)</code>, <code>deploymentJobState(name)</code>, <code>redeploy(name)</code>.</p>
-<h3 id="3-extension-contract-for-future-strategies">3. Extension contract for future strategies<a class="headerlink" href="#3-extension-contract-for-future-strategies" title="Permanent link">&para;</a></h3>
-<p>When <code>invalidRecordHandling: skip</code> ships: switch (or add a variant of) the invalid module ConfigMap to the desired policy and add cheap non-fatal methods — "poison record, job stays RUNNING, a follow-up valid record is still processed, skip log/metric observed" — no redeploy needed. The current fatal scenarios then move to an explicit <code>type: fail</code> ingress, preserving coverage of the strict contract. New scenario = new method; new strategy = new ConfigMap variant. No other machinery.</p>
-<h2 id="out-of-scope">Out of scope<a class="headerlink" href="#out-of-scope" title="Permanent link">&para;</a></h2>
-<ul>
-<li>Kinesis scenarios.</li>
-<li>Deserialization-failure defect class (malformed payload bytes): the routable ingress wraps payloads opaquely today, so there is no E2E-visible deser failure until ADR-0008 stage 2 defines one; add the scenario then.</li>
-<li>Metrics assertions (arrive with the skip policy).</li>
-</ul>
+<h1 id="alerting">Alerting<a class="headerlink" href="#alerting" title="Permanent link">&para;</a></h1>
+<p>Alert rules for the counters documented in <a href="../metrics/">Metrics</a>. Prerequisite: a Prometheus reporter scraping the TaskManagers (port 9249 in the reference deployments). The metric name prefix below follows the default scope format; adjust it to your <code>metrics.scope.*</code> configuration - the <code>deserializer_topic_defect_numInvalidRecordsSkipped</code> suffix is stable.</p>
+<h2 id="invalid-records">Invalid records<a class="headerlink" href="#invalid-records" title="Permanent link">&para;</a></h2>
+<p>The per-topic, per-defect counter carries <code>topic</code> and <code>defect</code> as labels, so a firing alert names the offending topic and the kind of corruption without log correlation:</p>
+<p>Both expressions aggregate with <code>sum by (topic, defect)</code>: a parallel ingress emits one series per source subtask, and without aggregation each subtask would fire its own alert.</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">alert</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">StateFunInvalidRecordsSkipped</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">expr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sum by (topic, defect) (increase(flink_taskmanager_job_task_operator_deserializer_topic_defect_numInvalidRecordsSkipped[5m])) &gt; 0</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">labels</span><span class="p">:</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="nt">severity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">warning</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">  </span><span class="nt">annotations</span><span class="p">:</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">    </span><span class="nt">summary</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Invalid</span><span class="nv"> </span><span class="s">Kafka</span><span class="nv"> </span><span class="s">records</span><span class="nv"> </span><span class="s">skipped</span><span class="nv"> </span><span class="s">on</span><span class="nv"> </span><span class="s">topic</span><span class="nv"> </span><span class="s">{{</span><span class="nv"> </span><span class="s">$labels.topic</span><span class="nv"> </span><span class="s">}}</span><span class="nv"> </span><span class="s">({{</span><span class="nv"> </span><span class="s">$labels.defect</span><span class="nv"> </span><span class="s">}})&quot;</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Records</span><span class="nv"> </span><span class="s">with</span><span class="nv"> </span><span class="s">defect</span><span class="nv"> </span><span class="s">{{</span><span class="nv"> </span><span class="s">$labels.defect</span><span class="nv"> </span><span class="s">}}</span><span class="nv"> </span><span class="s">are</span><span class="nv"> </span><span class="s">being</span><span class="nv"> </span><span class="s">skipped</span><span class="nv"> </span><span class="s">by</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">routable</span><span class="nv"> </span><span class="s">ingress.</span><span class="nv"> </span><span class="s">Each</span><span class="nv"> </span><span class="s">record</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">logged</span><span class="nv"> </span><span class="s">individually</span><span class="nv"> </span><span class="s">on</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">TaskManager:</span><span class="nv"> </span><span class="s">grep</span><span class="nv"> </span><span class="s">&#39;Skipping</span><span class="nv"> </span><span class="s">invalid</span><span class="nv"> </span><span class="s">record&#39;.&quot;</span>
+</span></code></pre></div>
+<p>To page on a sustained stream rather than a single stray record, alert on the rate instead:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">alert</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">StateFunInvalidRecordsSustained</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">expr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sum by (topic, defect) (rate(flink_taskmanager_job_task_operator_deserializer_topic_defect_numInvalidRecordsSkipped[15m])) &gt; 0.1</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">labels</span><span class="p">:</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="nt">severity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">critical</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">  </span><span class="nt">annotations</span><span class="p">:</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">    </span><span class="nt">summary</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Sustained</span><span class="nv"> </span><span class="s">invalid-record</span><span class="nv"> </span><span class="s">stream</span><span class="nv"> </span><span class="s">on</span><span class="nv"> </span><span class="s">topic</span><span class="nv"> </span><span class="s">{{</span><span class="nv"> </span><span class="s">$labels.topic</span><span class="nv"> </span><span class="s">}}</span><span class="nv"> </span><span class="s">({{</span><span class="nv"> </span><span class="s">$labels.defect</span><span class="nv"> </span><span class="s">}})&quot;</span>
+</span></code></pre></div>
+<h2 id="migrating-from-restart-based-alerts">Migrating from restart-based alerts<a class="headerlink" href="#migrating-from-restart-based-alerts" title="Permanent link">&para;</a></h2>
+<p>Before <code>invalidRecordHandling</code> existed, one invalid record crashed the job, so restart alerts doubled as bad-data alerts. With the <code>skip</code> default, bad data surfaces through the counters above and restarts indicate genuine failures only. Ingresses pinned to <code>type: fail</code> keep the old signal.</p>
 
 
 
 
 
 
+
+  
+  
 
 
 
@@ -1989,14 +2058,14 @@ Related: ADR-0008 (invalid record handling), stage-1 diagnostics on branch <code
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.sections", "navigation.indexes", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate", "content.action.edit", "toc.follow"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.indexes", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate", "content.action.edit", "toc.follow"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="https://unpkg.com/mermaid@11/dist/mermaid.min.js"></script>
       
-        <script src="../../../assets/js/mermaid-init.js"></script>
+        <script src="../../assets/js/mermaid-init.js"></script>
       
     
   </body>

@@ -855,6 +855,10 @@
       
         
       
+        
+      
+        
+      
     
     
     
@@ -1055,6 +1059,62 @@
     
   
     Logging
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/metrics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metrics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/alerting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Alerting
   
 
     
@@ -1924,11 +1984,11 @@
 <tbody>
 <tr>
 <td>Status</td>
-<td>Proposed</td>
+<td>Accepted (skip + fail implemented; forward pending)</td>
 </tr>
 <tr>
 <td>Date</td>
-<td>2026-07-25</td>
+<td>2026-07-25, revised 2026-08-08</td>
 </tr>
 <tr>
 <td>Issues/PRs</td>
@@ -1942,16 +2002,16 @@
 <h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
 <p>Introduce <code>invalidRecordHandling</code> as a per-ingress default with per-topic override, mirroring the existing placement of <code>forwardHeaders</code>. It is a camelCase field holding an object with a <code>type</code> discriminator, consistent with existing spec conventions like <code>deliverySemantic</code>:</p>
 <ul>
-<li><code>type: skip</code> (new default, no yaml required): the record is dropped, a log entry is emitted with full context (topic, partition, offset, timestamp, defect class, error, key, value size), a rate limiter prevents log flooding under sustained garbage (keyed by topic and defect class, so distinct defects always log fully; suppressed repeats surface in periodic summary lines carrying counts and per-partition offset ranges), and a metric counter increments for every record. The job never leaves <code>RUNNING</code>. The log level defaults to ERROR and can be lowered per ingress or per topic with <code>logLevel: warn</code>.</li>
+<li><code>type: skip</code> (new default, no yaml required): the record is dropped, every skipped record is logged individually with full context (defect class, topic, partition, offset, timestamp, key, value size) and a metric counter increments for every record. The job never leaves <code>RUNNING</code>. Revised 2026-08-08: the originally proposed rate limiter with summary lines was dropped in implementation - per-record diagnosability was chosen over flood protection, the counters are the alerting signal. The log level defaults to WARN and is configurable per ingress or per topic with <code>logLevel: debug|info|warn|error</code>.</li>
 <li><code>type: fail</code>: restores the previous behavior, the job crashes on the first invalid record, with pinned exception contracts so existing log-grepping tooling keeps working.</li>
 <li><code>type: forward</code>: the invalid record is delivered to a configured dead-letter function as a normal message, not a special envelope. The payload keeps the topic's configured <code>valueType</code> with the original bytes verbatim; a tombstone forwards as an empty payload, since the runtime's <code>TypedValue</code> invariant prohibits unset message values (the SDK <code>MessageWrapper</code> rejects them), and the <code>NULL_VALUE</code> defect metadata preserves the null-vs-empty distinction. Java SDK conveniences ship alongside: <code>Message.lastHeader(String)</code> (mirroring Kafka's and <code>KafkaEgressCapture</code>'s <code>lastHeader</code>) and an <code>InvalidRecord.of(message)</code> wrapper with Optional-returning, never-throwing accessors; raw <code>statefun.invalid/*</code> keys remain the cross-SDK contract. Provenance rides as message metadata under the reserved <code>statefun.invalid/</code> prefix (<code>kafka.topic</code>, <code>kafka.partition</code>, <code>kafka.offset</code>, <code>kafka.timestamp</code>, <code>defect</code>, <code>error</code>, <code>key</code>). Original record headers pass through unchanged. Any incoming header already using the reserved prefix is stripped so provenance cannot be spoofed by producers. The function instance id is the record key when present, or the literal <code>"none"</code> otherwise.</li>
 </ul>
-<p>An empty key is deliberately not a defect. It is a legal Kafka key and routes as a normal address to the function instance with id <code>""</code>, exactly as an explicit shared id would. Producers that do not intend all such records to converge on one instance must set a real key; the ingress does not second-guess an address it was given. The policy above therefore classifies only a null key, a null value (tombstone), and a deserialization failure as invalid.</p>
+<p>An empty key is deliberately not a defect. It is a legal Kafka key and routes as a normal address to the function instance with id <code>""</code>, exactly as an explicit shared id would. Producers that do not intend all such records to converge on one instance must set a real key; the ingress does not second-guess an address it was given. The policy above therefore classifies a null key and a null value (tombstone) as invalid. A deserialization-failure defect class is reserved for a future revision: the routable ingress today treats payload bytes opaquely, so a payload decode failure is not observable at this layer.</p>
 <p>Bind-time validation of routing targets was considered and dropped: with remote functions the runtime cannot verify at bind time that the service actually implements a target, so a static check could only catch namespace-level typos against endpoint patterns. An unroutable target therefore keeps its current behavior (fails at dispatch on first message) and remains documented as a deployment-hygiene concern.</p>
 <h2 id="consequences">Consequences<a class="headerlink" href="#consequences" title="Permanent link">&para;</a></h2>
 <ul>
-<li>The default behavior changes from crash-the-job to skip-with-ERROR-log; this is a breaking behavior change that must be called out in release notes.</li>
-<li>Operators who currently alert on job restarts as their signal for bad data need to migrate that alert to the <code>numInvalidRecordsSkipped</code> metric instead. Metric naming follows Flink conventions (camelCase <code>numXxx</code>, cf. <code>numLateRecordsDropped</code>), and the FLIP-33 standard source counter <code>numRecordsInErrors</code> increments alongside the policy-specific counters so existing dashboards pick the signal up unchanged.</li>
+<li>The default behavior changes from crash-the-job to skip-with-WARN-log; this is a breaking behavior change that must be called out in release notes. The skip-on-null contract applies to every KafkaIngressDeserializer wrapped by the runtime, including custom embedded-SDK ones: a null return, previously a broken-contract crash, now counts and drops the record.</li>
+<li>Operators who currently alert on job restarts as their signal for bad data need to migrate that alert to the <code>numInvalidRecordsSkipped</code> metric instead. Metric naming follows Flink conventions (camelCase <code>numXxx</code>, cf. <code>numLateRecordsDropped</code>); the counters register in the KafkaSource-provided <code>deserializer</code> subgroup. The originally proposed reuse of the FLIP-33 <code>numRecordsInErrors</code> counter was dropped in implementation (2026-08-08): that counter lives on the operator I/O group, unreachable from the deserializer context, and a same-named counter in a different scope would mislead dashboards. A per-topic, per-defect breakdown <code>topic.&lt;name&gt;.defect.&lt;NULL_KEY|NULL_VALUE&gt;.numInvalidRecordsSkipped</code> (the Kafka connector's group convention) makes one bad producer attributable and alertable in isolation (added 2026-08-08).</li>
 <li><code>type: forward</code> gives StateFun a dead-letter path that reuses the existing message and metadata machinery from ADR-0005 (Kafka record headers) with no new protocol additions, and no new runtime machinery beyond the existing ingress-to-function path.</li>
 <li><code>type: fail</code> remains available for teams that prefer the old strict contract, one line of yaml away.</li>
 <li>Unroutable targets (a typo'd namespace in <code>targets:</code>) still fail at first message, past the reach of this policy; keeping routing targets correct stays a deploy-review concern.</li>
