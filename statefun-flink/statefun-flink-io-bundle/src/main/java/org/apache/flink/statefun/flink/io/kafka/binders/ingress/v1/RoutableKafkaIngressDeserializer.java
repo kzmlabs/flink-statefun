@@ -36,8 +36,8 @@ public final class RoutableKafkaIngressDeserializer
   @Override
   public Message deserialize(ConsumerRecord<byte[], byte[]> input) {
     final String topic = input.topic();
-    final byte[] payload = input.value();
-    final byte[] key = requireNonNullKey(input.key());
+    final byte[] key = requireNonNullKey(input);
+    final byte[] payload = requireNonNullValue(input);
     final String id = new String(key, StandardCharsets.UTF_8);
 
     final RoutingConfig routingConfig = routingConfigs.get(topic);
@@ -71,7 +71,8 @@ public final class RoutableKafkaIngressDeserializer
     return proto.build();
   }
 
-  private byte[] requireNonNullKey(byte[] key) {
+  private static byte[] requireNonNullKey(ConsumerRecord<byte[], byte[]> input) {
+    final byte[] key = input.key();
     if (key == null) {
       TypeName tpe = RoutableKafkaIngressBinderV1.KIND_TYPE;
       throw new IllegalStateException(
@@ -79,8 +80,41 @@ public final class RoutableKafkaIngressDeserializer
               + tpe.namespace()
               + "/"
               + tpe.name()
-              + " ingress requires a UTF-8 key set for each record.");
+              + " ingress requires a UTF-8 key set for each record. Offending record: "
+              + recordCoordinates(input)
+              + ".");
     }
     return key;
+  }
+
+  // runs after the key check, so input.key() is known to be non-null here
+  private static byte[] requireNonNullValue(ConsumerRecord<byte[], byte[]> input) {
+    final byte[] value = input.value();
+    if (value == null) {
+      TypeName tpe = RoutableKafkaIngressBinderV1.KIND_TYPE;
+      throw new IllegalStateException(
+          "The "
+              + tpe.namespace()
+              + "/"
+              + tpe.name()
+              + " ingress cannot process a tombstone (null value) record. Offending record: "
+              + recordCoordinates(input)
+              + ", key ["
+              + new String(input.key(), StandardCharsets.UTF_8)
+              + "].");
+    }
+    return value;
+  }
+
+  private static String recordCoordinates(ConsumerRecord<byte[], byte[]> input) {
+    return "topic ["
+        + input.topic()
+        + "], partition ["
+        + input.partition()
+        + "], offset ["
+        + input.offset()
+        + "], timestamp ["
+        + input.timestamp()
+        + "]";
   }
 }

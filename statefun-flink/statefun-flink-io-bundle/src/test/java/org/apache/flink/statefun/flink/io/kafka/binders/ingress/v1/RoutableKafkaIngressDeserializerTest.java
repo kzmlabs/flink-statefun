@@ -9,11 +9,14 @@ import com.google.protobuf.Message;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import org.apache.flink.statefun.flink.io.generated.AutoRoutable;
 import org.apache.flink.statefun.flink.io.generated.RoutingConfig;
 import org.apache.flink.statefun.flink.io.generated.TargetFunctionType;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.common.header.internals.RecordHeaders;
+import org.apache.kafka.common.record.TimestampType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -115,6 +118,37 @@ class RoutableKafkaIngressDeserializerTest {
   }
 
   @Test
+  void nullKeyFailureReportsRecordCoordinates() {
+    final ConsumerRecord<byte[], byte[]> record =
+        consumerRecordAt(
+            ORDERS_TOPIC, 3, 42L, 1690000000123L, null, "x".getBytes(StandardCharsets.UTF_8));
+
+    assertThatThrownBy(() -> deserializer.deserialize(record))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("requires a UTF-8 key")
+        .hasMessageContaining("topic [" + ORDERS_TOPIC + "]")
+        .hasMessageContaining("partition [3]")
+        .hasMessageContaining("offset [42]")
+        .hasMessageContaining("timestamp [1690000000123]");
+  }
+
+  @Test
+  void tombstoneFailureReportsRecordCoordinatesAndKey() {
+    final ConsumerRecord<byte[], byte[]> record =
+        consumerRecordAt(
+            ORDERS_TOPIC, 1, 7L, 1690000000456L, "pk-7".getBytes(StandardCharsets.UTF_8), null);
+
+    assertThatThrownBy(() -> deserializer.deserialize(record))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("tombstone")
+        .hasMessageContaining("topic [" + ORDERS_TOPIC + "]")
+        .hasMessageContaining("partition [1]")
+        .hasMessageContaining("offset [7]")
+        .hasMessageContaining("timestamp [1690000000456]")
+        .hasMessageContaining("key [pk-7]");
+  }
+
+  @Test
   void throwsWhenTopicIsNotInRoutingMap() {
     final ConsumerRecord<byte[], byte[]> record =
         consumerRecord(
@@ -137,5 +171,21 @@ class RoutableKafkaIngressDeserializerTest {
   private static ConsumerRecord<byte[], byte[]> consumerRecord(
       String topic, byte[] partitionKey, byte[] payload) {
     return new ConsumerRecord<>(topic, 0, 0L, partitionKey, payload);
+  }
+
+  private static ConsumerRecord<byte[], byte[]> consumerRecordAt(
+      String topic, int partition, long offset, long timestamp, byte[] key, byte[] payload) {
+    return new ConsumerRecord<>(
+        topic,
+        partition,
+        offset,
+        timestamp,
+        TimestampType.CREATE_TIME,
+        key == null ? -1 : key.length,
+        payload == null ? -1 : payload.length,
+        key,
+        payload,
+        new RecordHeaders(),
+        Optional.empty());
   }
 }
