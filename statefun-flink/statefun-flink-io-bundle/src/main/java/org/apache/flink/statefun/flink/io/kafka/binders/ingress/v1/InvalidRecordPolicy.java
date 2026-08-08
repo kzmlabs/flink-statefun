@@ -39,6 +39,14 @@ final class InvalidRecordPolicy implements Serializable {
     return DEFAULT;
   }
 
+  static InvalidRecordPolicy skip(LogLevel logLevel) {
+    return new InvalidRecordPolicy(Action.SKIP, logLevel);
+  }
+
+  static InvalidRecordPolicy fail() {
+    return new InvalidRecordPolicy(Action.FAIL, LogLevel.ERROR);
+  }
+
   /**
    * Parses an invalidRecordHandling spec node: type skip or fail, optional logLevel warn or error
    * applicable to skip only. Unknown values fail spec parsing with the valid values listed.
@@ -47,13 +55,13 @@ final class InvalidRecordPolicy implements Serializable {
     JsonNode typeNode = node.get("type");
     String type = typeNode == null || typeNode.isNull() ? null : typeNode.asText();
     if ("skip".equals(type)) {
-      return new InvalidRecordPolicy(Action.SKIP, parseLogLevel(node));
+      return skip(parseLogLevel(node));
     }
     if ("fail".equals(type)) {
       if (node.has("logLevel")) {
         throw new IllegalArgumentException("invalidRecordHandling: logLevel is only applicable to type: skip");
       }
-      return new InvalidRecordPolicy(Action.FAIL, LogLevel.ERROR);
+      return fail();
     }
     throw new IllegalArgumentException("Invalid invalidRecordHandling type: " + type + "; valid values are [skip, fail]");
   }
@@ -79,5 +87,10 @@ final class InvalidRecordPolicy implements Serializable {
 
   LogLevel logLevel() {
     return logLevel;
+  }
+
+  /** Resolves this policy to the handler strategy the deserializer applies to invalid records. */
+  InvalidRecordHandler handler() {
+    return action == Action.FAIL ? new InvalidRecordHandler.Fail() : new InvalidRecordHandler.Skip(logLevel);
   }
 }

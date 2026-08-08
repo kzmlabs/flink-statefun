@@ -88,7 +88,7 @@ final class RoutableKafkaIngressSpec {
     builder.withProperties(properties);
     KafkaIngressBuilderApiExtension.withDeserializer(
         builder,
-        new RoutableKafkaIngressDeserializer(routingConfigsByTopic(), forwardHeaderTopics()));
+        new RoutableKafkaIngressDeserializer(routingConfigsByTopic(), forwardHeaderTopics(), invalidRecordPolicyByTopic()));
 
     return builder.build();
   }

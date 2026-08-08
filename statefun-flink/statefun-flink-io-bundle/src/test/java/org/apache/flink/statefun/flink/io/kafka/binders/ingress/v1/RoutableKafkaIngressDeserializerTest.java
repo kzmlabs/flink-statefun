@@ -39,12 +39,16 @@ class RoutableKafkaIngressDeserializerTest {
           .build();
 
   private RoutableKafkaIngressDeserializer deserializer;
+  private RoutableKafkaIngressDeserializer failPolicyDeserializer;
 
   @BeforeEach
   void setUp() {
     deserializer =
         new RoutableKafkaIngressDeserializer(
-            routingMap(ORDERS_TOPIC, ORDERS_ROUTING), Set.of(ORDERS_TOPIC));
+            routingMap(ORDERS_TOPIC, ORDERS_ROUTING), Set.of(ORDERS_TOPIC), Map.of());
+    failPolicyDeserializer =
+        new RoutableKafkaIngressDeserializer(
+            routingMap(ORDERS_TOPIC, ORDERS_ROUTING), Set.of(ORDERS_TOPIC), Map.of(ORDERS_TOPIC, InvalidRecordPolicy.fail()));
   }
 
   @Test
@@ -104,7 +108,7 @@ class RoutableKafkaIngressDeserializerTest {
   @Test
   void headersAreIgnoredWhenTopicHasNotOptedIntoForwarding() {
     RoutableKafkaIngressDeserializer optedOut =
-        new RoutableKafkaIngressDeserializer(routingMap(ORDERS_TOPIC, ORDERS_ROUTING), Set.of());
+        new RoutableKafkaIngressDeserializer(routingMap(ORDERS_TOPIC, ORDERS_ROUTING), Set.of(), Map.of());
     ConsumerRecord<byte[], byte[]> record =
         consumerRecord(
             ORDERS_TOPIC,
@@ -127,11 +131,25 @@ class RoutableKafkaIngressDeserializerTest {
   }
 
   @Test
+  void skipPolicyIsTheDefaultAndDropsNullKeyRecords() {
+    ConsumerRecord<byte[], byte[]> record = consumerRecordAt(ORDERS_TOPIC, 3, 42L, 1690000000123L, null, "x".getBytes(StandardCharsets.UTF_8));
+
+    assertThat(deserializer.deserialize(record)).isNull();
+  }
+
+  @Test
+  void skipPolicyIsTheDefaultAndDropsTombstones() {
+    ConsumerRecord<byte[], byte[]> record = consumerRecordAt(ORDERS_TOPIC, 1, 7L, 1690000000456L, "pk-7".getBytes(StandardCharsets.UTF_8), null);
+
+    assertThat(deserializer.deserialize(record)).isNull();
+  }
+
+  @Test
   void nullKeyFailureReportsRecordCoordinates() {
     ConsumerRecord<byte[], byte[]> record = consumerRecordAt(ORDERS_TOPIC, 3, 42L, 1690000000123L, null, "x".getBytes(StandardCharsets.UTF_8));
 
-    assertThatThrownBy(() -> deserializer.deserialize(record))
-        .isInstanceOf(IllegalStateException.class)
+    assertThatThrownBy(() -> failPolicyDeserializer.deserialize(record))
+        .isInstanceOf(InvalidRecordException.class)
         .hasMessageContaining("requires a UTF-8 key")
         .hasMessageContaining("topic [" + ORDERS_TOPIC + "]")
         .hasMessageContaining("partition [3]")
@@ -143,8 +161,8 @@ class RoutableKafkaIngressDeserializerTest {
   void tombstoneFailureReportsRecordCoordinatesAndKey() {
     ConsumerRecord<byte[], byte[]> record = consumerRecordAt(ORDERS_TOPIC, 1, 7L, 1690000000456L, "pk-7".getBytes(StandardCharsets.UTF_8), null);
 
-    assertThatThrownBy(() -> deserializer.deserialize(record))
-        .isInstanceOf(IllegalStateException.class)
+    assertThatThrownBy(() -> failPolicyDeserializer.deserialize(record))
+        .isInstanceOf(InvalidRecordException.class)
         .hasMessageContaining("tombstone")
         .hasMessageContaining("topic [" + ORDERS_TOPIC + "]")
         .hasMessageContaining("partition [1]")

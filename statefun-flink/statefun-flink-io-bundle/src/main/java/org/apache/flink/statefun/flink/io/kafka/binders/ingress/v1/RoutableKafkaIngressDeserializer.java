@@ -7,11 +7,11 @@ import com.google.protobuf.MoreByteStrings;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import org.apache.flink.statefun.flink.io.generated.AutoRoutable;
 import org.apache.flink.statefun.flink.io.generated.Header;
 import org.apache.flink.statefun.flink.io.generated.RoutingConfig;
-import org.apache.flink.statefun.sdk.TypeName;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 public final class RoutableKafkaIngressDeserializer
@@ -19,11 +19,14 @@ public final class RoutableKafkaIngressDeserializer
 
   private static final long serialVersionUID = 1L;
 
+  private static final InvalidRecordHandler DEFAULT_HANDLER = InvalidRecordPolicy.defaults().handler();
+
   private final Map<String, RoutingConfig> routingConfigs;
   private final Set<String> forwardHeaderTopics;
+  private final Map<String, InvalidRecordHandler> invalidRecordHandlerByTopic;
 
   public RoutableKafkaIngressDeserializer(
-      Map<String, RoutingConfig> routingConfigs, Set<String> forwardHeaderTopics) {
+      Map<String, RoutingConfig> routingConfigs, Set<String> forwardHeaderTopics, Map<String, InvalidRecordPolicy> invalidRecordPolicyByTopic) {
     if (routingConfigs == null || routingConfigs.isEmpty()) {
       throw new IllegalArgumentException(
           "Routing config for routable Kafka ingress cannot be empty.");
@@ -31,13 +34,24 @@ public final class RoutableKafkaIngressDeserializer
     this.routingConfigs = routingConfigs;
     this.forwardHeaderTopics =
         forwardHeaderTopics == null ? Set.of() : Set.copyOf(forwardHeaderTopics);
+    this.invalidRecordHandlerByTopic =
+        invalidRecordPolicyByTopic == null
+            ? Map.of()
+            : invalidRecordPolicyByTopic.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().handler()));
   }
 
+  /** Returns the routable envelope, or null when the record is invalid and its topic's policy is skip. */
   @Override
   public Message deserialize(ConsumerRecord<byte[], byte[]> input) {
     String topic = input.topic();
-    byte[] key = requireNonNullKey(input);
-    byte[] payload = requireNonNullValue(input);
+    if (input.key() == null) {
+      return handlerFor(topic).handle(input, InvalidRecordException.Defect.NULL_KEY);
+    }
+    if (input.value() == null) {
+      return handlerFor(topic).handle(input, InvalidRecordException.Defect.NULL_VALUE);
+    }
+    byte[] key = input.key();
+    byte[] payload = input.value();
     String id = new String(key, StandardCharsets.UTF_8);
 
     RoutingConfig routingConfig = routingConfigs.get(topic);
@@ -71,35 +85,7 @@ public final class RoutableKafkaIngressDeserializer
     return proto.build();
   }
 
-  private static byte[] requireNonNullKey(ConsumerRecord<byte[], byte[]> input) {
-    byte[] key = input.key();
-    if (key == null) {
-      throw invalidRecord(input, "requires a UTF-8 key set for each record");
-    }
-    return key;
-  }
-
-  private static byte[] requireNonNullValue(ConsumerRecord<byte[], byte[]> input) {
-    byte[] value = input.value();
-    if (value == null) {
-      throw invalidRecord(input, "cannot process a tombstone (null value) record");
-    }
-    return value;
-  }
-
-  /**
-   * Builds the job-fatal rejection for an invalid record, carrying its topic, partition, offset,
-   * timestamp and, when present, its key. Null-safe on every record field, so the diagnostic can
-   * never itself throw regardless of which defect triggered it.
-   */
-  private static IllegalStateException invalidRecord(
-      ConsumerRecord<byte[], byte[]> input, String defect) {
-    TypeName tpe = RoutableKafkaIngressBinderV1.KIND_TYPE;
-    byte[] key = input.key();
-    String keySegment = key == null ? "" : ", key [" + new String(key, StandardCharsets.UTF_8) + "]";
-    return new IllegalStateException(
-        String.format(
-            "The %s/%s ingress %s. Offending record: topic [%s], partition [%d], offset [%d], timestamp [%d]%s.",
-            tpe.namespace(), tpe.name(), defect, input.topic(), input.partition(), input.offset(), input.timestamp(), keySegment));
+  private InvalidRecordHandler handlerFor(String topic) {
+    return invalidRecordHandlerByTopic.getOrDefault(topic, DEFAULT_HANDLER);
   }
 }
