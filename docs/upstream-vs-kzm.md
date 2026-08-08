@@ -18,7 +18,7 @@ description: Migration guide from Apache Stateful Functions 3.4.0 to StateFun Ac
 | **Kafka record headers** | Not supported | **End-to-end round-trip** — `Message#headers()` on ingress, egress builder on write, [opt-in per topic](guides/kafka-headers.md) |
 | **Active CI** | Inactive after 3.4.0 | Ongoing — Dependabot, CodeQL, Scorecard, Trivy |
 | **K8s deployment** | Examples in docs | **K8s-native E2E gate** via Flink Operator + LocalStack |
-| **Docker image** | `apache/flink-statefun:3.4.0` (Flink 1.16) | `ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.4` (Flink 2.2) |
+| **Docker image** | `apache/flink-statefun:3.4.0` (Flink 1.16) | `ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.5` (Flink 2.2) |
 | **Test framework** | JUnit 4 | JUnit Jupiter (6.x) |
 | **Release cadence** | Dormant | Active (Maven Central + GHCR) |
 
@@ -34,7 +34,7 @@ Each fork-side decision has a record explaining its context and consequences: se
 +  <groupId>io.github.kzmlabs.flinkstatefun</groupId>
    <artifactId>statefun-sdk-java</artifactId>
 -  <version>3.4.0</version>
-+  <version>3.4.0-KZM-3.4</version>
++  <version>3.4.0-KZM-3.5</version>
  </dependency>
 ```
 
