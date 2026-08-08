@@ -24,6 +24,21 @@ spec:
     # failure diagnostics from its log, and an exiting JM would restart the pod and wipe them
     execution.shutdown-on-application-finish: "false"
     pipeline.auto-generate-uids: "false"
+  # the image is logback-based and requires this file; without logConfiguration the operator
+  # does not generate it, logback fails to initialize, and the JM logs nothing at all
+  logConfiguration:
+    logback-console.xml: |
+      <?xml version="1.0" encoding="UTF-8"?>
+      <configuration>
+          <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+              <encoder>
+                  <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %logger{60} - %msg%n</pattern>
+              </encoder>
+          </appender>
+          <root level="INFO">
+              <appender-ref ref="console"/>
+          </root>
+      </configuration>
   podTemplate:
     spec:
       containers:
