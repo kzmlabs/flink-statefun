@@ -1,0 +1,83 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2014 The Apache Software Foundation
+package org.apache.flink.statefun.flink.io.kafka.binders.ingress.v1;
+
+import java.io.Serializable;
+import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.JsonNode;
+
+/**
+ * Effective invalid-record policy of one ingress topic: what to do with an invalid record (skip it
+ * or fail the job) and, for skip, at which level to log it. Serializable because it ships to the
+ * cluster inside the ingress deserializer.
+ */
+final class InvalidRecordPolicy implements Serializable {
+
+  private static final long serialVersionUID = 1L;
+
+  enum Action {
+    SKIP,
+    FAIL
+  }
+
+  enum LogLevel {
+    WARN,
+    ERROR
+  }
+
+  private static final InvalidRecordPolicy DEFAULT = new InvalidRecordPolicy(Action.SKIP, LogLevel.WARN);
+
+  private final Action action;
+  private final LogLevel logLevel;
+
+  private InvalidRecordPolicy(Action action, LogLevel logLevel) {
+    this.action = action;
+    this.logLevel = logLevel;
+  }
+
+  /** The out-of-the-box policy when no yaml is given: skip with a WARN log per record. */
+  static InvalidRecordPolicy defaults() {
+    return DEFAULT;
+  }
+
+  /**
+   * Parses an invalidRecordHandling spec node: type skip or fail, optional logLevel warn or error
+   * applicable to skip only. Unknown values fail spec parsing with the valid values listed.
+   */
+  static InvalidRecordPolicy fromSpecNode(JsonNode node) {
+    JsonNode typeNode = node.get("type");
+    String type = typeNode == null || typeNode.isNull() ? null : typeNode.asText();
+    if ("skip".equals(type)) {
+      return new InvalidRecordPolicy(Action.SKIP, parseLogLevel(node));
+    }
+    if ("fail".equals(type)) {
+      if (node.has("logLevel")) {
+        throw new IllegalArgumentException("invalidRecordHandling: logLevel is only applicable to type: skip");
+      }
+      return new InvalidRecordPolicy(Action.FAIL, LogLevel.ERROR);
+    }
+    throw new IllegalArgumentException("Invalid invalidRecordHandling type: " + type + "; valid values are [skip, fail]");
+  }
+
+  private static LogLevel parseLogLevel(JsonNode node) {
+    JsonNode levelNode = node.get("logLevel");
+    if (levelNode == null || levelNode.isNull()) {
+      return LogLevel.WARN;
+    }
+    String level = levelNode.asText();
+    if ("warn".equals(level)) {
+      return LogLevel.WARN;
+    }
+    if ("error".equals(level)) {
+      return LogLevel.ERROR;
+    }
+    throw new IllegalArgumentException("Invalid invalidRecordHandling logLevel: " + level + "; valid values are [warn, error]");
+  }
+
+  Action action() {
+    return action;
+  }
+
+  LogLevel logLevel() {
+    return logLevel;
+  }
+}
