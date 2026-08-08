@@ -1,6 +1,7 @@
 ---
 title: One bad Kafka record shouldn't crash a Flink Stateful Functions job
 description: A single null-key record crashed a whole Stateful Functions job. StateFun Actors 3.4.0-KZM-3.5 ships invalidRecordHandling - skip by default, strict fail per topic, full per-record diagnostics.
+image: invalid-record-handling-hero.png
 ---
 
 # One bad Kafka record shouldn't crash a Flink Stateful Functions job

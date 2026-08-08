@@ -3,7 +3,7 @@
 {% block extrahead %}
   {% set page_title = (page and page.title) or config.site_name %}
   {% set page_description = (page and page.meta and page.meta.description) or config.site_description %}
-  {% set image = "https://kzmlabs.github.io/flink-statefun/assets/social-preview.png" %}
+  {% set image = (page and page.meta and page.meta.image and (config.site_url ~ "assets/" ~ page.meta.image)) or "https://kzmlabs.github.io/flink-statefun/assets/social-preview.png" %}
   {% set page_url = (page and page.canonical_url) or config.site_url %}
   {% set is_home = page and page.is_homepage %}
 
