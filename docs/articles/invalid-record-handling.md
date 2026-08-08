@@ -5,7 +5,9 @@ description: How a single null-key record crashed a whole Stateful Functions job
 
 # One bad Kafka record should not kill 20 pipelines
 
-![One bad event, ten thousand frozen deliveries: before and after invalidRecordHandling](../assets/invalid-record-handling-hero.png)
+*Published 2026-08-08 · by the kzmlabs maintainers*
+
+![One bad record shouldn't stop the business: invalidRecordHandling in StateFun Actors](../assets/invalid-record-handling-hero.png)
 
 Picture a delivery platform. Ten thousand orders in flight, each one an event on a Kafka topic, each topic feeding a Stateful Functions pipeline: order tracking, courier assignment, notifications, billing. Twenty topics, twenty pipelines, one Flink job.
 
@@ -13,7 +15,7 @@ Now one producer publishes a single malformed order event: a record with no key.
 
 In Apache Stateful Functions, that one record crashed the entire job. Not the one pipeline that consumed it - all twenty. Order tracking down, couriers idle, customers refreshing the app. One bad record, platform-wide outage.
 
-As of StateFun Actors 3.4.0-KZM-3.5, that is no longer the default behavior. This article walks through what actually happened inside the runtime, why it was a business problem rather than an engineering nuisance, and what the `invalidRecordHandling` policy does about it.
+As of [StateFun Actors 3.4.0-KZM-3.5](https://github.com/kzmlabs/flink-statefun/releases/tag/v3.4.0-KZM-3.5), that is no longer the default behavior. This article walks through what actually happened inside the runtime, why it was a business problem rather than an engineering nuisance, and what the `invalidRecordHandling` policy does about it.
 
 ## What actually happens on a bad record?
 
