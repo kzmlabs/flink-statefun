@@ -6,17 +6,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.IOException;
-import java.lang.reflect.Proxy;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import org.apache.flink.api.common.serialization.DeserializationSchema;
-import org.apache.flink.metrics.Counter;
 import org.apache.flink.metrics.MetricGroup;
-import org.apache.flink.metrics.SimpleCounter;
 import org.apache.flink.statefun.flink.common.UnimplementedTypeInfo;
+import org.apache.flink.statefun.flink.io.testutils.RecordingMetricGroup;
 import org.apache.flink.statefun.sdk.kafka.KafkaIngressDeserializer;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.UserCodeClassLoader;
@@ -55,32 +51,7 @@ class KafkaDeserializationSchemaDelegateTest {
     }
   }
 
-  private static final class RecordingMetrics {
-    final Map<String, Counter> counters = new HashMap<>();
-
-    MetricGroup group() {
-      return group("");
-    }
-
-    private MetricGroup group(String scope) {
-      return (MetricGroup) Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[] {MetricGroup.class}, (proxy, method, args) -> {
-        if (method.getName().equals("counter") && args != null && args.length == 1) {
-          return counters.computeIfAbsent(scope + args[0], k -> new SimpleCounter());
-        }
-        if (method.getName().equals("addGroup") && args != null && args.length == 2) {
-          return group(scope + args[0] + "." + args[1] + ".");
-        }
-        return null;
-      });
-    }
-
-    long count(String name) {
-      Counter counter = counters.get(name);
-      return counter == null ? 0 : counter.getCount();
-    }
-  }
-
-  private static DeserializationSchema.InitializationContext contextOf(RecordingMetrics metrics) {
+  private static DeserializationSchema.InitializationContext contextOf(RecordingMetricGroup metrics) {
     return new DeserializationSchema.InitializationContext() {
       @Override
       public MetricGroup getMetricGroup() {
@@ -106,9 +77,9 @@ class KafkaDeserializationSchemaDelegateTest {
   }
 
   @Test
-  void skippedRecordsAreCountedGloballyAndPerTopic() throws Exception {
+  void skippedRecordsAreCountedGlobally() throws Exception {
     KafkaDeserializationSchemaDelegate<String> delegate = new KafkaDeserializationSchemaDelegate<>(new NullOnTombstoneDeserializer());
-    RecordingMetrics metrics = new RecordingMetrics();
+    RecordingMetricGroup metrics = new RecordingMetricGroup();
     delegate.open(contextOf(metrics));
 
     ListCollector<String> collector = new ListCollector<>();
@@ -119,9 +90,32 @@ class KafkaDeserializationSchemaDelegateTest {
 
     assertThat(metrics.count("numInvalidRecordsSkipped")).isEqualTo(3);
     assertThat(metrics.count("numRecordsInErrors")).isEqualTo(3);
-    assertThat(metrics.count("topic.orders.numInvalidRecordsSkipped")).isEqualTo(2);
-    assertThat(metrics.count("topic.payments.numInvalidRecordsSkipped")).isEqualTo(1);
     assertThat(collector.collected).containsExactly("ok");
+  }
+
+  private static final class MetricsAwareDeserializer implements KafkaIngressDeserializer<String>, InvalidRecordMetricsAware {
+    private static final long serialVersionUID = 1L;
+    MetricGroup received;
+
+    @Override
+    public String deserialize(ConsumerRecord<byte[], byte[]> record) {
+      return "x";
+    }
+
+    @Override
+    public void registerInvalidRecordMetrics(MetricGroup metricGroup) {
+      received = metricGroup;
+    }
+  }
+
+  @Test
+  void metricsAwareDeserializerReceivesTheMetricGroupOnOpen() throws Exception {
+    MetricsAwareDeserializer aware = new MetricsAwareDeserializer();
+    KafkaDeserializationSchemaDelegate<String> delegate = new KafkaDeserializationSchemaDelegate<>(aware);
+
+    delegate.open(contextOf(new RecordingMetricGroup()));
+
+    assertThat(aware.received).isNotNull();
   }
 
   @Test

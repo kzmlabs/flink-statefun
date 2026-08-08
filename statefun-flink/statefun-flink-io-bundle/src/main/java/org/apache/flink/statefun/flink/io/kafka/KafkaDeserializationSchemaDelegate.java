@@ -22,10 +22,8 @@ final class KafkaDeserializationSchemaDelegate<T> implements KafkaRecordDeserial
   private final TypeInformation<T> producedTypeInfo;
   private final KafkaIngressDeserializer<T> delegate;
 
-  private transient MetricGroup metricGroup;
   private transient Counter numInvalidRecordsSkipped;
   private transient Counter numRecordsInErrors;
-  private transient Map<String, Counter> skippedByTopic;
 
   KafkaDeserializationSchemaDelegate(KafkaIngressDeserializer<T> delegate) {
     this.producedTypeInfo = new UnimplementedTypeInfo<>();
@@ -34,10 +32,12 @@ final class KafkaDeserializationSchemaDelegate<T> implements KafkaRecordDeserial
 
   @Override
   public void open(DeserializationSchema.InitializationContext context) throws Exception {
-    metricGroup = context.getMetricGroup();
+    MetricGroup metricGroup = context.getMetricGroup();
     numInvalidRecordsSkipped = metricGroup.counter("numInvalidRecordsSkipped");
     numRecordsInErrors = metricGroup.counter("numRecordsInErrors");
-    skippedByTopic = new HashMap<>();
+    if (delegate instanceof InvalidRecordMetricsAware metricsAware) {
+      metricsAware.registerInvalidRecordMetrics(metricGroup);
+    }
   }
 
   @Override
@@ -54,25 +54,20 @@ final class KafkaDeserializationSchemaDelegate<T> implements KafkaRecordDeserial
 
   /**
    * A null from the deserializer means the record was invalid and its policy said skip: it is
-   * counted (globally, FLIP-33 numRecordsInErrors, and per topic for alerting) and not collected.
-   * The valid-record path pays only one null comparison on top of the pre-existing behavior.
+   * counted (globally plus FLIP-33 numRecordsInErrors; the labeled per-topic per-defect breakdown
+   * is registered by the deserializer itself via InvalidRecordMetricsAware) and not collected. The
+   * valid-record path pays only one null comparison on top of the pre-existing behavior.
    */
   @Override
   public void deserialize(ConsumerRecord<byte[], byte[]> consumerRecord, Collector<T> collector) {
     T value = delegate.deserialize(consumerRecord);
     if (value == null) {
-      countSkipped(consumerRecord.topic());
+      if (numInvalidRecordsSkipped != null) {
+        numInvalidRecordsSkipped.inc();
+        numRecordsInErrors.inc();
+      }
       return;
     }
     collector.collect(value);
-  }
-
-  private void countSkipped(String topic) {
-    if (metricGroup == null) {
-      return;
-    }
-    numInvalidRecordsSkipped.inc();
-    numRecordsInErrors.inc();
-    skippedByTopic.computeIfAbsent(topic, t -> metricGroup.addGroup("topic", t).counter("numInvalidRecordsSkipped")).inc();
   }
 }

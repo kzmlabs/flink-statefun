@@ -1,41 +1,24 @@
 ---
 title: Metrics
-description: Metrics exposed by StateFun Actors on top of Flink's own - invalid-record counters on the Kafka ingress, their scopes, and how to alert on them.
+description: Metrics StateFun Actors adds on top of Flink's own - the invalid-record counters of the routable Kafka ingress, their registration scope, naming conventions, and Prometheus mapping.
 ---
 
 # Metrics
 
-StateFun Actors jobs expose all standard [Flink metrics](https://nightlies.apache.org/flink/flink-docs-stable/docs/ops/metrics/); the E2E and quickstart deployments ship with the Prometheus reporter enabled on port 9249. This page documents the metrics this distribution adds on top.
+StateFun Actors jobs expose the standard [Flink metrics](https://nightlies.apache.org/flink/flink-docs-stable/docs/ops/metrics/) unchanged. This page documents what this distribution adds on top. The reference deployments enable the Prometheus reporter on port 9249 (`metrics.reporter.prom.factory.class`, see `flink-deployment.yaml` in the E2E resources).
 
-## Invalid records on the Kafka ingress
+## Invalid-record counters
 
-Emitted by the routable Kafka ingress when a record is skipped under `invalidRecordHandling: skip` (see the [Kafka I/O guide](kafka-io.md#invalid-records)). All three are counters registered on the source operator's metric group and increment once per skipped record:
+Registered on the source operator's metric group of the routable Kafka ingress. They increment once per record skipped under `invalidRecordHandling: skip` (see [Kafka I/O](kafka-io.md#invalid-records)); under `type: fail` nothing increments because the first invalid record fails the job.
 
-| Metric | Scope | Notes |
+| Metric | Increments | Naming rationale |
 |---|---|---|
-| `numInvalidRecordsSkipped` | source operator | Total skipped records across all topics of the ingress. Follows Flink's `numXxx` counter convention (cf. `numLateRecordsDropped`). |
-| `numRecordsInErrors` | source operator | The FLIP-33 standard source counter - existing dashboards that already chart it pick up the signal unchanged. |
-| `topic.<name>.numInvalidRecordsSkipped` | source operator, per topic | Same count broken down per topic via a `topic` metric group (the Kafka connector's group convention), so one bad producer is attributable and alertable in isolation. |
+| `numInvalidRecordsSkipped` | once per skipped record, all topics of the ingress | Flink operator-counter convention `numXxx`, cf. `numLateRecordsDropped` |
+| `numRecordsInErrors` | alongside `numInvalidRecordsSkipped` | [FLIP-33](https://cwiki.apache.org/confluence/display/FLINK/FLIP-33%3A+Standardize+Connector+Metrics) standard source counter; dashboards that already chart it need no change |
+| `topic.<topic>.defect.<defect>.numInvalidRecordsSkipped` | once per skipped record of that topic and defect | key-value metric groups, same pattern as the Kafka connector's `KafkaSourceReader.topic.<topic>.partition.<partition>.*` |
 
-Under `type: fail` no counters increment - the job fails on the first invalid record, which is its own signal.
+`<defect>` is `NULL_KEY` or `NULL_VALUE`, matching the `defect [...]` field of the per-record skip log line.
 
-## Alerting example
+## Prometheus mapping
 
-With the Prometheus reporter, the per-topic group becomes a `topic` label. Alert on any skipped record per topic over 5 minutes:
-
-```yaml
-- alert: StateFunInvalidRecordsSkipped
-  expr: increase(flink_taskmanager_job_task_operator_topic_numInvalidRecordsSkipped[5m]) > 0
-  labels:
-    severity: warning
-  annotations:
-    summary: "Invalid Kafka records skipped on topic {{ $labels.topic }}"
-    description: "A producer is emitting records the ingress cannot route (null key or tombstone). Every record is individually logged on the TaskManager - grep 'Skipping invalid record'."
-```
-
-The exact metric name prefix depends on your reporter's scope format; the trailing `topic_numInvalidRecordsSkipped` part is stable.
-
-## Next steps
-
-- [Kafka I/O guide](kafka-io.md#invalid-records) - the `invalidRecordHandling` policy the counters belong to.
-- [Logging](logging.md) - the per-record skip log lines these counters summarize.
+Key-value groups become labels: the per-topic counter arrives as `..._topic_defect_numInvalidRecordsSkipped{topic="example.orders", defect="NULL_VALUE"}`. The metric name prefix depends on the reporter's scope format; the trailing `topic_defect_numInvalidRecordsSkipped` part is stable. Alert rules for these counters: [Alerting](alerting.md).

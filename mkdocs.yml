@@ -79,6 +79,7 @@ nav:
       - Kubernetes deployment: guides/k8s-deployment.md
       - Logging: guides/logging.md
       - Metrics: guides/metrics.md
+      - Alerting: guides/alerting.md
   - Architecture:
       - Overview: architecture/index.md
       - Shading layer: architecture/shading.md

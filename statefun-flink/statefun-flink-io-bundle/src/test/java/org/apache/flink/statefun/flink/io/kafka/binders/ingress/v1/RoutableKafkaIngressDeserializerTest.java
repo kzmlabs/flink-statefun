@@ -189,6 +189,24 @@ class RoutableKafkaIngressDeserializerTest {
   }
 
   @Test
+  void skippedRecordsAreCountedByTopicAndDefect() {
+    org.apache.flink.statefun.flink.io.testutils.RecordingMetricGroup metrics = new org.apache.flink.statefun.flink.io.testutils.RecordingMetricGroup();
+    deserializer.registerInvalidRecordMetrics(metrics.group());
+
+    deserializer.deserialize(consumerRecordAt(ORDERS_TOPIC, 0, 1L, 1690000000100L, null, "x".getBytes(StandardCharsets.UTF_8)));
+    deserializer.deserialize(consumerRecordAt(ORDERS_TOPIC, 0, 2L, 1690000000200L, "pk-1".getBytes(StandardCharsets.UTF_8), null));
+    deserializer.deserialize(consumerRecordAt(ORDERS_TOPIC, 0, 3L, 1690000000300L, "pk-2".getBytes(StandardCharsets.UTF_8), null));
+
+    assertThat(metrics.count("topic." + ORDERS_TOPIC + ".defect.NULL_KEY.numInvalidRecordsSkipped")).isEqualTo(1);
+    assertThat(metrics.count("topic." + ORDERS_TOPIC + ".defect.NULL_VALUE.numInvalidRecordsSkipped")).isEqualTo(2);
+  }
+
+  @Test
+  void skippingWithoutRegisteredMetricsIsANoOp() {
+    assertThat(deserializer.deserialize(consumerRecordAt(ORDERS_TOPIC, 0, 1L, 1690000000100L, null, "x".getBytes(StandardCharsets.UTF_8)))).isNull();
+  }
+
+  @Test
   void skipPolicyIsTheDefaultAndDropsNullKeyRecords() {
     ConsumerRecord<byte[], byte[]> record = consumerRecordAt(ORDERS_TOPIC, 3, 42L, 1690000000123L, null, "x".getBytes(StandardCharsets.UTF_8));
 

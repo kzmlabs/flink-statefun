@@ -15,7 +15,7 @@ import org.apache.flink.statefun.flink.io.generated.RoutingConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 public final class RoutableKafkaIngressDeserializer
-    implements org.apache.flink.statefun.sdk.kafka.KafkaIngressDeserializer<Message> {
+    implements org.apache.flink.statefun.sdk.kafka.KafkaIngressDeserializer<Message>, org.apache.flink.statefun.flink.io.kafka.InvalidRecordMetricsAware {
 
   private static final long serialVersionUID = 1L;
 
@@ -24,6 +24,9 @@ public final class RoutableKafkaIngressDeserializer
   private final Map<String, RoutingConfig> routingConfigs;
   private final Set<String> forwardHeaderTopics;
   private final Map<String, InvalidRecordHandler> invalidRecordHandlerByTopic;
+
+  private transient org.apache.flink.metrics.MetricGroup invalidRecordMetrics;
+  private transient Map<String, org.apache.flink.metrics.Counter> skipCounters;
 
   public RoutableKafkaIngressDeserializer(
       Map<String, RoutingConfig> routingConfigs, Set<String> forwardHeaderTopics, Map<String, InvalidRecordPolicy> invalidRecordPolicyByTopic) {
@@ -45,10 +48,10 @@ public final class RoutableKafkaIngressDeserializer
   public Message deserialize(ConsumerRecord<byte[], byte[]> input) {
     String topic = input.topic();
     if (input.key() == null) {
-      return handlerFor(topic).handle(input, InvalidRecordException.Defect.NULL_KEY);
+      return handleInvalid(input, InvalidRecordException.Defect.NULL_KEY);
     }
     if (input.value() == null) {
-      return handlerFor(topic).handle(input, InvalidRecordException.Defect.NULL_VALUE);
+      return handleInvalid(input, InvalidRecordException.Defect.NULL_VALUE);
     }
     byte[] key = input.key();
     byte[] payload = input.value();
@@ -85,7 +88,20 @@ public final class RoutableKafkaIngressDeserializer
     return proto.build();
   }
 
-  private InvalidRecordHandler handlerFor(String topic) {
-    return invalidRecordHandlerByTopic.getOrDefault(topic, DEFAULT_HANDLER);
+  /** Hands the source operator's metric group over for the labeled per-topic per-defect skip counters. */
+  @Override
+  public void registerInvalidRecordMetrics(org.apache.flink.metrics.MetricGroup metricGroup) {
+    this.invalidRecordMetrics = metricGroup;
+    this.skipCounters = new java.util.HashMap<>();
+  }
+
+  /** Applies the topic's handler; a null result means skipped, counted under topic and defect labels. */
+  private Message handleInvalid(ConsumerRecord<byte[], byte[]> input, InvalidRecordException.Defect defect) {
+    String topic = input.topic();
+    Message replacement = invalidRecordHandlerByTopic.getOrDefault(topic, DEFAULT_HANDLER).handle(input, defect);
+    if (replacement == null && invalidRecordMetrics != null) {
+      skipCounters.computeIfAbsent(topic + "|" + defect, k -> invalidRecordMetrics.addGroup("topic", topic).addGroup("defect", defect.name()).counter("numInvalidRecordsSkipped")).inc();
+    }
+    return replacement;
   }
 }

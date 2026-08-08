@@ -63,22 +63,22 @@ spec:
 
 | `type` | Behavior |
 |---|---|
-| `skip` (default) | The record is dropped, the job keeps running. Every skipped record is logged individually on the TaskManager with full coordinates, and the [invalid-record counters](metrics.md) increment. |
-| `fail` | The job fails on the first invalid record with the coordinates in the exception - the strict pre-3.5 contract, one line of yaml away. |
+| `skip` (default) | The record is dropped and the job keeps running. Each skipped record is logged individually on the TaskManager and the [invalid-record counters](metrics.md) increment. |
+| `fail` | The job fails on the first invalid record, with the record coordinates in the exception. This is the strict pre-3.5 behavior. |
 
-Every skipped record produces one log line - deliberately no rate limiting, so each corrupted record stays individually diagnosable:
+Skip logging is one line per record, at `logLevel`, with no rate limiting:
 
 ```
 Skipping invalid record: defect [NULL_VALUE], topic [example.orders], partition [0], offset [42], timestamp [1690000000123], key [order-17], value size [-1]
 ```
 
-`defect` is `NULL_KEY` or `NULL_VALUE`; the key prints as `null` when absent; `value size` is `-1` for tombstones. An empty key is NOT invalid - it is a legal address that routes to the function instance with id `""`.
+`defect` is `NULL_KEY` or `NULL_VALUE`. A null key prints as `key [null]`; a tombstone prints as `value size [-1]`. An empty key is not invalid: it is a legal address that routes to the function instance with id `""`.
 
-For alerting on skipped records, see the [Metrics guide](metrics.md).
+Alert rules for the counters: [Alerting](alerting.md).
 
 !!! warning "Behavior change in 3.5"
 
-    Before 3.5 an invalid record crashed the whole job unconditionally. `skip` is the new default; teams that alerted on job restarts as their bad-data signal should alert on `numInvalidRecordsSkipped` instead, or pin `type: fail` to keep the old contract.
+    Previously an invalid record crashed the whole job unconditionally. `skip` is the new default. Teams alerting on job restarts as their bad-data signal should alert on `numInvalidRecordsSkipped` instead, or pin `type: fail`.
 
 ## Egress
 
