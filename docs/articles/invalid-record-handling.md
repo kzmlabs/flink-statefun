@@ -1,6 +1,6 @@
 ---
 title: One bad Kafka record should not kill 20 pipelines
-description: How a single null-key record crashed a whole Stateful Functions job, and the invalidRecordHandling policy that turns that outage into a log line, a metric and a ticket.
+description: A single null-key record crashed a whole Stateful Functions job. The failure anatomy, the invalidRecordHandling policy shipped in KZM-3.5, and the trade-offs we argued about.
 ---
 
 # One bad Kafka record should not kill 20 pipelines
@@ -13,22 +13,11 @@ description: How a single null-key record crashed a whole Stateful Functions job
 
     One null-key Kafka record used to crash an entire Stateful Functions job - every pipeline, not just the one that read it. As of 3.4.0-KZM-3.5 the routable ingress has an `invalidRecordHandling` policy: `skip` (new default) drops the record, logs it individually with full coordinates and counts it with `topic` + `defect` Prometheus labels; `fail` restores the strict halt-on-bad-data contract, per ingress or per topic.
 
-Picture a delivery platform. Ten thousand orders in flight, each one an event on a Kafka topic, each topic feeding a Stateful Functions pipeline: order tracking, courier assignment, notifications, billing. Twenty topics, twenty pipelines, one Flink job.
+A while back we did something every streaming team should try once: we took a live Kubernetes cluster running Stateful Functions, and deliberately fed it garbage. One Kafka record with a null key. Then one tombstone. Nothing exotic - the kind of records any misconfigured producer can emit on a Tuesday.
 
-Now one producer publishes a single malformed order event: a record with no key.
+The null key killed the entire Flink job. Not the pipeline that consumed it - all of them. Every ingress, every topic, every function, gone with one `IllegalStateException`.
 
-In Apache Stateful Functions, that one record crashed the entire job. Not the one pipeline that consumed it - all twenty. Order tracking down, couriers idle, customers refreshing the app. One bad record, platform-wide outage.
-
-As of [StateFun Actors 3.4.0-KZM-3.5](https://github.com/kzmlabs/flink-statefun/releases/tag/v3.4.0-KZM-3.5), that is no longer the default behavior. This article walks through what actually happened inside the runtime, why it was a business problem rather than an engineering nuisance, and what the `invalidRecordHandling` policy does about it.
-
-## What actually happens on a bad record?
-
-The routable Kafka ingress (`io.statefun.kafka.v1/ingress`) uses the record key as the target function instance id, and the record value as the message payload. Two kinds of records violate that contract:
-
-- **Null key.** There is no function instance to route to. The deserializer threw an `IllegalStateException`.
-- **Null value (tombstone).** Compacted topics use null-valued records as deletion markers. The deserializer passed the null payload into envelope building and died with a bare `NullPointerException` from deep inside protobuf - no topic, no offset, no hint which record was responsible.
-
-We verified both empirically on a live Kubernetes cluster before changing anything: produce one poison record, watch the whole job go down. Because a Flink job fails as a unit, the blast radius is every ingress, every topic, every function - not just the pipeline that consumed the record:
+The tombstone was worse. It sailed past the key check and blew up as a bare `NullPointerException` from `com.google.protobuf.ByteString.wrap`, deep inside envelope building. No topic, no offset, no hint of which record did it. Good luck with that at 3am.
 
 ```mermaid
 flowchart LR
@@ -43,17 +32,15 @@ flowchart LR
     style DOWN fill:#ff5470,color:#0a0e27
 ```
 
-Worse, the failure loops. The offset of the poison record is never committed, so every restart re-reads it and dies again, until the restart budget is exhausted and the job reaches terminal `FAILED`.
+And then it looped: the poison record's offset never gets committed, so every restart re-reads it and dies again, until the restart budget runs out and the job parks itself at terminal `FAILED`.
 
-## Why this is a business problem
+If you run one topic and one pipeline, maybe that's tolerable. We know teams running twenty topics feeding twenty pipelines in a single StateFun job. One producer bug on one topic, and all twenty stop - order tracking, notifications, billing, everything - because of a record most of them never touched. That's not an engineering nuisance, that's a platform-wide outage with a single-record trigger.
 
-The record that kills the job is, by definition, the record nobody planned for: a producer bug, a manual publish gone wrong, a tombstone landing on a topic that was never supposed to be compacted. It arrives unannounced, usually at night.
-
-The cost structure is what makes it painful. The trigger is one event, but the outage is total: with twenty topics feeding twenty pipelines, one bad record on one topic halts all twenty. Revenue-carrying traffic stops because of a record it never touched. Recovery is manual - someone has to find the poison record (with no diagnostics pointing at it), skip past it by hand, and restart the job.
+As of [StateFun Actors 3.4.0-KZM-3.5](https://github.com/kzmlabs/flink-statefun/releases/tag/v3.4.0-KZM-3.5), it's no longer the default behavior. Here's what we shipped and, more interesting, what we argued about along the way.
 
 ## The fix: a policy, not a crash
 
-`invalidRecordHandling` is a per-ingress setting with a per-topic override:
+`invalidRecordHandling` on the routable Kafka ingress. An ingress-level default, with a per-topic override:
 
 ```yaml
 kind: io.statefun.kafka.v1/ingress
@@ -68,9 +55,9 @@ spec:
       ...
 ```
 
-**`type: skip` is the new default.** An invalid record is dropped and the job keeps running. The other nineteen pipelines never notice.
+`skip` is the new default: the bad record is dropped, the job keeps running, the other nineteen pipelines never notice.
 
-**`type: fail` restores the strict contract.** Some pipelines should halt on bad data - regulated flows, financial commands, anything where processing gap is worse than downtime. One line of yaml, per ingress or per topic.
+`fail` is the old behavior, one line of yaml away - and it's the right choice more often than the name suggests. Crash-on-first-bad-record is a defensible default for a financial ledger, where a processing gap is worse than downtime. It's a terrible default for everything else. The per-topic override exists precisely so one ingress can hold both: lenient telemetry topics next to a strict billing topic.
 
 ```mermaid
 flowchart LR
@@ -83,63 +70,58 @@ flowchart LR
     style stop fill:#ff5470,color:#0a0e27
 ```
 
-## Is a skipped record silently lost?
+## The argument we had about rate limiting
 
-No - and this is the part that matters operationally. Every skipped record produces one log line with full coordinates:
+The original design had a log rate limiter: first occurrence per (topic, defect) logs fully, repeats get summarized into periodic count lines. Very reasonable. Very standard.
+
+We threw it out.
+
+When a producer misbehaves, the operator's first question is "which records, exactly?" - and a summarized log can't answer it. So every skipped record gets exactly one line, with everything you need to point at the guilty producer:
 
 ```text
 Skipping invalid record: defect [NULL_KEY], topic [orders], partition [0], offset [42], timestamp [1690000000123], key [null], value size [17]
 ```
 
-There is deliberately no rate limiting. During the design review we chose per-record diagnosability over log-flood protection: when a producer misbehaves, the operator's first question is "which records, exactly?" and sampled or summarized logs cannot answer it. The counters absorb the alerting load instead.
+Flood protection is real, but that's what the counters are for. Logs answer "which records"; metrics answer "how many, how fast, alert whom." Two counters land on the source operator (inside the `deserializer` scope KafkaSource hands to the deserialization schema - more on that below):
 
-Two counters register on the source operator, inside the `deserializer` scope:
+- `numInvalidRecordsSkipped` - the total for the ingress
+- `topic.<topic>.defect.<NULL_KEY|NULL_VALUE>.numInvalidRecordsSkipped` - the same count with `topic` and `defect` as Prometheus labels
 
-- `numInvalidRecordsSkipped` - the total across all topics of the ingress.
-- `topic.<topic>.defect.<NULL_KEY|NULL_VALUE>.numInvalidRecordsSkipped` - the same count broken down with `topic` and `defect` as Prometheus labels.
+That labeled counter is the one you alert on: the alert that fires literally names the topic and the kind of corruption. Ready-made rules are in the [Alerting guide](../guides/alerting.md).
 
-The labeled counter is the workhorse: the alert that fires carries the topic name and the defect kind, so it points at the misbehaving producer directly. Ready-made alert rules are in the [Alerting guide](../guides/alerting.md).
+Under `fail` you still crash - but now the exception carries the full coordinates too, tombstones included. The forensic hunt is over either way.
 
-## What happens under fail?
+## The metric we deliberately did NOT ship
 
-The job fails on the first invalid record - but unlike the old behavior, the exception carries the full record coordinates:
+An earlier revision also incremented `numRecordsInErrors`, the FLIP-33 standard source counter, "so existing dashboards pick up the signal unchanged." Sounds great in a design doc.
 
-```text
-The io.statefun.kafka.v1/ingress ingress cannot process a tombstone (null value) record. Offending record: topic [orders], partition [0], offset [42], timestamp [1690000000123], key [order-17].
-```
+Then a review pass against the actual `flink-connector-kafka` bytecode showed the deserialization schema never gets the operator I/O metric group - KafkaSource hands it a `deserializer` subgroup. The real FLIP-33 counter is simply unreachable from there. Registering a same-named counter in a different scope would have produced a metric that looks standard, shows up in searches, and quietly measures something else. Dashboards would have trusted it.
 
-The tombstone case previously surfaced as a bare `NullPointerException` with no context at all. Under `fail` you still get the halt-on-bad-data guarantee; you no longer get the forensic hunt.
+So it's gone, and the docs say why. If you take one thing from this section: when a doc claims "existing dashboards will just work," check which metric group the code actually writes to.
 
-## How do we know it works?
+## An accidental fix, five years late
 
-Every release of StateFun Actors is gated on a Kubernetes-native end-to-end suite: a real Flink Kubernetes Operator, real Kafka, real remote functions, provisioned in CI from scratch. The invalid-record scenarios run against a dedicated deployment in that suite:
+`KafkaIngressDeserializer`'s javadoc has said "return null if the message cannot be deserialized" for years. The runtime never honored it - the null went straight into Flink's collector and corrupted the stream. Classic case of documentation describing the intended world, not the real one.
 
-- Under the default skip policy: a null-key poison record and a tombstone are produced, followed by a valid record. The test asserts the job stays `RUNNING`, the valid record's result arrives, and the TaskManager log carries one diagnostic line per skipped record.
-- Under `fail`: the same poison records must fail the job with the coordinates in the JobManager log.
-
-The failure mode this feature fixes was itself discovered by poking a live cluster; the fix is proven the same way, on every commit.
-
-## What about custom deserializers?
-
-`KafkaIngressDeserializer` has documented "return null if the message cannot be deserialized" in its javadoc for years - but the runtime never honored it and collected the null anyway. As of this release the contract is real for every deserializer, including custom embedded-SDK ones: a null return counts and drops the record instead of corrupting the stream. If your custom deserializer returns null today, its records will now be skipped instead of crashing the job.
+The skip mechanism is exactly "deserializer returns null, runtime counts and drops it" - so that contract is now real for every deserializer, including custom embedded-SDK ones. If your custom deserializer returns null today, those records now get skipped instead of taking the job down. Check your assumptions before upgrading; it's in the changelog as a behavioral break.
 
 ## How does this compare to a dead letter queue?
 
-Different layers of the same defense, and the ecosystem has several prior arts worth naming:
+Prior art worth naming, because the ecosystem solved this at other layers long ago:
 
-- **Kafka Connect** routes failed records to a dead letter topic via `errors.tolerance: all` and `errors.deadletterqueue.topic.name`. That protects connectors, not stream processors.
-- **Kafka Streams** has `DeserializationExceptionHandler` with the stock `LogAndContinueExceptionHandler` - the closest analog to our `skip`, though without per-record coordinates in a pinned format or a per-topic, per-defect metric breakdown.
-- **Flink DataStream** jobs typically route bad records to a side output. Stateful Functions users never see the DataStream API, so that escape hatch was out of reach - which is exactly why the ingress itself has to own the policy.
+- **Kafka Connect** has `errors.tolerance: all` plus a dead letter topic - protects connectors, not stream processors.
+- **Kafka Streams** has `DeserializationExceptionHandler` with the stock `LogAndContinueExceptionHandler` - the closest analog to our `skip`, though without pinned per-record coordinates or the per-topic/per-defect metric breakdown.
+- **Flink DataStream** jobs route bad records to side outputs - but StateFun users never touch the DataStream API, which is exactly why the ingress itself has to own the policy.
 
-`skip` is the log-and-continue layer. The planned `forward` policy (ADR-0008 stage 3) is the true dead-letter layer: invalid records delivered to a designated function with provenance metadata, so a pipeline can quarantine, replay or alert on them with the full power of the programming model.
+`skip` is our log-and-continue layer. The true dead-letter layer - `forward`, delivering invalid records to a designated function with provenance metadata so you can quarantine or replay them with the full programming model - is designed (ADR-0008 in the repository) and is the next stage. The handler abstraction is already in place, so it lands without touching the ingress hot path.
 
-## When should you keep type: fail?
+## Proof over promises
 
-Use `fail` where a processing gap is worse than downtime: payment commands, ledger events, anything audited. Use the default `skip` everywhere availability wins. The per-topic override means one ingress can hold both: lenient telemetry topics next to a strict billing topic.
+Every release of this fork is gated on a Kubernetes-native E2E suite - real Flink Operator, real Kafka, real remote functions, provisioned in CI from scratch. The invalid-record scenarios run against a dedicated deployment in that suite: poison records under `skip` (job must stay `RUNNING`, the next valid record must come out the other side, every skip must appear in the TaskManager log), and the same poison under `fail` (job must die with coordinates in the JobManager log).
 
-## What is next
+Getting those tests green was its own small saga - an application-mode JobManager exits after a terminal job failure, and its pod restart takes the logs we were asserting on with it. If you ever wonder why your `kubectl logs` shows a suspiciously fresh JobManager after a crash: that's why. `execution.shutdown-on-application-finish: false` is your friend in test rigs.
 
-`type: forward` - delivering invalid records to a dead-letter function with provenance metadata - is designed (ADR-0008 in the repository) and lands as the next stage. The handler abstraction is already in place, so it arrives without touching the ingress hot path.
+The failure mode this feature fixes was discovered by poking a live cluster. The fix is proven the same way, on every commit. That's the standard we're trying to hold this fork to.
 
 ---
 
