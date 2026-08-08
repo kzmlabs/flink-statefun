@@ -2,130 +2,138 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://kzmlabs.github.io/flink-statefun/</loc>
-         <lastmod>2026-07-25</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://kzmlabs.github.io/flink-statefun/build/</loc>
-         <lastmod>2026-07-25</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://kzmlabs.github.io/flink-statefun/install/</loc>
-         <lastmod>2026-07-25</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://kzmlabs.github.io/flink-statefun/quickstart/</loc>
-         <lastmod>2026-07-25</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://kzmlabs.github.io/flink-statefun/release-process/</loc>
-         <lastmod>2026-07-25</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://kzmlabs.github.io/flink-statefun/snapshots/</loc>
-         <lastmod>2026-07-25</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://kzmlabs.github.io/flink-statefun/upstream-vs-kzm/</loc>
-         <lastmod>2026-07-25</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://kzmlabs.github.io/flink-statefun/adr/</loc>
-         <lastmod>2026-07-25</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://kzmlabs.github.io/flink-statefun/adr/0001-fork-statefun-for-flink-2/</loc>
-         <lastmod>2026-07-25</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://kzmlabs.github.io/flink-statefun/adr/0002-kafka-io-source-sink-v2/</loc>
-         <lastmod>2026-07-25</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://kzmlabs.github.io/flink-statefun/adr/0003-restore-kinesis-io-localstack/</loc>
-         <lastmod>2026-07-25</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://kzmlabs.github.io/flink-statefun/adr/0004-k8s-native-e2e-release-gate/</loc>
-         <lastmod>2026-07-25</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://kzmlabs.github.io/flink-statefun/adr/0005-kafka-record-headers/</loc>
-         <lastmod>2026-07-25</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://kzmlabs.github.io/flink-statefun/adr/0006-operator-1-15-flink-v2-2/</loc>
-         <lastmod>2026-07-25</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://kzmlabs.github.io/flink-statefun/adr/0007-restart-strategy-key-names/</loc>
-         <lastmod>2026-07-25</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://kzmlabs.github.io/flink-statefun/adr/0008-kafka-invalid-record-handling/</loc>
-         <lastmod>2026-07-25</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://kzmlabs.github.io/flink-statefun/architecture/</loc>
-         <lastmod>2026-07-25</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://kzmlabs.github.io/flink-statefun/architecture/e2e-tests/</loc>
-         <lastmod>2026-07-25</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://kzmlabs.github.io/flink-statefun/architecture/shading/</loc>
-         <lastmod>2026-07-25</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://kzmlabs.github.io/flink-statefun/articles/</loc>
-         <lastmod>2026-07-25</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://kzmlabs.github.io/flink-statefun/articles/flink-operator-1.15-upgrade/</loc>
-         <lastmod>2026-07-25</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://kzmlabs.github.io/flink-statefun/articles/forking-statefun/</loc>
-         <lastmod>2026-07-25</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://kzmlabs.github.io/flink-statefun/articles/kafka-record-headers/</loc>
-         <lastmod>2026-07-25</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://kzmlabs.github.io/flink-statefun/examples/</loc>
-         <lastmod>2026-07-25</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://kzmlabs.github.io/flink-statefun/examples/fraud-detection/</loc>
-         <lastmod>2026-07-25</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://kzmlabs.github.io/flink-statefun/examples/iot-fleet/</loc>
-         <lastmod>2026-07-25</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://kzmlabs.github.io/flink-statefun/guides/k8s-deployment/</loc>
-         <lastmod>2026-07-25</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://kzmlabs.github.io/flink-statefun/guides/kafka-egress-tuning/</loc>
-         <lastmod>2026-07-25</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://kzmlabs.github.io/flink-statefun/guides/kafka-headers/</loc>
-         <lastmod>2026-07-25</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://kzmlabs.github.io/flink-statefun/guides/kafka-io/</loc>
-         <lastmod>2026-07-25</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://kzmlabs.github.io/flink-statefun/guides/kinesis-io/</loc>
-         <lastmod>2026-07-25</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://kzmlabs.github.io/flink-statefun/guides/logging/</loc>
-         <lastmod>2026-07-25</lastmod>
+         <lastmod>2026-08-08</lastmod>
+    </url>
+    <url>
+         <loc>https://kzmlabs.github.io/flink-statefun/superpowers/plans/2026-08-08-kafka-invalid-records-e2e/</loc>
+         <lastmod>2026-08-08</lastmod>
+    </url>
+    <url>
+         <loc>https://kzmlabs.github.io/flink-statefun/superpowers/specs/2026-08-08-kafka-invalid-records-e2e-design/</loc>
+         <lastmod>2026-08-08</lastmod>
     </url>
 </urlset>
