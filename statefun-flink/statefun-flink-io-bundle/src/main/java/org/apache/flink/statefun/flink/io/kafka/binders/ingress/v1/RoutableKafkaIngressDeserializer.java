@@ -74,47 +74,39 @@ public final class RoutableKafkaIngressDeserializer
   private static byte[] requireNonNullKey(ConsumerRecord<byte[], byte[]> input) {
     final byte[] key = input.key();
     if (key == null) {
-      TypeName tpe = RoutableKafkaIngressBinderV1.KIND_TYPE;
-      throw new IllegalStateException(
-          "The "
-              + tpe.namespace()
-              + "/"
-              + tpe.name()
-              + " ingress requires a UTF-8 key set for each record. Offending record: "
-              + recordCoordinates(input)
-              + ".");
+      throw invalidRecord(input, "requires a UTF-8 key set for each record");
     }
     return key;
   }
 
-  // runs after the key check, so input.key() is known to be non-null here
   private static byte[] requireNonNullValue(ConsumerRecord<byte[], byte[]> input) {
     final byte[] value = input.value();
     if (value == null) {
-      TypeName tpe = RoutableKafkaIngressBinderV1.KIND_TYPE;
-      throw new IllegalStateException(
-          "The "
-              + tpe.namespace()
-              + "/"
-              + tpe.name()
-              + " ingress cannot process a tombstone (null value) record. Offending record: "
-              + recordCoordinates(input)
-              + ", key ["
-              + new String(input.key(), StandardCharsets.UTF_8)
-              + "].");
+      throw invalidRecord(input, "cannot process a tombstone (null value) record");
     }
     return value;
   }
 
-  private static String recordCoordinates(ConsumerRecord<byte[], byte[]> input) {
-    return "topic ["
-        + input.topic()
-        + "], partition ["
-        + input.partition()
-        + "], offset ["
-        + input.offset()
-        + "], timestamp ["
-        + input.timestamp()
-        + "]";
+  /**
+   * Builds the job-fatal rejection for an invalid record, carrying its topic, partition, offset,
+   * timestamp and, when present, its key. Null-safe on every record field, so the diagnostic can
+   * never itself throw regardless of which defect triggered it.
+   */
+  private static IllegalStateException invalidRecord(
+      ConsumerRecord<byte[], byte[]> input, String defect) {
+    final TypeName tpe = RoutableKafkaIngressBinderV1.KIND_TYPE;
+    final byte[] key = input.key();
+    final String keySegment = key == null ? "" : ", key [" + new String(key, StandardCharsets.UTF_8) + "]";
+    return new IllegalStateException(
+        String.format(
+            "The %s/%s ingress %s. Offending record: topic [%s], partition [%d], offset [%d], timestamp [%d]%s.",
+            tpe.namespace(),
+            tpe.name(),
+            defect,
+            input.topic(),
+            input.partition(),
+            input.offset(),
+            input.timestamp(),
+            keySegment));
   }
 }
