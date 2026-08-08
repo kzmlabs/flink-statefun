@@ -9,6 +9,10 @@ description: How a single null-key record crashed a whole Stateful Functions job
 
 ![One bad record shouldn't stop the business: invalidRecordHandling in StateFun Actors](../assets/invalid-record-handling-hero.png)
 
+!!! abstract "TL;DR"
+
+    One null-key Kafka record used to crash an entire Stateful Functions job - every pipeline, not just the one that read it. As of 3.4.0-KZM-3.5 the routable ingress has an `invalidRecordHandling` policy: `skip` (new default) drops the record, logs it individually with full coordinates and counts it with `topic` + `defect` Prometheus labels; `fail` restores the strict halt-on-bad-data contract, per ingress or per topic.
+
 Picture a delivery platform. Ten thousand orders in flight, each one an event on a Kafka topic, each topic feeding a Stateful Functions pipeline: order tracking, courier assignment, notifications, billing. Twenty topics, twenty pipelines, one Flink job.
 
 Now one producer publishes a single malformed order event: a record with no key.
@@ -118,6 +122,16 @@ The failure mode this feature fixes was itself discovered by poking a live clust
 ## What about custom deserializers?
 
 `KafkaIngressDeserializer` has documented "return null if the message cannot be deserialized" in its javadoc for years - but the runtime never honored it and collected the null anyway. As of this release the contract is real for every deserializer, including custom embedded-SDK ones: a null return counts and drops the record instead of corrupting the stream. If your custom deserializer returns null today, its records will now be skipped instead of crashing the job.
+
+## How does this compare to a dead letter queue?
+
+Different layers of the same defense, and the ecosystem has several prior arts worth naming:
+
+- **Kafka Connect** routes failed records to a dead letter topic via `errors.tolerance: all` and `errors.deadletterqueue.topic.name`. That protects connectors, not stream processors.
+- **Kafka Streams** has `DeserializationExceptionHandler` with the stock `LogAndContinueExceptionHandler` - the closest analog to our `skip`, though without per-record coordinates in a pinned format or a per-topic, per-defect metric breakdown.
+- **Flink DataStream** jobs typically route bad records to a side output. Stateful Functions users never see the DataStream API, so that escape hatch was out of reach - which is exactly why the ingress itself has to own the policy.
+
+`skip` is the log-and-continue layer. The planned `forward` policy (ADR-0008 stage 3) is the true dead-letter layer: invalid records delivered to a designated function with provenance metadata, so a pipeline can quarantine, replay or alert on them with the full power of the programming model.
 
 ## When should you keep type: fail?
 
