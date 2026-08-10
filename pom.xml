@@ -115,7 +115,7 @@
         <protobuf.version>3.25.5</protobuf.version>
         <unixsocket.version>2.10.1</unixsocket.version>
         <protoc-jar-maven-plugin.version>3.11.4</protoc-jar-maven-plugin.version>
-        <flink.version>2.2.1</flink.version>
+        <flink.version>2.3.0</flink.version>
         <flink-kafka.version>4.0.1-2.0</flink-kafka.version>
         <flink.connector.aws.version>6.0.0-2.0</flink.connector.aws.version>
         <scala.binary.version>2.12</scala.binary.version>
