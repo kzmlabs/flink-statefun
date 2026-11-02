@@ -116,6 +116,7 @@ public final class KinesisEgressBuilder<T> {
    *     href="https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/ClientConfiguration.html">com.aws.ClientConfiguration</a>.
    * @deprecated Please use {@link #withProperty(String, String)} instead.
    */
+  @Deprecated
   public KinesisEgressBuilder<T> withClientConfigurationProperty(String key, String value) {
     Objects.requireNonNull(key);
     Objects.requireNonNull(value);
