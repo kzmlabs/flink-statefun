@@ -10,7 +10,7 @@ FROM ${FLINK_BASE_IMAGE}
 # Security: patch base-image OS packages that already have fixed versions
 # published — openssl/libssl3t64 CVE-2026-45447 (High) plus the gnutls, krb5,
 # sqlite, systemd/udev, nghttp2, gcrypt, gzip, perl-base and ncurses
-# Mediums/Lows. Scoped --only-upgrade: touches only the flagged packages,
+# Mediums/Lows, brotli CVE-2026-111497 (High). Scoped --only-upgrade: touches only the flagged packages,
 # never installs new ones. Base runs build steps as flink, so root for apt.
 USER root
 RUN apt-get update \
@@ -19,6 +19,7 @@ RUN apt-get update \
       libgssapi-krb5-2 libk5crypto3 libkrb5-3 libkrb5support0 \
       libsqlite3-0 libsystemd0 libudev1 libnghttp2-14 libgcrypt20 \
       gzip perl-base libncursesw6 libtinfo6 ncurses-base ncurses-bin \
+      libbrotli1 \
  && rm -rf /var/lib/apt/lists/*
 USER flink
 

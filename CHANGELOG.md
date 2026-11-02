@@ -28,6 +28,13 @@ All notable changes to **StateFun Actors by Kzmlabs** are documented in this fil
 - Connectors unchanged: `flink-connector-kafka` 4.0.1-2.0,
   `flink-connector-aws` 6.0.0-2.0.
 
+### Security
+
+- Image scan baseline on the 2.3.0 image: plain (aws-sdk transitive)
+  netty 4.1.136 → 4.1.137 (CVE-2026-75595, Critical), jackson 2.18.9 →
+  2.18.11 (CVE-2026-68497/89407/89425/91776/91777), lz4 fork 1.10.3 →
+  1.11.4 (CVE-2026-106451), base `libbrotli1` upgraded (CVE-2026-111497).
+
 ## [3.4.0-KZM-3.5] - 2026-08-08
 
 Feature release. Headline: **invalid-record handling on the routable Kafka
