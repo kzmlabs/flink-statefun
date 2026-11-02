@@ -24,7 +24,7 @@ flowchart LR
 
 - **Kubernetes 1.27+**
 - **Cert-manager** (Operator dependency)
-- **Flink Kubernetes Operator 1.15+** (adds Flink 2.2 support)
+- **Flink Kubernetes Operator 1.16.1+** (first line accepting `flinkVersion: v2_3`; 1.16.1 fixes FLINK-40467, savepoint redeploy on Flink 2.3 application mode)
 - An **S3-compatible bucket** for checkpoints (S3, GCS via interop, MinIO, Ceph)
 - IAM Roles for Service Accounts (IRSA) on EKS for credential-free S3 / Kinesis access (recommended)
 
@@ -38,7 +38,7 @@ metadata:
   namespace: my-app
 spec:
   image: ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.5
-  flinkVersion: v2_2
+  flinkVersion: v2_3
   flinkConfiguration:
     state.backend.type: rocksdb
     state.checkpoints.dir: s3://my-bucket/checkpoints

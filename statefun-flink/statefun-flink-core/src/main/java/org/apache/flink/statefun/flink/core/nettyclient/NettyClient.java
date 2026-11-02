@@ -242,7 +242,9 @@ final class NettyClient implements RequestReplyClient, NettyClientService {
             clientKeyLocation ->
                 openStreamIfExistsOrThrow(ResourceLocator.findNamedResource(clientKeyLocation)));
 
-    final SslContextBuilder sslContextBuilder = SslContextBuilder.forClient();
+    // null keeps the pre-Netty-4.2 behaviour: no hostname verification, trust via trustedCaCerts
+    final SslContextBuilder sslContextBuilder =
+        SslContextBuilder.forClient().endpointIdentificationAlgorithm(null);
     maybeTrustCaCertsInputStream.ifPresent(sslContextBuilder::trustManager);
     maybeCertInputStream.ifPresent(
         certInputStream -> {

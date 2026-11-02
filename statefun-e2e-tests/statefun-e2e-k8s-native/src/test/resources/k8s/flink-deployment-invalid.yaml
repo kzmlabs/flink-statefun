@@ -9,7 +9,7 @@ metadata:
 spec:
   image: flink-statefun:e2e
   imagePullPolicy: Never
-  flinkVersion: "v2_2"
+  flinkVersion: "v2_3"
   serviceAccount: flink
   flinkConfiguration:
     classloader.parent-first-patterns.additional: "org.apache.flink.statefun;org.apache.kafka;com.google.protobuf"

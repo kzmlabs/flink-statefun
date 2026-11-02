@@ -6,6 +6,35 @@ All notable changes to **StateFun Actors by Kzmlabs** are documented in this fil
 
 ## [Unreleased]
 
+### Changed
+
+- **Flink runtime 2.2.1 → 2.3.0** ([ADR-0009](https://kzmlabs.github.io/flink-statefun/adr/0009-flink-2-3-netty-4-2-operator-1-16/)).
+  Base image `apache/flink:2.3.0-java21` (Ubuntu 24.04, Temurin 21). The
+  shaded dependencies StateFun compiles against now match what Flink 2.3.0
+  ships: `flink-shaded-netty` 4.2.6.Final-21.0 (was 4.1.91.Final-17.0,
+  three shaded releases behind the runtime) and `flink-shaded-jackson`
+  2.20.1-21.0 (was 2.18.2-20.0). Image `lib/` moves to log4j 2.25.3.
+- **Remote-function HTTP client on Netty 4.2**: event loops are built with
+  `MultiThreadIoEventLoopGroup` + `Epoll`/`KQueue`/`Nio` `IoHandler`
+  factories (the transport-specific groups are deprecated in 4.2). TLS
+  endpoint identification is pinned explicitly to the pre-4.2 behaviour
+  (no hostname verification; trust via `trustedCaCerts`), so the upgrade
+  does not change which remote-function certificates are accepted. Netty
+  4.2's adaptive `ByteBufAllocator` default is adopted as-is.
+- **K8s E2E gate on Flink Kubernetes Operator 1.16.1**; every
+  `FlinkDeployment` example and test manifest declares `flinkVersion: v2_3`.
+  1.16.1 carries the fix for FLINK-40467 (Flink 2.3 application-mode
+  savepoint redeploy could start without submitting the job).
+- Connectors unchanged: `flink-connector-kafka` 4.0.1-2.0,
+  `flink-connector-aws` 6.0.0-2.0.
+
+### Security
+
+- Image scan baseline on the 2.3.0 image: plain (aws-sdk transitive)
+  netty 4.1.136 → 4.1.137 (CVE-2026-75595, Critical), jackson 2.18.9 →
+  2.18.11 (CVE-2026-68497/89407/89425/91776/91777), lz4 fork 1.10.3 →
+  1.11.4 (CVE-2026-106451), base `libbrotli1` upgraded (CVE-2026-111497).
+
 ## [3.4.0-KZM-3.5] - 2026-08-08
 
 Feature release. Headline: **invalid-record handling on the routable Kafka

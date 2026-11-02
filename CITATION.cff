@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 message: "If you use Kzmlabs Flink StateFun in your research or production work, please cite it."
 title: "Kzmlabs Flink StateFun"
-abstract: "Actively maintained continuation of the Stateful Functions framework for building distributed stateful applications and event-driven microservices on Apache Flink 2.2.0 with Java 21. Function-as-actor programming model with durable state, exactly-once messaging, Kafka and Kinesis ingress/egress, and Kubernetes-native deployment via the Flink Kubernetes Operator."
+abstract: "Actively maintained continuation of the Stateful Functions framework for building distributed stateful applications and event-driven microservices on Apache Flink 2.3.0 with Java 21. Function-as-actor programming model with durable state, exactly-once messaging, Kafka and Kinesis ingress/egress, and Kubernetes-native deployment via the Flink Kubernetes Operator."
 type: software
 authors:
   - name: "Kzmlabs"

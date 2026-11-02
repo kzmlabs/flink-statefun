@@ -1,6 +1,6 @@
 # Contributing to Kzmlabs Flink StateFun
 
-Thanks for your interest in contributing! This project is an actively maintained continuation of the Stateful Functions framework, updated for Flink 2.2.1 and Java 21.
+Thanks for your interest in contributing! This project is an actively maintained continuation of the Stateful Functions framework, updated for Flink 2.3.0 and Java 21.
 
 ## Ways to Contribute
 
@@ -101,7 +101,7 @@ The project tracks coverage via JaCoCo + Codecov ([flags `unittests` and `e2e`](
 Include:
 
 - Kzmlabs StateFun version
-- Flink version (should be 2.2.x)
+- Flink version (should be 2.3.x)
 - Java version (should be 21)
 - OS and architecture
 - Minimal reproducer (code + config)

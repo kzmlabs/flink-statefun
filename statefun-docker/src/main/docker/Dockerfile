@@ -4,13 +4,13 @@
 # syntax=docker/dockerfile:1.7
 
 ARG IMAGE_REGISTRY_PREFIX=
-ARG FLINK_BASE_IMAGE=${IMAGE_REGISTRY_PREFIX}apache/flink:2.2.1-java21@sha256:256a3dde6a0d613fff973f3d86b04c22bbeddabee4acb3376f24b6ac1f1d6a58
+ARG FLINK_BASE_IMAGE=${IMAGE_REGISTRY_PREFIX}apache/flink:2.3.0-java21@sha256:0bb8d196d2c517d42a75a44429e1f69049f1b26a36560933cb1579670ae41c4e
 FROM ${FLINK_BASE_IMAGE}
 
 # Security: patch base-image OS packages that already have fixed versions
 # published — openssl/libssl3t64 CVE-2026-45447 (High) plus the gnutls, krb5,
 # sqlite, systemd/udev, nghttp2, gcrypt, gzip, perl-base and ncurses
-# Mediums/Lows. Scoped --only-upgrade: touches only the flagged packages,
+# Mediums/Lows, brotli CVE-2026-111497 (High). Scoped --only-upgrade: touches only the flagged packages,
 # never installs new ones. Base runs build steps as flink, so root for apt.
 USER root
 RUN apt-get update \
@@ -19,6 +19,7 @@ RUN apt-get update \
       libgssapi-krb5-2 libk5crypto3 libkrb5-3 libkrb5support0 \
       libsqlite3-0 libsystemd0 libudev1 libnghttp2-14 libgcrypt20 \
       gzip perl-base libncursesw6 libtinfo6 ncurses-base ncurses-bin \
+      libbrotli1 \
  && rm -rf /var/lib/apt/lists/*
 USER flink
 
