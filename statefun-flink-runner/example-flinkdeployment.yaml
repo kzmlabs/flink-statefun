@@ -10,7 +10,8 @@ metadata:
   name: statefun-app
 spec:
   image: ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-2.0-RC5-k8s
-  # Requires Flink K8s Operator 1.15+ (adds Flink 2.2 support); matches the 2.2.x runtime image
+  # Requires Flink K8s Operator 1.16.1+ (first line accepting v2_3; 1.16.1 fixes FLINK-40467
+  # savepoint redeploy on Flink 2.3 application mode); matches the 2.3.x runtime image
   flinkVersion: "v2_3"
   flinkConfiguration:
     taskmanager.numberOfTaskSlots: "1"
