@@ -11,13 +11,15 @@ import org.apache.flink.core.fs.CloseableRegistry;
 import org.apache.flink.shaded.netty4.io.netty.bootstrap.Bootstrap;
 import org.apache.flink.shaded.netty4.io.netty.channel.Channel;
 import org.apache.flink.shaded.netty4.io.netty.channel.EventLoopGroup;
+import org.apache.flink.shaded.netty4.io.netty.channel.IoHandlerFactory;
+import org.apache.flink.shaded.netty4.io.netty.channel.MultiThreadIoEventLoopGroup;
 import org.apache.flink.shaded.netty4.io.netty.channel.epoll.Epoll;
-import org.apache.flink.shaded.netty4.io.netty.channel.epoll.EpollEventLoopGroup;
+import org.apache.flink.shaded.netty4.io.netty.channel.epoll.EpollIoHandler;
 import org.apache.flink.shaded.netty4.io.netty.channel.epoll.EpollSocketChannel;
 import org.apache.flink.shaded.netty4.io.netty.channel.kqueue.KQueue;
-import org.apache.flink.shaded.netty4.io.netty.channel.kqueue.KQueueEventLoopGroup;
+import org.apache.flink.shaded.netty4.io.netty.channel.kqueue.KQueueIoHandler;
 import org.apache.flink.shaded.netty4.io.netty.channel.kqueue.KQueueSocketChannel;
-import org.apache.flink.shaded.netty4.io.netty.channel.nio.NioEventLoopGroup;
+import org.apache.flink.shaded.netty4.io.netty.channel.nio.NioIoHandler;
 import org.apache.flink.shaded.netty4.io.netty.channel.socket.nio.NioSocketChannel;
 import org.apache.flink.util.IOUtils;
 
@@ -29,18 +31,26 @@ final class NettySharedResources {
 
   public NettySharedResources() {
     // TODO: configure DNS resolving
-    final EventLoopGroup workerGroup;
+    // Netty 4.2: transport-specific EventLoopGroups are deprecated in favour of
+    // MultiThreadIoEventLoopGroup driven by a transport IoHandlerFactory.
+    final IoHandlerFactory ioHandlerFactory;
     final Class<? extends Channel> channelClass;
+    final String threadName;
     if (Epoll.isAvailable()) {
-      workerGroup = new EpollEventLoopGroup(demonThreadFactory("netty-http-worker"));
+      ioHandlerFactory = EpollIoHandler.newFactory();
       channelClass = EpollSocketChannel.class;
+      threadName = "netty-http-worker";
     } else if (KQueue.isAvailable()) {
-      workerGroup = new KQueueEventLoopGroup(demonThreadFactory("http-netty-worker"));
+      ioHandlerFactory = KQueueIoHandler.newFactory();
       channelClass = KQueueSocketChannel.class;
+      threadName = "http-netty-worker";
     } else {
-      workerGroup = new NioEventLoopGroup(demonThreadFactory("netty-http-client"));
+      ioHandlerFactory = NioIoHandler.newFactory();
       channelClass = NioSocketChannel.class;
+      threadName = "netty-http-client";
     }
+    final EventLoopGroup workerGroup =
+        new MultiThreadIoEventLoopGroup(demonThreadFactory(threadName), ioHandlerFactory);
     registerClosable(workerGroup::shutdownGracefully);
 
     Bootstrap bootstrap = new Bootstrap();

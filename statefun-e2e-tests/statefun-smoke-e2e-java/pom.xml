@@ -15,7 +15,7 @@
     <artifactId>statefun-smoke-e2e-java</artifactId>
 
     <properties>
-        <netty.shaded.version>4.1.65.Final-14.0</netty.shaded.version>
+        <netty.shaded.version>4.2.6.Final-21.0</netty.shaded.version>
         <central.skip>true</central.skip>
     </properties>
 

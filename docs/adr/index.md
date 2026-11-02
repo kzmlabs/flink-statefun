@@ -21,6 +21,7 @@ Together with the [architecture overview](../architecture/index.md) and the [dif
 | [0006](0006-operator-1-15-flink-v2-2.md) | Flink Operator 1.15, flinkVersion v2_2 | Accepted | 2026-06 |
 | [0007](0007-restart-strategy-key-names.md) | Restart-strategy keys without the execution. prefix | Accepted | 2026-07 |
 | [0008](0008-kafka-invalid-record-handling.md) | Kafka invalid-record handling policy | Proposed | 2026-07 |
+| [0009](0009-flink-2-3-netty-4-2-operator-1-16.md) | Flink 2.3.0, shaded Netty 4.2, Operator 1.16.1 | Accepted | 2026-11 |
 
 ## Writing a new ADR
 

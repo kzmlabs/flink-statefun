@@ -12,7 +12,7 @@ import java.util.concurrent.CompletableFuture;
 import org.apache.flink.shaded.netty4.io.netty.bootstrap.ServerBootstrap;
 import org.apache.flink.shaded.netty4.io.netty.buffer.Unpooled;
 import org.apache.flink.shaded.netty4.io.netty.channel.*;
-import org.apache.flink.shaded.netty4.io.netty.channel.nio.NioEventLoopGroup;
+import org.apache.flink.shaded.netty4.io.netty.channel.nio.NioIoHandler;
 import org.apache.flink.shaded.netty4.io.netty.channel.socket.nio.NioServerSocketChannel;
 import org.apache.flink.shaded.netty4.io.netty.handler.codec.http.*;
 import org.apache.flink.shaded.netty4.io.netty.handler.ssl.ClientAuth;
@@ -76,8 +76,8 @@ public class CommandInterpreterAppServer {
   }
 
   private static ServerBootstrap getServerBootstrap(ChannelInitializer<Channel> childHandler) {
-    NioEventLoopGroup eventLoopGroup = new NioEventLoopGroup();
-    NioEventLoopGroup workerGroup = new NioEventLoopGroup();
+    EventLoopGroup eventLoopGroup = new MultiThreadIoEventLoopGroup(NioIoHandler.newFactory());
+    EventLoopGroup workerGroup = new MultiThreadIoEventLoopGroup(NioIoHandler.newFactory());
 
     return new ServerBootstrap()
         .group(eventLoopGroup, workerGroup)

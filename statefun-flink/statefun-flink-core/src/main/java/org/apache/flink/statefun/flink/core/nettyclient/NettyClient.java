@@ -242,7 +242,12 @@ final class NettyClient implements RequestReplyClient, NettyClientService {
             clientKeyLocation ->
                 openStreamIfExistsOrThrow(ResourceLocator.findNamedResource(clientKeyLocation)));
 
-    final SslContextBuilder sslContextBuilder = SslContextBuilder.forClient();
+    // Netty 4.2 defaults client builders to HTTPS endpoint identification (hostname
+    // verification); Netty 4.1 did not verify. Keep the historical StateFun behaviour
+    // explicit so the runtime upgrade does not silently change which remote-function
+    // certificates are accepted. Trust is still governed by trustedCaCerts.
+    final SslContextBuilder sslContextBuilder =
+        SslContextBuilder.forClient().endpointIdentificationAlgorithm(null);
     maybeTrustCaCertsInputStream.ifPresent(sslContextBuilder::trustManager);
     maybeCertInputStream.ifPresent(
         certInputStream -> {

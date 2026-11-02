@@ -4,7 +4,7 @@
 # syntax=docker/dockerfile:1.7
 
 ARG IMAGE_REGISTRY_PREFIX=
-ARG FLINK_BASE_IMAGE=${IMAGE_REGISTRY_PREFIX}apache/flink:2.2.1-java21@sha256:256a3dde6a0d613fff973f3d86b04c22bbeddabee4acb3376f24b6ac1f1d6a58
+ARG FLINK_BASE_IMAGE=${IMAGE_REGISTRY_PREFIX}apache/flink:2.3.0-java21@sha256:0bb8d196d2c517d42a75a44429e1f69049f1b26a36560933cb1579670ae41c4e
 FROM ${FLINK_BASE_IMAGE}
 
 # Security: patch base-image OS packages that already have fixed versions

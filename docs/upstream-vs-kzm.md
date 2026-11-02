@@ -11,7 +11,7 @@ description: Migration guide from Apache Stateful Functions 3.4.0 to StateFun Ac
 
 | | Apache StateFun 3.4.0 | StateFun Actors KZM-3.4 |
 |---|---|---|
-| **Flink runtime** | 1.16.2 | **2.2.1** |
+| **Flink runtime** | 1.16.2 | **2.3.0** |
 | **Java baseline** | 11 | **21** |
 | **Maven group** | `org.apache.flink` | `io.github.kzmlabs.flinkstatefun` |
 | **Kinesis I/O** | Built for Flink 1.x Kinesis source | **Restored** on Flink 2.x's `KinesisStreamsSource`/`KinesisStreamsSink` |
@@ -22,7 +22,7 @@ description: Migration guide from Apache Stateful Functions 3.4.0 to StateFun Ac
 | **Test framework** | JUnit 4 | JUnit Jupiter (6.x) |
 | **Release cadence** | Dormant | Active (Maven Central + GHCR) |
 
-Each fork-side decision has a record explaining its context and consequences: see the [decision log](adr/index.md). The most relevant per row: fork rationale [ADR-0001](adr/0001-fork-statefun-for-flink-2.md), Kafka connector migration [ADR-0002](adr/0002-kafka-io-source-sink-v2.md), Kinesis restoration [ADR-0003](adr/0003-restore-kinesis-io-localstack.md), E2E gate [ADR-0004](adr/0004-k8s-native-e2e-release-gate.md), record headers [ADR-0005](adr/0005-kafka-record-headers.md).
+Each fork-side decision has a record explaining its context and consequences: see the [decision log](adr/index.md). The most relevant per row: fork rationale [ADR-0001](adr/0001-fork-statefun-for-flink-2.md), Kafka connector migration [ADR-0002](adr/0002-kafka-io-source-sink-v2.md), Kinesis restoration [ADR-0003](adr/0003-restore-kinesis-io-localstack.md), E2E gate [ADR-0004](adr/0004-k8s-native-e2e-release-gate.md), record headers [ADR-0005](adr/0005-kafka-record-headers.md), Flink 2.3 runtime [ADR-0009](adr/0009-flink-2-3-netty-4-2-operator-1-16.md).
 
 ## Migrating user code
 

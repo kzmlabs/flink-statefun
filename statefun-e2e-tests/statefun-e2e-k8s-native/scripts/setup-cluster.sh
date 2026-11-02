@@ -17,7 +17,7 @@ set -euo pipefail
 
 CLUSTER_NAME=${1:-statefun-e2e}
 NAMESPACE=statefun-e2e
-FLINK_OPERATOR_VERSION=1.15.0
+FLINK_OPERATOR_VERSION=1.16.1
 KAFKA_TOPICS=(counter.commands counter.results counter.commands.ttl counter.results.ttl greeter.commands greeter.results invalid.commands invalid.results)
 KINESIS_STREAMS=(counter.commands counter.results)
 S3_BUCKET=statefun-checkpoints

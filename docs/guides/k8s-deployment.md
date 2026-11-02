@@ -38,7 +38,7 @@ metadata:
   namespace: my-app
 spec:
   image: ghcr.io/kzmlabs/flink-statefun:3.4.0-KZM-3.5
-  flinkVersion: v2_2
+  flinkVersion: v2_3
   flinkConfiguration:
     state.backend.type: rocksdb
     state.checkpoints.dir: s3://my-bucket/checkpoints

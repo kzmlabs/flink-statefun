@@ -19,7 +19,7 @@
     <properties>
         <okhttp.version>4.12.0</okhttp.version>
         <additional-sources.dir>target/additional-sources</additional-sources.dir>
-        <flink-shaded-netty.version>4.1.91.Final-17.0</flink-shaded-netty.version>
+        <flink-shaded-netty.version>4.2.6.Final-21.0</flink-shaded-netty.version>
     </properties>
 
     <dependencies>
